@@ -48,12 +48,8 @@ class Class(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField()
     term = models.CharField(max_length=2, choices=TERM_CHOICES)
-    day = models.IntegerField()  # From 1 to 7
     capacity = models.IntegerField()
-    start_rank = models.IntegerField()  # 开始于第几节
-    end_rank = models.IntegerField()  # 结束于第几节
-    # room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    # campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+    duration = models.CharField(max_length=15)  # in format like "2 3 3", separated by a space
 
 
 '''
