@@ -1,6 +1,20 @@
 from django.db import models
 
 
+class Campus(models.Model):
+    name = models.CharField(max_length=10)
+
+
+class Department(models.Model):
+    name = models.CharField(max_length=15)
+    campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
+
+
+class Major(models.Model):
+    name = models.CharField(max_length=15)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+
+
 class User(models.Model):
     STUDENT = 'S'
     TEACHER = 'T'
@@ -14,6 +28,8 @@ class User(models.Model):
     zju_id = models.CharField(max_length=10)
     name = models.CharField(max_length=20)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=STUDENT)
+    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
+    major = models.ForeignKey(Major, null=True, blank=True, on_delete=models.DO_NOTHING)
     hashed_password = models.CharField(max_length=30)
     token = models.CharField(max_length=30)
     last_login = models.DateTimeField()
@@ -24,7 +40,20 @@ class Course(models.Model):
     name = models.CharField(max_length=20)
     description = models.TextField()
     credit = models.FloatField()
-    major = models.CharField(max_length=15)
+    capacity = models.IntegerField()
+    duration = models.CharField(max_length=15)  # in format like "2 3 3", separated by a space
+
+
+class MajorHasCourse(models.Model):
+    COMPULSORY = 'C'
+    NON_COMPULSORY = 'N'
+    COURSE_TYPE_CHOICES = [
+        (COMPULSORY, 'compulsory'),
+        (NON_COMPULSORY, 'non-compulsory'),
+    ]
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    major = models.ForeignKey(Major, on_delete=models.CASCADE)
+    course_type = models.CharField(max_length=1, choices=COURSE_TYPE_CHOICES, default=NON_COMPULSORY)
 
 
 class Class(models.Model):
@@ -44,16 +73,10 @@ class Class(models.Model):
         (WINTER, 'Winter term'),
         (SHORT, 'Short term'),
     ]
-
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField()
     term = models.CharField(max_length=2, choices=TERM_CHOICES)
-    day = models.IntegerField()  # From 1 to 7
-    capacity = models.IntegerField()
-    start_rank = models.IntegerField()  # 开始于第几节
-    end_rank = models.IntegerField()  # 结束于第几节
-    # room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    # campus = models.ForeignKey(Campus, on_delete=models.CASCADE)
 
 
 '''
