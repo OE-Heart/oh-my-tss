@@ -11,7 +11,7 @@ class User(models.Model):
         (ADMIN, 'Admin'),
     ]
 
-    zju_id = models.CharField(max_length=10, null=True)
+    zju_id = models.CharField(max_length=10)
     name = models.CharField(max_length=20)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=STUDENT)
     hashed_password = models.CharField(max_length=30)
@@ -21,6 +21,15 @@ class User(models.Model):
 
 
 class Course(models.Model):
+    name = models.CharField(max_length=20)
+    description = models.TextField()
+    credit = models.FloatField()
+    major = models.CharField(max_length=15)
+    capacity = models.IntegerField()
+    duration = models.CharField(max_length=15)  # in format like "2 3 3", separated by a space
+
+
+class Class(models.Model):
     AUTUMN_WINTER = 'AW'
     SPRING_SUMMER = 'SS'
     SPRING = 'SP'
@@ -37,25 +46,15 @@ class Course(models.Model):
         (WINTER, 'Winter term'),
         (SHORT, 'Short term'),
     ]
-
-    name = models.CharField(max_length=20)
     teacher = models.ForeignKey(User, on_delete=models.CASCADE)
-    description = models.TextField()
-    credit = models.FloatField()
-    major = models.CharField(max_length=15)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField()
     term = models.CharField(max_length=2, choices=TERM_CHOICES)
-    capacity = models.IntegerField()
-    duration = models.CharField(max_length=15)  # in format like "2 3 3", separated by a space
 
 
 '''
-class Course(models.Model):
-    _class = models.ForeignKey(Class, on_delete=models.CASCADE)
-    day = models.IntegerField()  # from 1 to 7
-    start_at = models.IntegerField()  # 开始于第几节
-    duration = models.IntegerField()  # 以节为单位
-    # room = models.ForeignKey(Room, on_delete=models.CASCADE)
-    # campus is a foreign key of room, will not exist here
-
+class TeacherHasClass(models.Model):
+    class = models.ForeignKey(Class, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(Class, on_delete=models.CASCADE)
+    capacity = models.IntegerField()
 '''
