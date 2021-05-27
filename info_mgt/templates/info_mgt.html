@@ -1,0 +1,14 @@
+{% extends 'template.html' %} {% load static %}
+
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_mgt.css' %}" />
+{% endblock extra_css %}
+
+{% block page_content %}
+  <div id="info_mgt">
+    TODO: Write the page content for <span class="appname">APP:info_mgt</span>
+    <div>
+      Param Test: {{ test_param }}
+    </div>
+  </div>
+{% endblock page_content %}
