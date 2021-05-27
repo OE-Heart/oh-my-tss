@@ -11,7 +11,7 @@ class User(models.Model):
         (ADMIN, 'Admin'),
     ]
 
-    zju_id = models.CharField(max_length=10)
+    zju_id = models.CharField(max_length=10, null=True)
     name = models.CharField(max_length=20)
     role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=STUDENT)
     hashed_password = models.CharField(max_length=30)
@@ -21,13 +21,6 @@ class User(models.Model):
 
 
 class Course(models.Model):
-    name = models.CharField(max_length=20)
-    description = models.TextField()
-    credit = models.FloatField()
-    major = models.CharField(max_length=15)
-
-
-class Class(models.Model):
     AUTUMN_WINTER = 'AW'
     SPRING_SUMMER = 'SS'
     SPRING = 'SP'
@@ -45,7 +38,11 @@ class Class(models.Model):
         (SHORT, 'Short term'),
     ]
 
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    name = models.CharField(max_length=20)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE)
+    description = models.TextField()
+    credit = models.FloatField()
+    major = models.CharField(max_length=15)
     year = models.IntegerField()
     term = models.CharField(max_length=2, choices=TERM_CHOICES)
     capacity = models.IntegerField()
@@ -53,8 +50,12 @@ class Class(models.Model):
 
 
 '''
-class TeacherHasClass(models.Model):
-    class = models.ForeignKey(Class, on_delete=models.CASCADE)
-    teacher = models.ForeignKey(Class, on_delete=models.CASCADE)
-    capacity = models.IntegerField()
+class Course(models.Model):
+    _class = models.ForeignKey(Class, on_delete=models.CASCADE)
+    day = models.IntegerField()  # from 1 to 7
+    start_at = models.IntegerField()  # 开始于第几节
+    duration = models.IntegerField()  # 以节为单位
+    # room = models.ForeignKey(Room, on_delete=models.CASCADE)
+    # campus is a foreign key of room, will not exist here
+
 '''
