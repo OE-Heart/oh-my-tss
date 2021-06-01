@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Campus(models.Model):
@@ -15,24 +16,15 @@ class Major(models.Model):
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
 
 
-class User(models.Model):
-    STUDENT = 'S'
-    TEACHER = 'T'
-    ADMIN = 'A'
-    ROLE_CHOICES = [
-        (STUDENT, 'Student'),
-        (TEACHER, 'Teacher'),
-        (ADMIN, 'Admin'),
-    ]
-
-    zju_id = models.CharField(max_length=10)
-    name = models.CharField(max_length=20)
-    role = models.CharField(max_length=1, choices=ROLE_CHOICES, default=STUDENT)
-    department = models.ForeignKey(Department, on_delete=models.DO_NOTHING)
+class Student(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
     major = models.ForeignKey(Major, null=True, blank=True, on_delete=models.DO_NOTHING)
-    hashed_password = models.CharField(max_length=30)
-    token = models.CharField(max_length=30)
-    last_login = models.DateTimeField()
+    # avatar = models.ImageField()
+
+
+class Teacher(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    major = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
     # avatar = models.ImageField()
 
 
