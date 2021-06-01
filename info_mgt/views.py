@@ -1,3 +1,33 @@
-from django.shortcuts import render
+from django.contrib.auth import authenticate, login, logout
 
-# Create your views here.
+
+def login_view(request):
+    username = request.POST['username']
+    password = request.POST['password']
+    user = authenticate(request, username=username, password=password)
+    if user is not None:
+        login(request, user)
+        # TODO: Redirect to a success page.
+    else:
+        # TODO: Return an 'invalid login' error message.
+        pass
+
+
+def logout_view(request):
+    logout(request)
+    # TODO: Redirect to a success page.
+
+
+'''
+{% if blog.article %}  <!-- permission to visit articles in the blog -->
+    <p>You have permission to do something in this blog app.</p>
+    {% if perms.blog.add_article %}
+        <p>You can add articles.</p>
+    {% endif %}
+    {% if perms.blog.comment_article %}
+        <p>You can comment articles!</p>
+    {% endif %}
+{% else %}
+    <p>You don't have permission to do anything in the blog app.</p>
+{% endif %}
+'''
