@@ -1,0 +1,22 @@
+.content {
+  justify-content: center;
+}
+
+#main-card {
+  position: relative;
+  min-width: 85%;
+  min-height: 100vh;
+
+  margin-top: 60px;
+  padding: 60px;
+
+  border-radius: 30px;
+  background-color: #fff;
+  box-shadow: 15px 15px 8px #bbb;
+
+  display: flex;
+}
+
+.card-content {
+  width: 100%;
+}

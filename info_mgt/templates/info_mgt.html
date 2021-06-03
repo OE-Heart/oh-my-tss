@@ -1,0 +1,23 @@
+{% extends 'template.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_css %}
+  <link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_mgt.css' %}" />
+{% endblock extra_css %}
+
+{% block card_content %}
+  <div id="info_mgt" class="card-content">
+    TODO: Write the page content for <span class="appname">APP:info_mgt</span>
+    <div>
+      Param Test: {{ test_param }}
+    </div>
+    <form method="POST">
+      {% csrf_token %}
+      {% form form=form %}
+        <input type="text" />
+      {% endform %}
+    </form>
+  </div>
+{% endblock card_content %}

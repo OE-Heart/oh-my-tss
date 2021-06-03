@@ -1,0 +1,49 @@
+{% extends 'skeleton.html' %} {% load static %}
+
+{% block import_css %}
+  <link rel="stylesheet" type="text/css" href="{% static 'template/css/template.css' %}" />
+  {% block extra_css %}{% endblock extra_css %}
+{% endblock import_css  %}
+
+{% block page_header %}
+  <div class="title">大标题</div>
+  <div class="nav-list">
+    Add Each Nav Link Here as Sample:
+    <a class="nav" href="{% url 'info_mgt:index' %}">呐</a>
+  </div>
+  <div class="avt">
+    {% if is_logined %}
+      <div class="img">
+        <img src="{{ avatar_src }}" alt="avatar" />
+      </div>
+    {% else %}
+      <div class="noimg" title="未登录">?</div>
+    {% endif %}
+    <div class="avt-popup">
+      {% if is_logined %}
+        <div>您好, {{ login_name }}！</div>
+        <div>
+          <a href="{# TODO: personal center url #}">个人中心</a>
+        </div>
+      {% else %}
+        <div>您好, 请先登录~</div>
+        <div>
+          <a href="{# TODO: login url #}">登录界面</a>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+{% endblock page_header %}
+
+{% block page_navigator %}
+  {% comment "We don't need a navigator bar actually" %}
+  {% endcomment %}
+{% endblock page_navigator %}
+
+{% block page_content %}
+  <h1>If you see this, you should write your own page content</h1>
+{% endblock page_content %}
+
+{% block page_footer %}
+  TODO: 不知道这里填啥 大概就写个Copyright之类的东西?
+{% endblock page_footer %}

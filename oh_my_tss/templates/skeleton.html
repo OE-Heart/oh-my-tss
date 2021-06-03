@@ -1,0 +1,59 @@
+{% extends 'material/frontend/base.html' %}
+
+{% load material_form %}
+
+{% load static %}
+
+{% block extrahead %}
+<link href="{% static 'template.css' %}"  rel="stylesheet">
+{% endblock extrahead %}
+
+{% block favicon %}
+  {{ block.super }}
+  {% comment %} TODO: design a favicon 
+  <link href="{% static 'material/imgs/favicon.png' %}" rel="shortcut icon">
+  {% endcomment %}
+{% endblock favicon %}
+
+{% block title %}
+  {{ web_title }}
+{% endblock title %}
+{% block page_title %}
+  {{ page_title }}
+{% endblock page_title %}
+
+{% block userphoto %}
+  {{ block.super }}
+  <a href="#">{# TODO: maybe to render an avatar #}</a>
+{% endblock %}
+
+{% block sidenav_items %}
+  {% for module in modules %}
+    {% if current_module == module %}
+      <li class="active">
+        <ul class="collapsible collapsible-accordion">
+          <li>
+            <a href="{{ module.index_url }}" class="collapsible-header active">{{ module.display_name }}{{ module.icon|safe }}</a>
+            <div class="collapsible-body" style="display:block">
+              {% include module.menu %}
+            </div>
+          </li>
+        </ul>
+      </li>
+    {% else %}
+      <li {% if forloop.last %}class="last"{% endif %}>
+        <a href="{{ module.index_url }}" class="collapsible-header" data-turbolinks="false">{{ module.display_name }}{{ module.icon|safe }}</a>
+      </li>
+    {% endif %}
+  {% endfor %}
+{% endblock sidenav_items %}
+
+{% block content %}
+  <div id="main-card">
+    {% block card_content %}{% endblock card_content %}
+  </div>
+{% endblock content %}
+
+{% block footer %}
+  {% comment %} TODO: customize a footer {% endcomment %}
+{% endblock footer %}
