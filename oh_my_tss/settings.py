@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'info_mgt',
-    'material.theme.amber',
+    'material.theme.lightblue',
     'material.frontend',
     'material',
 ]

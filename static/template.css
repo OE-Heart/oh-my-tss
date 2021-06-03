@@ -4,13 +4,17 @@
 
 #main-card {
   position: relative;
-  min-width: 90%;
-  margin: 30px;
-  padding: 30px;
-  display: flex;
-  border-radius: 10px;
-  background-color: white;
+  min-width: 85%;
   min-height: 100vh;
+
+  margin-top: 60px;
+  padding: 60px;
+
+  border-radius: 30px;
+  background-color: #fff;
+  box-shadow: 15px 15px 8px #bbb;
+
+  display: flex;
 }
 
 .card-content {
