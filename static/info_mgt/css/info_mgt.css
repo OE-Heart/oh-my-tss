@@ -17,6 +17,13 @@
   background-color: #005796;
   border-radius: 50%;
 }
+.table-foot-bar {
+  position: absolute;
+  bottom: 40px;
+  right: 60px;
+
+  color: #aaa;
+}
 .float-new-btn::before {
   content: '+';
   font-family: "Material-Design-Iconic-Font";
