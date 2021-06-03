@@ -8,9 +8,8 @@
 {% block page_header %}
   <div class="title">大标题</div>
   <div class="nav-list">
-    {% for nav in nav_list %}
-      <a class="nav" href="{{ nav.path }}">{{ nav.name }}</a>
-    {% endfor %}
+    Add Each Nav Link Here as Sample:
+    <a class="nav" href="{% url 'info_mgt:index' %}">呐</a>
   </div>
   <div class="avt">
     {% if is_logined %}

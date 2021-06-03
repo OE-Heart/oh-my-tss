@@ -1,5 +1,11 @@
 # oh-my-tss
 
+external packages (should be installed by `pip`)
+```
+django
+django-material
+```
+
 ```sh
 git clone git@github.com:RalXYZ/oh-my-tss.git
 cd oh-my-tss
