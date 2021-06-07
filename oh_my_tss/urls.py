@@ -24,4 +24,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include(frontend_urls)),
     path('info_mgt/', include('info_mgt.urls'), name="信息管理"),
+    path('class_schedule', include('class_schedule.urls'), name="课程安排")
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

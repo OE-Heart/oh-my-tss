@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'material.theme.lightblue',
     'material.frontend',
     'material',
+    'class_schedule'
 ]
 
 MIDDLEWARE = [
