@@ -5,7 +5,8 @@
 {% load static %}
 
 {% block extrahead %}
-<link href="{% static 'template.css' %}"  rel="stylesheet">
+  <link href="{% static 'template.css' %}"  rel="stylesheet">
+  {% block extra_head %}{% endblock %}
 {% endblock extrahead %}
 
 {% block favicon %}
@@ -35,7 +36,19 @@
           <li>
             <a href="{{ module.index_url }}" class="collapsible-header active">{{ module.display_name }}{{ module.icon|safe }}</a>
             <div class="collapsible-body" style="display:block">
-              {% include module.menu %}
+              <ul class="collapsible">
+                {% for submodule in module.submodules %}
+                  {% if cur_submodule == submodule.name %}
+                    <li class="sub-nav sub-active">
+                      <a href="{{ submodule.link }}">{{ submodule.text }}</a>
+                    </li>
+                  {% else %}
+                    <li class="sub-nav">
+                      <a href="{{ submodule.link }}">{{ submodule.text }}</a>
+                    </li>
+                  {% endif %}
+                {% endfor %}
+              </ul>
             </div>
           </li>
         </ul>
