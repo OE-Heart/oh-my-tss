@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'material.theme.lightblue',
     'material.frontend',
     'material',
-    'class_schedule'
+    'class_schedule',
+    'online_exam'
 ]
 
 MIDDLEWARE = [
