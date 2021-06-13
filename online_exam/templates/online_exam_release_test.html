@@ -8,6 +8,58 @@
 
 {% block card_content %}
     <style type="text/css">
+        .col_1{
+            width: 17%;
+        }
+        .col_2{
+            width: 15%;
+        }
+        .col_3{
+            width: 15%;
+        }
+        .col_4 {
+            whdth: 15%;
+        }
+        .col_5{
+            whdth: 15%;
+        }
+        .col_6{
+            whdth: 15%;
+        }
+        .col_7{
+            whdth: 15%;
+        }
+
+
+        .mylabel{
+            font-size: 10px;
+            color: #3d443d;
+            background-color: lightgreen;
+            border-radius: 5px;
+        }
+        .mybutton{
+            width: 60px;
+            text-align: center;
+            height: 30px;
+            background-color: #3399ff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.3em;
+        }
+        .mybutton2{
+            width: 60px;
+            text-align: center;
+            height: 30px;
+            background-color: red;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.3em;
+        }
+        #block1{
+            display: block;
+        }
         #mheader1{
             font-size: 30px;
             color: black;
@@ -16,14 +68,55 @@
             border: #3d443d;
         }
     </style>
-    <div id="online_exam">
-        <button onclick="window.location.href='main'" id="mheader1">进入题库</button>
-        <button onclick="window.location.href='generate_paper'" id="mheader1">生成试卷</button>
-        <button style="background-color: #3399ff;border-radius: 5px" id="mheader1">发布测试</button>
-        <button onclick="window.location.href='test_info'" id="mheader1">考试信息</button>
-        <button onclick="window.location.href='paper_ana'" id="mheader1">试卷分析</button>
-        <br />
-     <hr size="10px"/>
-
+    <div id="block1">
+        <div id="online_exam">
+            <button onclick="window.location.href='../'" id="mheader1">进入题库</button>
+            <button onclick="window.location.href='../generate_paper'" id="mheader1">生成试卷</button>
+            <button id="mheader1" style="background-color: #3399ff; border-radius: 5px">发布测试</button>
+            <button onclick="window.location.href='../test_info'" id="mheader1">考试信息</button>
+            <button onclick="window.location.href='../paper_ana'" id="mheader1">试卷分析</button>
+            <br />
+        </div>
+        <hr size="10px"/>
+        <!--<button onclick="" class="button1">添加题目</button>
+        <button onclick="window.location.href='main'" class="button2">返回</button>-->
+        <table class="mytable">
+            <tr>
+                <th class="col_1" style="font-size: 20px">Exam</th>
+                <th class="col_2" style="font-size: 20px">Start</th>
+                <th class="col_3" style="font-size: 20px">End</th>
+                <th class="col_4"></th>
+                <th class="col_5" style="font-size: 20px">Course</th>
+                <th class="col_6"></th>
+                <th class="col_7"></th>
+            </tr>
+            <tr>
+                <td class="col_1">Quiz</td>
+                <td class="col_2">2021.6.7  12:00:00</td>
+                <td class="col_3">2021.6.7  12:00:00</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton">Publish</button></td>
+                <td class="col_5"><label class="mylabel">{{ web_title }}</label></td>
+                <td class="col_6"><button onclick="window.location.href='#'" class="mybutton2">Delete</button></td>
+                <td class="clo_7"><button onclick="window.location.href='#'" class="mybutton">Detail</button></td>
+            </tr>
+            <tr>
+                <td class="col_1">Midterm</td>
+                <td class="col_2">2021.6.7  12:00:00</td>
+                <td class="col_3">2021.6.7  12:00:00</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton">Publish</button></td>
+                <td class="col_5"><label class="mylabel">{{ web_title }}</label></td>
+                <td class="col_6"><button onclick="window.location.href='#'" class="mybutton2">Delete</button></td>
+                <td class="clo_7"><button onclick="window.location.href='#'" class="mybutton">Detail</button></td>
+            </tr>
+            <tr>
+                <td class="col_1">Final</td>
+                <td class="col_2">2021.6.7  12:00:00</td>
+                <td class="col_3">2021.6.7  12:00:00</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton">Publish</button></td>
+                <td class="col_5"><label class="mylabel">{{ web_title }}</label></td>
+                <td class="col_6"><button onclick="window.location.href='#'" class="mybutton2">Delete</button></td>
+                <td class="clo_7"><button onclick="window.location.href='#'" class="mybutton">Detail</button></td>
+            </tr>
+        </table>
     </div>
 {% endblock card_content %}

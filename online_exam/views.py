@@ -120,3 +120,10 @@ def paperanalysis(req):
         'page_title': '在线测验子系统',
         'test_param': 'TEST PARAM',
     })
+
+def stuanalysis(req):
+    return render(req, 'online_exam_stu_analysis.html', {
+        'web_title': '在线测验系统',
+        'page_title': '在线测验子系统',
+        'test_param': 'TEST PARAM',
+    })
