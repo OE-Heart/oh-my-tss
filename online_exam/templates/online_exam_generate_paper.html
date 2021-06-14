@@ -1,0 +1,95 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
+{% endblock extra_css %}
+
+{% block card_content %}
+    <style type="text/css">
+    #online_exam{
+        display: block;
+    }
+    .col_1{
+        width: 67%;
+    }
+    .col_2{
+        width: 11%;
+    }
+    .col_3{
+        width: 11%;
+    }
+    .col_4{
+        width: 11%;
+    }
+    .mybutton{
+        width: 60px;
+        text-align: center;
+        height: 30px;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 0.3em;
+    }
+    #mheader1{
+        font-size: 30px;
+        color: black;
+        background-color: white;
+        width: 200px;
+        border: #3d443d;
+    }
+    </style>
+    <div id="online_exam">
+        <button onclick="window.location.href='../'" id="mheader1">进入题库</button>
+        <button style="background-color: #3399ff;border-radius: 5px" id="mheader1">生成试卷</button>
+        <button onclick="window.location.href='../release_test'" id="mheader1">发布测试</button>
+        <button onclick="window.location.href='../test_info'" id="mheader1">考试信息</button>
+        <button onclick="window.location.href='../paper_ana'" id="mheader1">试卷分析</button>
+        <hr />
+        <p></p>
+        <button onclick="window.location.href='#'" class="mybutton" style="background-color: #3399ff">Auto</button>
+        <button onclick="window.location.href='#'" class="mybutton" style="background-color: #3399ff; float: right">Finish</button>
+        <table class="mytable">
+            <tr>
+                <th class="col_1" style="font-size: 20px;">Question</th>
+                <th class="col_2" style="font-size: 20px;">Subject</th>
+                <th class="col_3" style="font-size: 20px;">Value</th>
+                <th class="col_4"></th>
+            </tr>
+            <tr>
+                <td class="col_1">0</td>
+                <td class="col_2"><button onclick="window.location.href='#'" class="mybutton" style="background-color: lightgreen">CS121</button></td>
+                <td class="col_3">1</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton" style="background-color: #3399ff">Select</button></td>
+            </tr>
+            <tr>
+                <td class="col_1">0</td>
+                <td class="col_2"><button onclick="window.location.href='#'" class="mybutton" style="background-color: lightgreen">CS121</button></td>
+                <td class="col_3">1</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton" style="background-color: red">Undo</button></td>
+            </tr>
+            <tr>
+                <td class="col_1">0</td>
+                <td class="col_2"><button onclick="window.location.href='#'" class="mybutton" style="background-color: lightgreen">CS121</button></td>
+                <td class="col_3">1</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton" style="background-color: #3399ff">Select</button></td>
+            </tr>
+            <tr>
+                <td class="col_1">0</td>
+                <td class="col_2"><button onclick="window.location.href='#'" class="mybutton" style="background-color: lightgreen">CS121</button></td>
+                <td class="col_3">1</td>
+                <td class="col_4"><button onclick="window.location.href='#'" class="mybutton" style="background-color: red">Undo</button></td>
+            </tr>
+        </table>
+
+        <form method="post">
+            {% csrf_token %}
+            {% form form=form %}
+                <input type="text" name="username">
+            {% endform %}
+        </form>
+    </div>
+
+{% endblock card_content %}
