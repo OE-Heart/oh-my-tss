@@ -1,7 +1,7 @@
 from django.http.request import HttpRequest
-from django.http.response import Http404
+from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from info_mgt.forms import SignupForm
+from info_mgt.forms import LoginForm
 from django.contrib.auth import authenticate, login, logout
 
 
@@ -9,7 +9,7 @@ def index(req):
     return render(req, 'info_mgt.html', {
         'web_title': '信息管理',
         'page_title': '信息管理',
-        'form': SignupForm
+        # 'form': SignupForm
     })
 
 # TODO: those following pages' templates are not implemented yet.
@@ -69,7 +69,7 @@ def course_edit(req, option):
         page_title = '添加课程'
     else:
         # TODO: report a 404 error
-        return HttpRequest(404);
+        return HttpRequest(404)
 
     return render(req, 'info_mgt.html', {
         'web_title': '课程管理',
@@ -78,21 +78,34 @@ def course_edit(req, option):
     })
 
 
-def login_view(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    user = authenticate(request, username=username, password=password)
-    if user is not None:
-        login(request, user)
-        # TODO: Redirect to a success page.
+def login_view(req):
+    if req.method == 'GET':
+        return render(req, 'login.html', {
+            'form': LoginForm
+        })
+    elif req.method == 'POST':
+        # Authentication
+        username = req.POST['username']
+        password = req.POST['password']
+        user = authenticate(req, username=username, password=password)
+        if user is not None:
+            login(req, user)
+            # TODO: Redirect to a success page.
+            return HttpResponseRedirect('/info_mgt')
+        else:
+            # TODO: Return an 'invalid login' error message.
+            return render(req, 'login.html', {
+                'form': LoginForm,
+                'login_err_tips': True
+            })
     else:
-        # TODO: Return an 'invalid login' error message.
         pass
 
 
 def logout_view(request):
     logout(request)
     # TODO: Redirect to a success page.
+    return HttpResponseRedirect('/info_mgt')
 
 
 '''
