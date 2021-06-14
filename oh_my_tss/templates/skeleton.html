@@ -23,9 +23,23 @@
   {{ page_title }}
 {% endblock page_title %}
 
-{% block userphoto %}
-  {{ block.super }}
-  <a href="#">{# TODO: maybe to render an avatar #}</a>
+{% block sidenav_header %}
+  <li>
+    <div class="user-view">
+      <div class="background" >
+        <img src="{% static 'material/imgs/sidenav.svg' %}">
+      </div>
+      {% block userphoto %}
+        {% if user.photo.url %}
+          <a href="#"><img class="circle" src="{{ user.photo.url }}"></a>
+        {% else %}
+          <a href="#"><img class="circle" src="{% static 'material/imgs/user.png' %}"></a>
+        {% endif %}
+      {% endblock %}
+      <a href="#"><span class="white-text name">{{ user.first_name | title }} {{ user.last_name | title }}</span></a>
+      <a href="#"><span class="white-text email">{{ user.email }}</span></a>
+    </div>
+  </li>
 {% endblock %}
 
 {% block sidenav_items %}

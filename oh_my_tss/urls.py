@@ -14,6 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
+from django.shortcuts import render
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
@@ -21,8 +22,12 @@ from material.frontend import urls as frontend_urls
 
 from info_mgt import views as info_mgt_views
 
+def landing(req):
+    return render(req, 'skeleton.html')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', landing, name="landing"),
     path('', include(frontend_urls)),
     path('login/', info_mgt_views.login_view, name="login"),
     path('logout/', info_mgt_views.logout_view, name="logout"),
