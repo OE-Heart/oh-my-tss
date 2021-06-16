@@ -1,8 +1,9 @@
 from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from info_mgt.forms import LoginForm
+from info_mgt.forms import LoginForm, CourseEditForm
 from django.contrib.auth import authenticate, login, logout
+from info_mgt import models
 
 
 def index(req):
@@ -60,22 +61,67 @@ def course_display(req):
     })
 
 
-def course_edit(req, option):
+def course_edit(req, option, in_course_name):
     ''' TODO: render by another template '''
-
-    if option == 'edit':
-        page_title = '修改课程详情'
-    elif option == 'new':
-        page_title = '添加课程'
-    else:
-        # TODO: report a 404 error
-        return HttpRequest(404)
-
-    return render(req, 'info_mgt.html', {
-        'web_title': '课程管理',
-        'page_title': '修改课程详情' if option == 'edit' else '添加课程',
-        'cur_submodule': 'course'
-    })
+    if req.method == 'POST':
+        course_name = req.POST.get('name')
+        course_desc = req.POST.get('description')
+        course_credit = req.POST.get('credit')
+        course_capacity = req.POST.get('capacity')
+        course_duration = req.POST.get('duration')
+        if option == 'edit':
+            query_set = models.Course.objects.filter(name=in_course_name)
+            n_updates = query_set.update(
+                name=course_name,
+                description=course_desc,
+                credit=course_credit,
+                capacity=course_capacity,
+                duration=course_duration
+            )
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '修改课程详情',
+                'cur_submodule': 'course',
+                'form': CourseEditForm(instance=models.Course.objects.filter(name=course_name)[0]),
+                'edit_result': True if n_updates != 0 else False
+            })
+        elif option == 'new':
+            ins = models.Course.objects.create(
+                name=course_name,
+                description=course_desc,
+                credit=course_credit,
+                capacity=course_capacity,
+                duration=course_duration
+            )
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '添加课程',
+                'cur_submodule': 'course',
+                'form': CourseEditForm,
+                'new_result': True if ins else False
+            })
+        else:
+            # TODO: report a 404 error
+            return HttpRequest(404)
+    elif req.method == 'GET':
+        if option == 'edit':
+            page_title = '修改课程详情'
+            course_data = models.Course.objects.get(name=in_course_name)
+            form_obj = CourseEditForm(instance=course_data)
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '修改课程详情',
+                'cur_submodule': 'course',
+                'form': form_obj
+            })
+        elif option == 'new':
+            page_title = '添加课程'
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '添加课程',
+                'cur_submodule': 'course',
+                'form': CourseEditForm
+            })
 
 
 def login_view(req):

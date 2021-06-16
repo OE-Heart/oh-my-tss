@@ -1,6 +1,6 @@
 from django import forms
 from material import *
-
+from info_mgt.models import Course
 
 from oh_my_tss import demo as forms
 
@@ -20,3 +20,25 @@ from oh_my_tss import demo as forms
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=128)
     password = forms.CharField(max_length=128, widget=forms.PasswordInput)
+
+
+# class NewCourseForm(forms.Form):
+#     name = forms.CharField(max_length=20)
+#     description = forms.CharField(widget=forms.Textarea)
+#     credit = forms.FloatField(min_value=0)
+#     capacity = forms.IntegerField(min_value=0)
+#     duration = forms.CharField(max_length=15)
+#
+#     layout = Layout('course_name',
+#                     'description',
+#                     Row('credit', 'capacity', 'duration'))
+
+
+class CourseEditForm(forms.ModelForm):
+    layout = Layout('name',
+                    'description',
+                    Row('credit', 'capacity', 'duration'))
+
+    class Meta:
+        model = Course
+        fields = '__all__'
