@@ -19,13 +19,16 @@ class Major(models.Model):
 class Student(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
     major = models.ForeignKey(Major, null=True, blank=True, on_delete=models.DO_NOTHING)
-    # avatar = models.ImageField()
 
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    major = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
-    # avatar = models.ImageField()
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
+
+
+class Avatar(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    avatar = models.ImageField()
 
 
 class Course(models.Model):
