@@ -3,6 +3,7 @@ from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
 from django.contrib.auth import authenticate, login, logout
+from . import models
 
 
 def index(req):
@@ -42,13 +43,31 @@ def account_edit(req, option):
     })
 
 
-def course_list(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '课程管理',
-        'page_title': '课程信息管理',
-        'cur_submodule': 'course'
-    })
+def course_list(req, page):
+    if req.user.has_perm('info_mgt.view_course'):
+
+        if req.method == 'POST' and req.POST['name']:
+                courses = models.Course.objects.filter(name=req.POST['name'])
+        else:
+            courses = models.Course.objects.all()[page: page + 10]
+
+        page_sum = len(courses) // 10 + 1
+
+        return render(req, 'courselist.html', {
+            'web_title': '课程管理',
+            'page_title': '课程信息管理',
+            'cur_submodule': 'course',
+            'courses': courses,
+            'cur_page': page + 1,
+            'prev_page': page - 1,
+            'prev_disabled': page == 0,
+            'next_page': page + 1,
+            'next_disabled': page + 1 >= page_sum,
+            'page_sum': page_sum,
+            'last_search': req.POST['name'] if req.method == 'POST' else None,
+        })
+    else:
+        return HttpResponse(403)
 
 
 def course_display(req):
