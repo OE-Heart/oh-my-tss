@@ -12,4 +12,6 @@ urlpatterns = [
     path('course', views.course_list, name='course_list'),
     path('course/detail', views.course_display, name='course_display'),
     path(r'course/<str:option>', views.course_edit, name='course_edit'),
+
+    path('info/view', views.info_view, name='info_view'),
 ]

@@ -3,6 +3,7 @@ from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
 from django.contrib.auth import authenticate, login, logout
+from .models import Major
 
 
 def index(req):
@@ -13,6 +14,14 @@ def index(req):
     })
 
 # TODO: those following pages' templates are not implemented yet.
+
+
+def info_view(req):
+    return render(req, 'info_view.html', {
+        'web_title': '个人信息',
+        'page_title': '个人信息',
+        'request_user': req.user,
+    })
 
 
 def account_list(req):
