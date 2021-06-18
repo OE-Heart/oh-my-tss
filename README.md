@@ -4,12 +4,13 @@ external packages (should be installed by `pip`)
 ```
 django
 django-material
+pymysql
+pillow
 ```
 
 ```sh
 git clone git@github.com:RalXYZ/oh-my-tss.git
 cd oh-my-tss
-python manage.py migrate
 ```
 
 Start Development Server: 
