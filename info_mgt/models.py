@@ -23,7 +23,7 @@ class Student(models.Model):
 
 class Teacher(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    major = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
+    department = models.ForeignKey(Department, null=True, blank=True, on_delete=models.DO_NOTHING)
 
 
 class Avatar(models.Model):

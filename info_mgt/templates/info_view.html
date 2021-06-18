@@ -1,0 +1,41 @@
+{% extends 'skeleton.html' %}
+
+{% block card_content %}
+<div id="info_mgt" class="card-content">
+    <table>
+        <thead>
+            <tr>
+                <th>用户名</th>
+                <th>{{ request_user.username }}</th>
+            </tr>
+            <tr>
+                <th>姓名</th>
+                <th>{{ request_user.last_name }} {{ user.first_name }}</th>
+            </tr>
+            <tr>
+                <th>电子邮箱</th>
+                <th>{{ request_user.email }}</th>
+            </tr>
+
+            {% for group in request_user.groups.all %}
+                {% if group.name == 'student' %}
+                    <tr>
+                        <th>专业</th>
+                        <th>{{ request_user.student.major.name }}</th>
+                    </tr>
+                {% elif group.name == 'teacher' %}
+                    <tr>
+                        <th>学院</th>
+                        <th>{{ request_user.teacher.department.name }}</th>
+                    </tr>
+                {% endif %}
+            {% endfor %}
+
+            <tr>
+                <th>头像</th>
+                <th>{{ request_user.avatar.avatar.path }}</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+{% endblock card_content %}
