@@ -2,6 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
+from info_mgt.forms import SelfInfoForm
 from django.contrib.auth import authenticate, login, logout
 from . import models
 from .models import Major
@@ -18,12 +19,21 @@ def index(req):
 
 
 def info_view(req):
+    if req.method == 'POST' and req.POST['name']:
+        courses = models.Course.objects.filter(name=req.POST['name'])
+    else:
+        courses = models.Course.objects.all()
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
         'page_title': '个人信息',
         'request_user': req.user,
     })
 
+def info_edit(req):
+    return render(req, 'info_edit.html', {
+        'web_title': '个人信息修改',
+        'page_title': '个人信息修改'
+    })
 
 def account_list(req):
     ''' TODO: render by another template '''
