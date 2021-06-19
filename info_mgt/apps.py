@@ -10,4 +10,5 @@ class InfoMgtConfig(ModuleMixin, AppConfig):
     submodules = [
         {'name': 'account', 'text': '账户信息管理', 'link': './account'},
         {'name': 'course', 'text': '课程信息管理', 'link': './course'},
+        {'name': 'course', 'text': '个人信息管理', 'link': './info'}
     ]

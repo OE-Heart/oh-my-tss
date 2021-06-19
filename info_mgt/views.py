@@ -2,6 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
+from info_mgt.forms import SelfInfoForm
 from django.contrib.auth import authenticate, login, logout
 from . import models
 from .models import Major
@@ -14,6 +15,7 @@ def index(req):
         # 'form': SignupForm
     })
 
+
 # TODO: those following pages' templates are not implemented yet.
 
 
@@ -23,6 +25,42 @@ def info_view(req):
         'page_title': '个人信息',
         'request_user': req.user,
     })
+
+def info_edit(req):
+    ''' TODO: repair it '''
+    if req.method == 'POST':
+        new_username = req.POST['username']
+        new_last_name = req.POST['last_name']
+        new_first_name = req.POST['first_name']
+        new_email = req.POST['email']
+        query_set = models.User.objects.filter(id=req.user.id)
+        print(query_set)
+        # result = query_set.update(
+        #     username=new_username,
+        #     last_name=new_last_name,
+        #     first_name=new_first_name,
+        #     email=new_email
+        # ) if result != 0 else False
+        print("更新成功")
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改',
+            'page_title': '个人信息修改',
+            'request_user': req.user,
+            'form': SelfInfoForm(instance=req.user),
+            'edit': True,
+            'edit_result': True
+        })
+    elif req.method == 'GET':
+        obj = req.user
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改',
+            'page_title': '个人信息修改',
+            'request_user': req.user,
+            'form':SelfInfoForm(instance=obj),
+            'edit': False
+        })
+    else:
+        return HttpRequest(404)
 
 
 def account_list(req):

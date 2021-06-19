@@ -1,7 +1,6 @@
 from django import forms
+from django.contrib.auth.models import User
 from material import *
-
-
 from oh_my_tss import demo as forms
 
 
@@ -16,6 +15,18 @@ from oh_my_tss import demo as forms
 #         Row('first_name', 'last_name'),
 #         'emails',
 #     )
+class SelfInfoForm(forms.ModelForm):
+    layout = Layout(
+        'username',
+        Row('last_name', 'first_name'),
+        'email'
+    )
+
+    class Meta:
+        model = User
+        fields = ('username', 'last_name', 'first_name', 'email')
+        help_texts = {'username':""}
+
 
 class LoginForm(forms.Form):
     username = forms.CharField(max_length=128)
