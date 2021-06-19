@@ -28,7 +28,9 @@ def info_view(req):
 def info_edit(req):
     return render(req, 'info_edit.html', {
         'web_title': '个人信息修改',
-        'page_title': '个人信息修改'
+        'page_title': '个人信息修改',
+        'request_user': req.user,
+        'form': SelfInfoForm
     })
 
 def account_list(req):

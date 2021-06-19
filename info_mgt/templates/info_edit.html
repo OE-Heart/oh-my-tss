@@ -2,11 +2,14 @@
 
 {% load static %}
 
-{% block title %}
-    个人信息
-{% endblock %}
+{% block title %}个人信息{% endblock %}
+
 {% block card_content %}
-
-
-
+    <div class="card-content">
+    <form action="{{ app_path }}" method="post" id="edit-form">
+        {% csrf_token %}
+        {{ form }}
+    <input type="submit" value="submit"/>
+    </form>
+    </div>
 {% endblock card_content %}
