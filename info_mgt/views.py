@@ -19,10 +19,6 @@ def index(req):
 
 
 def info_view(req):
-    if req.method == 'POST' and req.POST['name']:
-        courses = models.Course.objects.filter(name=req.POST['name'])
-    else:
-        courses = models.Course.objects.all()
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
         'page_title': '个人信息',

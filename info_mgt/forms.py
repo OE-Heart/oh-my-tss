@@ -17,10 +17,10 @@ from oh_my_tss import demo as forms
 #         'emails',
 #     )
 class SelfInfoForm(forms.Form):
-    UserName = forms.CharField(max_length=128, label="姓名")
-    UserId = forms.CharField(max_length=11, label="学工号")
-    UserDepart = forms.CharField(max_length=20, label="院系")
-    UserMajor = forms.CharField(max_length=20, label="专业")
+    username = forms.CharField(max_length=128, label="姓名")
+    id = forms.CharField(max_length=11, label="学工号")
+    department = forms.CharField(max_length=20, label="院系")
+    major = forms.CharField(max_length=20, label="专业")
 
 
 class LoginForm(forms.Form):
