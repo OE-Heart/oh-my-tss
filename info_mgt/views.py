@@ -52,15 +52,18 @@ def account_edit(req, option):
     })
 
 
-def course_list(req, page):
+def course_list(req, page=0):
     if req.user.has_perm('info_mgt.view_course'):
 
         if req.method == 'POST' and req.POST['name']:
-                courses = models.Course.objects.filter(name=req.POST['name'])
+            courses = models.Course.objects.filter(name=req.POST['name'])
         else:
-            courses = models.Course.objects.all()[page: page + 10]
+            courses = models.Course.objects.all()[page * 10: page * 10 + 10]
 
         page_sum = len(courses) // 10 + 1
+
+        if page >= page_sum:
+            return HttpResponse(404)
 
         return render(req, 'courselist.html', {
             'web_title': '课程管理',
