@@ -118,16 +118,14 @@ def course_list(req, page):
 
 
 def course_display(req):
-    if req.method == 'GET' and req.GET['name']:
-        course = models.Course.objects.filter(name=req.GET['name'])
-        return render(req, 'course_detail.html', {
-        'web_title': '课程管理',
-        'page_title': '课程详情',
-        'cur_submodule': 'course',
-        'request_course': course,
-        })
-    else:
-        return HttpResponse(403)
+    # FIXME:connect with courselist
+    course = req.course
+    return render(req, 'course_detail.html', {
+    'web_title': '课程管理',
+    'page_title': '课程详情',
+    'cur_submodule': 'course',
+    'request_course': course
+    })
 
 
 def course_edit(req, option):
