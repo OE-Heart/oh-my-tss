@@ -117,9 +117,8 @@ def course_list(req, page):
         return HttpResponse(403)
 
 
-def course_display(req):
-    # FIXME:connect with courselist
-    course = req.course
+def course_display(req, name):
+    course = models.Course.objects.filter(name=name)
     return render(req, 'course_detail.html', {
     'web_title': '课程管理',
     'page_title': '课程详情',
