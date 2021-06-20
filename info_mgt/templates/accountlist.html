@@ -1,0 +1,60 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock  %}
+
+{% block card_content %}
+<div class="card-content">
+  <form method='POST'>
+    {% csrf_token %}
+    {% if last_search %}
+      <input class="search-input" type="text" name="name" value={{ last_search }} />
+    {% else %}
+      <input class="search-input" type="text" name="name" placeholder="输入课程名.." />
+    {% endif %}
+    <input class="search-submit" type="submit" name="提交" />
+  </form>
+  <table>
+    <thead>
+      <tr>
+        <th>名称</th>
+        <th>专业/院系</th>
+        <th>操作</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for account in accounts %}
+      <tr>
+        <td>{{ account.name }}</td>
+        <td>{{ account.major }}</td>
+        <td>
+          {% comment %} TODO: use real url {% endcomment %}
+          <a href="">查看</a>
+          <a href="">编辑</a>
+          <a href="">删除</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="pager">
+    {% if prev_disabled %}
+      <span style="color: silver">上一页</span>
+    {% else %}
+      <a href="{{ prev_page }}">上一页</a>
+    {% endif %}
+    {{ cur_page }} / {{ page_sum }} 页
+    {% if next_disabled %}
+      <span style="color: silver">下一页</span>
+    {% else %}
+      <a href="{{ next_page }}">下一页</a>
+    {% endif %}
+  </div>
+  <a class="add-btn" href="" title="添加新课程">
+    {% comment %} TODO: use real url {% endcomment %}
+  </a>
+</div>
+{% endblock card_content %}
