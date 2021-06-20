@@ -13,14 +13,26 @@
 {% endblock extra_head %}
 
 {% block card_content %}
-<div class="card-content">
-<script>
-    {% if delete_room_successfully %}
+    <script>
+        {% if delete_room_successfully %}
         alert("教室删除成功")
-    {% elif delete_room_failed %}
-        alert("教室删除失败")
-    {% endif %}
+        {% elif delete_room_failed %}
+            alert("教室删除失败")
+        {% endif %}
+        {% if info_retrieve_failure %}
+            alert('信息加载失败，请刷新重试')
+        {% endif %}
+        {% if modify_succeeded %}
+            alert('教室信息修改成功！');
+        {% elif modify_failed %}
+            alert('教室信息修改失败，请稍后重试');
+        {% elif duplicated %}
+            alert('教室信息修改失败，请检查门牌号是否有重复');
+        {% elif no_such_room %}
+            alert('教室不存在')
+        {% endif %}
 </script>
+<div class="card-content">
 <table>
     <thead>
         <tr>
@@ -33,6 +45,7 @@
         </tr>
     </thead>
     <tbody>
+    {% if room_list %}
       {% for i in room_list %}
       <tr>
         <td>{{ i.Building.Campus.name }}</td>
@@ -56,8 +69,8 @@
             来判断是否删除成功-->
            <script type="text/javascript">
                 function DeleteCheck() {
-                    var mymessage=confirm("确定要删除该教室吗?");
-                    if(mymessage === true)
+                    let my_message=confirm("确定要删除该教室吗?");
+                    if(my_message === true)
                     {
                         <!-- 在数据库中删除该教室-->
                         window.location.replace({% url 'delete_room' i.id %})
@@ -71,6 +84,7 @@
         </td>
       </tr>
       {% endfor %}
+    {% endif %}
     </tbody>
 </table>
   <div class="pager">

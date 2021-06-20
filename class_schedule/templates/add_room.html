@@ -14,6 +14,21 @@
 {% block title %}添加教室{% endblock %}
 
 {% block card_content %}
+    <script>
+function check(){
+    {% if add_success %}
+        window.alert('教室添加成功！');
+    {% elif add_failure %}
+        window.alert('教室添加失败，请稍后重试');
+    {% elif duplicate %}
+        window.alert('教室添加失败，请检查新教室门牌号是否和同一教学楼已有教室有重复');
+    {% endif %}
+    {% if info_retrieve_failure %}
+        window.alert('信息加载失败，请刷新重试。');
+    {% endif %}
+}
+    check();
+</script>
 <div id="info_mgt" class="card-content">
       <form method="post" action="{% url 'add_room_submit' %}">
           {% csrf_token %}
@@ -24,7 +39,7 @@
               <select name="campus" style="display: block" class="prefix" required id="campus_selection" onchange="adjust_building_choices(this.value)">
                   {% if campus_list %}
                       {% for i in campus_list %}
-                          <option value="{{ i.id }}">i.name</option>
+                          <option value="{{ i.id }}">{{ i.name }}</option>
                       {% endfor %}
 {#                  <option value="紫金港">紫金港</option>#}
 {#                  <option value="玉泉">玉泉</option>#}
@@ -39,7 +54,7 @@
               let options = '';
               {% if building_list %}
                   {% for j in building_list %}
-                      if(campus_id === {{ j.campus.id }})
+                      if(campus_id === {{ j.campus_id }})
                         options += '<option value="{{ j.id }}">{{ j.name }}</option>';
                   {% endfor %}
               {% endif %}
@@ -54,7 +69,9 @@
               <select id="building" name="building" style="display: block" class="prefix" required>
                   {% if building_list %}
                       {% for j in building_list %}
-                          <option value="{{ j.id }}">{{ j.name }}</option>
+                          {% if j.campus_id == campus_list.first.id %}
+                            <option value="{{ j.id }}">{{ j.name }}</option>
+                          {% endif %}
                       {% endfor %}
                   {% endif %}
 {#                  <option value="西一">西一</option>#}

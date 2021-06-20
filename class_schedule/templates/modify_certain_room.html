@@ -23,6 +23,9 @@
               document.getElementById('capacity').value = {{ original_info.capacity }};
           }
           reset();
+          {% if info_retrieve_failure %}
+              alert('信息获取失败，请刷新重试');
+          {% endif %}
       </script>
           {% csrf_token %}
           校区：<!--{{ original_info.building.campus.name }}-->

@@ -36,7 +36,7 @@
       <tr>
         <td>{{ i.course.name }}</td>
         <td>
-            {% for j in i.ClassHasRoom_set %}
+            {% for j in i.classhasroom_set %}
                 <div>
                     {% if j.day %}
                         {% if j.day == 1 %}
@@ -62,7 +62,7 @@
             {% endfor %}
         </td>
         <td>
-            {% for j in i.ClassHasRoom %}
+            {% for j in i.classhasroom_set %}
                 <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
             {% endfor %}
         </td>
