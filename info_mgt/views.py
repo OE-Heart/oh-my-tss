@@ -4,8 +4,9 @@ from django.shortcuts import render
 from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from . import models
-from .models import Major
+from .models import Major, Student
 
 
 def index(req):
@@ -25,6 +26,7 @@ def info_view(req):
         'page_title': '个人信息',
         'request_user': req.user,
     })
+
 
 def info_edit(req):
     ''' TODO: repair it '''
@@ -56,37 +58,78 @@ def info_edit(req):
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
-            'form':SelfInfoForm(instance=obj),
+            'form': SelfInfoForm(instance=obj),
             'edit': False
         })
     else:
         return HttpRequest(404)
 
 
-def account_list(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
+def account_list(req, page=0):
+
+    accounts = []
+
+    if req.user.has_perm('info_mgt.view_student') and req.user.has_perm('info_mgt.view_teacher'):
+
+        account_sum = len(User.objects.all())
+
+        for i in range(account_sum):
+            groups = User.objects.all()[i].groups.all()
+            account = User.objects.all()[i]
+            if(len(groups) > 0):
+                if groups.all()[0].name == 'student':
+                    try:
+                        accounts.append({
+                            'name': account.first_name + ' ' + account.last_name,
+                            'major': account.student.major.name,
+                        })
+                    except:
+                        pass
+                elif groups.all()[0].name == 'teacher':
+                    try:
+                        accounts.append({
+                            'name': account.first_name + ' ' + account.last_name,
+                            'major': account.teacher.department.name,
+                        })
+                    except:
+                        pass
+        # accounts.append(User.objects.all()[4].student)
+
+        if req.method == 'POST' and req.POST['name']:
+            accounts = [x for x in accounts if x['name'] == req.POST['name']]
+
+        page_sum = len(accounts) // 10 + 1
+
+        if page >= page_sum:
+            return HttpResponse(404)
+
+    else:
+        return HttpResponse(403)
+
+    # if req.user.has_perm('info_mgt.view_course'):
+
+    #     if req.method == 'POST' and req.POST['name']:
+    #         courses = models.Course.objects.filter(name=req.POST['name'])
+    #     else:
+    #         courses = models.Course.objects.all()[page * 10: page * 10 + 10]
+
+    #     page_sum = len(courses) // 10 + 1
+
+    #     if page >= page_sum:
+    #         return HttpResponse(404)
+
+    return render(req, 'accountlist.html', {
         'web_title': '信息管理',
         'page_title': '账户信息管理',
-        'cur_submodule': 'account'
-    })
-
-
-def account_display(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '信息管理',
-        'page_title': '账户信息',
-        'cur_submodule': 'account'
-    })
-
-
-def account_edit(req, option):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '信息管理',
-        'page_title': '修改账户信息' if option == 'edit' else '添加账户',
-        'cur_submodule': 'account'
+        'cur_submodule': 'account',
+        'accounts': accounts,
+        'cur_page': page + 1,
+        'prev_page': page - 1,
+        'prev_disabled': page == 0,
+        'next_page': page + 1,
+        'next_disabled': page + 1 >= page_sum,
+        'page_sum': page_sum,
+        'last_search': req.POST['name'] if req.method == 'POST' else None,
     })
 
 
