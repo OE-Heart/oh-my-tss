@@ -1,0 +1,51 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+<div id="class_schedule" class="card-content">
+<table>
+    <thead>
+        <tr><th>申请人</th><th>课程编号</th><th>课程名</th><th>课程时段</th><th>课程地点</th></tr>
+    </thead>
+    <tbody>
+        <tr style="border:0">
+            <td>{{ app.applicant }}</td><td>{{ app.course_no }}</td><td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td>
+        </tr>
+    </tbody>
+</table>
+<div style="margin-top:40px">
+    <span style="font-size:14px;color:#aaa">申请理由与期望</span>
+    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.spec}}</textarea>
+</div>
+<form action="../submit_handle" method="POST">
+    <div style="margin-top:30px;margin-bottom:30px;display:flex;align-items:center;justify-content:space-between">
+        <div style="display:inline-block;margin-right:30px;">
+        <p>
+          <label>
+            <input class="with-gap" name="choice" type="radio"/>
+            <span>同意</span>
+          </label>
+        </p>
+        <p>
+          <label>
+            <input class="with-gap" name="choice" type="radio"/>
+            <span>拒绝</span>
+          </label>
+        </p>
+        </div>
+        <div style="width:75%">
+        <div class="input-field col s12">
+          <textarea id="textarea2" class="materialize-textarea" required></textarea>
+          <label for="textarea2">处理意见</label>
+        </div>
+        </div>
+    </div>
+    <input class="btn btn-default" type="submit" value="提交" style="display:block;margin:0 auto;background:#08c"/>
+</form>
+</div>
+{% endblock card_content %}

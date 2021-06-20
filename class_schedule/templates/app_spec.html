@@ -1,0 +1,33 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+<div id="class_schedule" class="card-content">
+<table style="margin-top:30px;margin-bottom:30px">
+    <thead>
+        <tr><th>课程名</th><th>原时段</th><th>原地点</th><th>处理结果</th></tr>
+    </thead>
+    <tbody>
+        <tr style="border:0">
+            <td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td><td>{{ app.result }}</td>
+        </tr>
+    </tbody>
+</table>
+<div style="margin-top:40px;border:0">
+    <span style="font-size:14px;color:#aaa">申请理由与期望</span>
+    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.spec}}</textarea>
+</div>
+<div style="margin-top:40px">
+    <span style="font-size:14px;color:#aaa">处理意见</span>
+    <textarea id="textarea2" class="materialize-textarea" style="color:#000" disabled>{{app.suggestion}}</textarea>
+</div>
+<form action="application" method="GET" style="margin-top:30px">
+    <input class="btn btn-default" type="submit" value="返回" style="display:block;margin:0 auto;background:#08c"/>
+</form>
+</div>
+{% endblock card_content %}
