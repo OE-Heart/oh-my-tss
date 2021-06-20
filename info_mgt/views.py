@@ -163,12 +163,13 @@ def course_list(req, page=0):
         return HttpResponse(403)
 
 
-def course_display(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '课程管理',
-        'page_title': '课程详情',
-        'cur_submodule': 'course'
+def course_display(req, name):
+    course = models.Course.objects.filter(name=name)
+    return render(req, 'course_detail.html', {
+    'web_title': '课程管理',
+    'page_title': '课程详情',
+    'cur_submodule': 'course',
+    'request_course': course
     })
 
 
