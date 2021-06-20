@@ -1,0 +1,45 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %} 
+{% load material_form %} 
+
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'info_mgt/css/info_mgt.css' %}"
+/>
+{% endblock extra_head %} 
+
+{% block card_content %}
+<div id="info_mgt" class="card-content">
+<form action="{{ app_path }}" method="post" id="course-edit-form">{% csrf_token %}
+  {% form form=form %}
+  {% endform %}
+  <div class="action right-align">
+    <button type="submit" class="btn btn-primary">提交</button>
+  </div>
+</form>
+  {% if new_result %}
+    <div class="done-msg">
+      <i class="material-icons">done</i>
+      添加新课程成功！
+    </div>
+  {% elif edit_result %}
+    <div class="done-msg">
+      <i class="material-icons">done</i>
+      编辑课程信息成功！
+    </div>
+  {% elif new_result == False %}
+    <div class="err-msg">
+      <i class="material-icons">warning</i>
+      添加失败，请检查信息无误！
+    </div>
+  {% elif edit_result == False %}
+    <div class="err-msg">
+      <i class="material-icons">warning</i>
+      编辑失败！
+    </div>
+  {% endif %}
+</div>
+{% endblock card_content %}
