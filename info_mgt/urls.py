@@ -14,8 +14,8 @@ urlpatterns = [
     path('account/delete/<str:username>', views.account_delete, name='account_delete'),
 
     path('course/detail/<str:name>', views.course_detail, name='course_display'),
-    path('course/<str:option>/<str:in_course_name>', views.course_edit, name='course_edit'),
     path('course/delete/<str:name>', views.course_delete, name='course_delete'),
+    path('course/<str:option>/<str:in_course_name>', views.course_edit, name='course_edit'),
     
     path('info', views.info_view, name='info_view'),
     path('info/view', views.info_view, name='info_view'),
