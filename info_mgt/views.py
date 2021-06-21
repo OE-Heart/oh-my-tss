@@ -27,6 +27,19 @@ def info_view(req):
     })
 
 
+def info_view_with_username(req, username):
+    try:
+        user = models.User.objects.get(username=username)
+    except:
+        return HttpResponse(404)
+
+    return render(req, 'info_view.html', {
+        'web_title': '个人信息',
+        'page_title': '个人信息',
+        'request_user': user,
+    })
+
+
 def info_edit(req):
     ''' TODO: repair it '''
     if req.method == 'POST':
