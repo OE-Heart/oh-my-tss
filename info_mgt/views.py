@@ -301,6 +301,8 @@ def course_edit(req, option, in_course_name):
                 'form': CourseEditForm,
                 'new_result': True if ins else False
             })
+        elif option == 'delete':
+            return HttpResponse(403)
         else:
             # TODO: report a 404 error
             return HttpResponse(404)
@@ -323,13 +325,16 @@ def course_edit(req, option, in_course_name):
                 'cur_submodule': 'course',
                 'form': CourseEditForm
             })
+        elif option == 'delete':
+            models.Course.objects.get(name=in_course_name).delete()
+            return HttpResponseRedirect('/info_mgt/course')
 
-def course_delete(req, name):
-    if req.method == 'GET':
-        models.Course.objects.get(name=name).delete()
-        return HttpResponseRedirect('/info_mgt/course')
-    else:
-        return HttpResponse(403)
+#def course_delete(req, name):
+#    if req.method == 'GET':
+#        models.Course.objects.get(name=name).delete()
+#        return HttpResponseRedirect('/info_mgt/course')
+#    else:
+#        return HttpResponse(403)
 
 def login_view(req):
     if req.method == 'GET':
