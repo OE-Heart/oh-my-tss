@@ -138,7 +138,7 @@ def info_edit(req):
                 f.write(chunk)
             f.close()
         else:
-            result = True
+            result2 = True
 
         query_set = models.User.objects.filter(id=req.user.id)
         result = query_set.update(username=new_username, last_name=new_last_name,
