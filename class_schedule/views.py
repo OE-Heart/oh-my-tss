@@ -30,7 +30,7 @@ def add_room(request):  # 打开添加教室的页面
         try:
             if request.method == 'GET':
                 building_list = Building.objects.filter(campus_id=campus_list.first().id)
-            elif request.method == 'POST':
+            elif request.method == 'POST' and request.POST.get('campus'):
                 building_list = Building.objects.filter(campus_id=request.POST.get('campus'))
                 return_dict['selected_campus'] = int(request.POST.get('campus'))
         except OperationalError:  # 捕捉数据库操作的异常
@@ -42,7 +42,7 @@ def add_room(request):  # 打开添加教室的页面
     elif request.GET.get('failed'):  # 之前教室因为其他原因添加失败
         return_dict['add_failure'] = True
     elif request.GET.get('duplicated'):  # 之前教室因为门牌号重复而添加失败
-        return_dict['info_retrieve_failure'] = True
+        return_dict['duplicate'] = True
     return render(request, 'add_room.html', return_dict)
 
 
@@ -163,8 +163,9 @@ def modify_room_submit(request, room_id):  # 提交修改的教室信息
             duplicate = Classroom.objects.get(building_id=new_building_id, room_number=new_room_number)
         except Classroom.DoesNotExist:
             pass
-        except Classroom.MultipleObjectsReturned:
-            return HttpResponseRedirect(reverse('modify_room') + 'duplication')
+        else:
+            if duplicate.id != room_id:
+                return HttpResponseRedirect(reverse('modify_room') + '?duplication=true')
         room_to_modify.building_id = request.POST.get('building')
         room_to_modify.room_number = request.POST.get('room_number')
         room_to_modify.type = request.POST.get('room_type')
