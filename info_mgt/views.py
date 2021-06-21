@@ -264,7 +264,6 @@ def course_detail(req, name):
 
 
 def course_edit(req, option, in_course_name):
-    ''' TODO: render by another template '''
     if req.method == 'POST':
         course_name = req.POST.get('name')
         course_desc = req.POST.get('description')
@@ -304,7 +303,7 @@ def course_edit(req, option, in_course_name):
             })
         else:
             # TODO: report a 404 error
-            return HttpRequest(404)
+            return HttpResponse(404)
     elif req.method == 'GET':
         if option == 'edit':
             page_title = '修改课程详情'
@@ -325,6 +324,12 @@ def course_edit(req, option, in_course_name):
                 'form': CourseEditForm
             })
 
+def course_delete(req, name):
+    if req.method == 'GET':
+        models.Course.objects.get(name=name).delete()
+        return HttpResponseRedirect('/info_mgt/course')
+    else:
+        return HttpResponse(403)
 
 def login_view(req):
     if req.method == 'GET':

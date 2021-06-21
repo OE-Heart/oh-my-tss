@@ -36,7 +36,7 @@
           {% comment %} TODO: use real url {% endcomment %}
           <a href="{% url 'info_mgt:course_display' course.name %}">查看</a>
           <a href="{% url 'info_mgt:course_edit' 'edit' course.name %}">编辑</a>
-          <a href="">删除</a>
+          <a href="{% url 'info_mgt:course_delete' course.name %}">删除</a>
         </td>
       </tr>
       {% endfor %}
