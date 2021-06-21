@@ -41,21 +41,24 @@ def info_view_with_username(req, username):
     })
 
 def info_add(req, username='#'):
-
-    if req.method == 'POST' and username != '#':
+    if req.method == 'POST':
         new_username = req.POST['username']
         new_last_name = req.POST['last_name']
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
 
-        this_user = models.User.objects.get(username=username)
-        if len(this_user) != 0:
-            this_user.username = new_username
-            this_user.last_name = new_last_name
-            this_user.first_name = new_first_name
-            this_user.email = new_email
-            this_user.save()
+        if username != '#':
+            this_user = models.User.objects.get(username=new_username)
+            if len(this_user) != 0:
+                this_user.username = new_username
+                this_user.last_name = new_last_name
+                this_user.first_name = new_first_name
+                this_user.email = new_email
+                this_user.save()
+            else:
+                result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
+                                                      first_name=new_first_name, email=new_email)
         else:
             result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                   first_name=new_first_name, email=new_email)
@@ -81,14 +84,24 @@ def info_add(req, username='#'):
             'edit_result': True
         })
     elif req.method == 'GET':
-        obj = req.user
-        return render(req, 'info_edit.html', {
-            'web_title': '用户信息修改',
-            'page_title': '用户信息修改',
-            'request_user': req.user,
-            'form': SelfInfoForm(),
-            'edit': False
-        })
+        if username != '#':
+            obj = req.user
+            return render(req, 'info_edit.html', {
+                'web_title': '用户信息修改',
+                'page_title': '用户信息修改',
+                'request_user': req.user,
+                'form': SelfInfoForm(instance=req.user),
+                'edit': False
+            })
+        else:
+            obj = req.user
+            return render(req, 'info_edit.html', {
+                'web_title': '用户信息修改',
+                'page_title': '用户信息修改',
+                'request_user': req.user,
+                'form': SelfInfoForm(),
+                'edit': False
+            })
     else:
         return HttpRequest(404)
 
