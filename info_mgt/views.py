@@ -40,8 +40,9 @@ def info_view_with_username(req, username):
         'request_user': user,
     })
 
-def info_add(req, username):
-    if req.method == 'POST':
+def info_add(req, username='#'):
+
+    if req.method == 'POST' and username != '#':
         new_username = req.POST['username']
         new_last_name = req.POST['last_name']
         new_first_name = req.POST['first_name']
@@ -49,11 +50,15 @@ def info_add(req, username):
         new_avatar = req.FILES.get('avatar')
 
         this_user = models.User.objects.get(username=username)
-        this_user.username = new_username
-        this_user.last_name = new_last_name
-        this_user.first_name = new_first_name
-        this_user.email = new_email
-        this_user.save()
+        if len(this_user) != 0:
+            this_user.username = new_username
+            this_user.last_name = new_last_name
+            this_user.first_name = new_first_name
+            this_user.email = new_email
+            this_user.save()
+        else:
+            result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
+                                                  first_name=new_first_name, email=new_email)
         # result_1 = this_user.update(
         #     username=new_username,
         #     last_name=new_last_name,
