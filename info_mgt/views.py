@@ -36,12 +36,12 @@ def info_edit(req):
         new_email = req.POST['email']
         query_set = models.User.objects.filter(id=req.user.id)
         print(query_set)
-        # result = query_set.update(
-        #     username=new_username,
-        #     last_name=new_last_name,
-        #     first_name=new_first_name,
-        #     email=new_email
-        # ) if result != 0 else False
+        result = query_set.update(
+            username=new_username,
+            last_name=new_last_name,
+            first_name=new_first_name,
+            email=new_email
+        )
         print("更新成功")
         return render(req, 'info_edit.html', {
             'web_title': '个人信息修改',
@@ -49,7 +49,7 @@ def info_edit(req):
             'request_user': req.user,
             'form': SelfInfoForm(instance=req.user),
             'edit': True,
-            'edit_result': True
+            'edit_result': True if result != 0 else False
         })
     elif req.method == 'GET':
         obj = req.user
