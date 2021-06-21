@@ -69,8 +69,8 @@ def info_add(req, username):
         result_2 = 1
         print("修改成功")
         return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改',
-            'page_title': '个人信息修改',
+            'web_title': '用户信息修改',
+            'page_title': '用户信息修改',
             'request_user': req.user,
             'form': SelfInfoForm(),
             'edit': True,
@@ -79,8 +79,8 @@ def info_add(req, username):
     elif req.method == 'GET':
         obj = req.user
         return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改',
-            'page_title': '个人信息修改',
+            'web_title': '用户信息修改',
+            'page_title': '用户信息修改',
             'request_user': req.user,
             'form': SelfInfoForm(),
             'edit': False
