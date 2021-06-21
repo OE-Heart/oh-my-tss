@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from info_mgt.models import Campus, Class, Teacher
-# from django.contrib import admin
+from django.contrib.auth.models import User
 import datetime
 
 
@@ -27,7 +27,7 @@ class Classroom(models.Model):
 
 class ClassHasRoom(models.Model):
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
-    classroom = models.ForeignKey(Classroom, on_delete=models.SET_NULL, null=True)
+    classroom = models.ForeignKey(Classroom, on_delete=models.SET_NULL, null=True, blank=True)
     day = models.IntegerField(default=1, null=True, blank=True, validators=[MaxValueValidator(7), MinValueValidator(1)])
     start_at = models.IntegerField(default=1, null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(13)])
     # 按理说应该限制2节及以上长度的时段只能在1，3，6，7，9，11节开始，只有长度为1节的才是可取1~13，从view里定义限制吧……
@@ -42,6 +42,6 @@ class Application(models.Model):
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
     content = models.TextField(max_length=100)
     reply_time = models.DateTimeField(null=True, blank=True)
-    # admin = models.ForeignKey(admin, on_delete=models.SET_NULL)
+    admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     is_accepted = models.BooleanField(null=True, blank=True)
     reply = models.TextField(max_length=100, null=True, blank=True)

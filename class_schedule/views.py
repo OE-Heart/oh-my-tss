@@ -2,12 +2,11 @@ from django.db import OperationalError, transaction
 from django.http.response import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render
 from django.http.request import HttpRequest
-from django.contrib.auth import authenticate
 from django.contrib.auth.models import User, Group
-from django.contrib import admin
 from .models import Classroom, ClassHasRoom, Application, Building
 from info_mgt.models import Campus, Department, Major, Teacher, Course, MajorHasCourse, Class
 from django.urls import reverse
+from django.db.models import Q
 
 
 def index(request):
@@ -18,30 +17,33 @@ def add_room(request):  # 打开添加教室的页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
         return HttpResponseRedirect(reverse('login'))
-    if request.method == 'GET':
-        return_dict = {'web_title': '添加教室',
-                       'page_title': '添加教室',
-                       'request_user': request.user,
-                       'cur_submodule': 'add_room', }
+    return_dict = {'web_title': '添加教室',
+                   'page_title': '添加教室',
+                   'request_user': request.user,
+                   'cur_submodule': 'add_room', }
+    try:
+        campus_list = Campus.objects.all().order_by('id')
+    except OperationalError:
+        return_dict['info_retrieve_failure'] = True
+    else:
+        return_dict['campus_list'] = campus_list
         try:
-            campus_list = Campus.objects.all()
-        except OperationalError:
-            return_dict['info_retrieve_failure'] = True
-        else:
-            return_dict['campus_list'] = campus_list
-        try:
-            building_list = Building.objects.all()
+            if request.method == 'GET':
+                building_list = Building.objects.filter(campus_id=campus_list.first().id)
+            elif request.method == 'POST':
+                building_list = Building.objects.filter(campus_id=request.POST.get('campus'))
+                return_dict['selected_campus'] = int(request.POST.get('campus'))
         except OperationalError:  # 捕捉数据库操作的异常
             return_dict['info_retrieve_failure'] = True
         else:
             return_dict['building_list'] = building_list
-        if request.GET.get('succeeded'):  # 之前有教室添加成功
-            return_dict['add_success'] = True
-        elif request.GET.get('failed'):  # 之前教室因为其他原因添加失败
-            return_dict['add_failure'] = True
-        elif request.GET.get('duplicated'):  # 之前教室因为门牌号重复而添加失败
-            return_dict['info_retrieve_failure'] = True
-        return render(request, 'add_room.html', return_dict)
+    if request.GET.get('succeeded'):  # 之前有教室添加成功
+        return_dict['add_success'] = True
+    elif request.GET.get('failed'):  # 之前教室因为其他原因添加失败
+        return_dict['add_failure'] = True
+    elif request.GET.get('duplicated'):  # 之前教室因为门牌号重复而添加失败
+        return_dict['info_retrieve_failure'] = True
+    return render(request, 'add_room.html', return_dict)
 
 
 def add_room_submit(request):  # 提交添加教室的信息
@@ -114,27 +116,31 @@ def modify_certain_room(request, room_id):  # 修改特定教室信息的页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
         return HttpResponseRedirect(reverse('login'))
-    if request.method == 'GET':
-        return_dict = {'web_title': '修改教室信息',
-                       'page_title': '修改教室信息',
-                       'request_user': request.user,
-                       'cur_submodule': 'modify_room'}
-        try:
-            room_to_modify = Classroom.objects.get(pk=room_id)
-        except OperationalError:
-            return_dict['info_retrieve_failure'] = True
-        except Classroom.DoesNotExist:
-            return HttpResponseRedirect(reverse('modify_room') + '?no_such_room=true')
-        else:
-            return_dict['original_info'] = room_to_modify
-        try:
-            campus_list = Campus.objects.all()
-            building_list = Building.objects.all()
-        except OperationalError:
-            return_dict['info_retrieve_failure'] = True
-        else:
-            return_dict['campus_list'] = campus_list
-            return_dict['building_list'] = building_list
+    return_dict = {'web_title': '修改教室信息',
+                   'page_title': '修改教室信息',
+                   'request_user': request.user,
+                   'cur_submodule': 'modify_room'}
+    try:
+        room_to_modify = Classroom.objects.get(pk=room_id)
+    except OperationalError:
+        return_dict['info_retrieve_failure'] = True
+    except Classroom.DoesNotExist:
+        return HttpResponseRedirect(reverse('modify_room') + '?no_such_room=true')
+    else:
+        return_dict['original_info'] = room_to_modify
+    try:
+        if request.method == 'GET':
+            campus_list = Campus.objects.all().order_by('id')
+            building_list = Building.objects.filter(campus_id=campus_list.first().id)
+        elif request.method == 'POST':
+            campus_list = Campus.objects.all().order_by('id')
+            building_list = Building.objects.filter(campus_id=request.POST.get('campus'))
+            return_dict['selected_campus'] = int(request.POST.get('campus'))
+    except OperationalError:
+        return_dict['info_retrieve_failure'] = True
+    else:
+        return_dict['campus_list'] = campus_list
+        return_dict['building_list'] = building_list
         return render(request, 'modify_certain_room.html', return_dict)
 
 
@@ -203,19 +209,25 @@ def auto_schedule(request):  # 打开自动排课页面
                        'cur_submodule': 'auto_schedule'}
         class_list = Class.objects.all()
         for i in class_list:
-            if not i.classhasroom_set:  # 如果教学班没有时段记录，则生成时段记录
+            rooms = ClassHasRoom.objects.filter(Class_id=i.id)
+            if not rooms:  # 如果教学班没有时段记录，则生成时段记录
                 times = i.course.duration.split()
                 with transaction.atomic():  # 通过事务避免只生成了部分时段记录
                     for j in times:
                         new_section = ClassHasRoom(Class_id=i.id, duration=int(j))
                         new_section.save()
+            not_scheduled = ClassHasRoom.objects.filter(Class_id=i.id, classroom__isnull=True)
         try:
-            schedule_list = Class.objects.filter(classhasroom__day__isnull=True)
-            scheduled_list = Class.objects.filter(classhasroom__day__isnull=False)
+            schedule_list = Class.objects.filter(classhasroom__classroom__isnull=True)
+            for i in schedule_list:
+                i.not_scheduled = True
+            scheduled_list = Class.objects.filter(classhasroom__classroom__isnull=False)
+            for i in scheduled_list:
+                i.not_scheduled = False
         except OperationalError:
             pass
         else:
-            schedule_list += scheduled_list
+            schedule_list = schedule_list.union(scheduled_list)
             return_dict['schedule_list'] = schedule_list
         return render(request, 'auto_schedule.html', return_dict)
 
@@ -229,21 +241,112 @@ def do_auto_schedule(request):  # 进行自动排课。。。麻烦（（（
 
 
 def manipulate_schedule(request):  # 打开手动调课页面
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return HttpResponseRedirect(reverse('login'))
     if request.method == 'GET':
-        return_dic = {'web_title': '手动课程调整',
-                      'page_title': '手动课程调整',
-                      'request_user': request.user,
-                      'cur_submodule': 'manipulate_schedule'}
-        return render(request, 'manipulate_schedule.html', return_dic)
+        return_dict = {'web_title': '手动课程调整',
+                       'page_title': '手动课程调整',
+                       'request_user': request.user,
+                       'cur_submodule': 'manipulate_schedule'}
+        selection1 = request.GET.get('cx_cxlb_1')
+        if selection1:
+            condition1 = request.GET.get('cx_cxnr_1')
+            try:
+                if selection1 == 'skjs':
+                    class_selection1 = Class.objects.filter(teacher__first_name__in=condition1)
+                    class_selection1 = class_selection1.union(Class.objects.filter(teacher__last_name__contains=condition1))
+                elif selection1 == 'kcmc':
+                    class_selection1 = Class.objects.filter(course__name__contains=condition1)
+                elif selection1 == 'sksj':
+                    class_selection1 = Class.objects.filter(classhasroom__day=int(request.GET.get('day1')))
+                elif selection1 == 'kcdd':
+                    room_selection1 = Classroom.objects.filter(building__campus__name__in=condition1)
+                    room_selection2 = Classroom.objects.filter(building__name__in=condition1)
+                    room_selection3 = Classroom.objects.filter(room_number__in=condition1)
+                    if not room_selection1 and not room_selection2 and not room_selection3:
+                        room_selection1.intersection(room_selection2)
+                        room_selection1.intersection(room_selection3)
+                    elif not room_selection1 or not room_selection2 or not room_selection3:
+                        if not room_selection1:
+                            room_selection1 = room_selection2.intersection(room_selection3)
+                        elif not room_selection2:
+                            room_selection1 = room_selection1.intersection(room_selection3)
+                        elif not room_selection3:
+                            room_selection1 = room_selection2.intersection(room_selection1)
+                    elif room_selection1 or room_selection2 or room_selection3:
+                        if room_selection2:
+                            room_selection1 = room_selection2
+                        elif room_selection3:
+                            room_selection1 = room_selection3
+                    class_selection1 = Class.objects.filter(classhasroom__classroom__in=room_selection1)
+            except OperationalError:
+                pass
+        selection2 = request.GET.get('cx_cxlb_2')
+        if selection2:
+            condition2 = request.GET.get('cx_cxnr_2')
+            try:
+                if selection2 == 'skjs':
+                    class_selection2 = Class.objects.filter(teacher__first_name__in=condition2)
+                    class_selection2 = class_selection2.union(Class.objects.filter(teacher__last_name__contains=condition2))
+                elif selection2 == 'kcmc':
+                    class_selection2 = Class.objects.filter(course__name__contains=condition2)
+                elif selection2 == 'sksj':
+                    class_selection2 = Class.objects.filter(classhasroom__day=int(request.GET.get('day2')))
+                elif selection2 == 'kcdd':
+                    room_selection1 = Classroom.objects.filter(building__campus__name__in=condition2)
+                    room_selection2 = Classroom.objects.filter(building__name__in=condition2)
+                    room_selection3 = Classroom.objects.filter(room_number__in=condition2)
+                    if not room_selection1 and not room_selection2 and not room_selection3:
+                        room_selection1.intersection(room_selection2)
+                        room_selection1.intersection(room_selection3)
+                    elif not room_selection1 or not room_selection2 or not room_selection3:
+                        if not room_selection1:
+                            room_selection1 = room_selection2.intersection(room_selection3)
+                        elif not room_selection2:
+                            room_selection1 = room_selection1.intersection(room_selection3)
+                        elif not room_selection3:
+                            room_selection1 = room_selection2.intersection(room_selection1)
+                    elif room_selection1 or room_selection2 or room_selection3:
+                        if room_selection2:
+                            room_selection1 = room_selection2
+                        elif room_selection3:
+                            room_selection1 = room_selection3
+                    class_selection2 = Class.objects.filter(classhasroom__classroom__in=room_selection1)
+            except OperationalError:
+                pass
+            if request.GET.get('logic') == 'and':
+                class_selection1 = class_selection1.intersection(class_selection2)
+            elif request.GET.get('logic') == 'or':
+                class_selection1 = class_selection1.union(class_selection2)
+            for i in class_selection1:
+                i.teacher = i.teacher.first_name + i.teacher.last_name
+            return_dict['courses'] = class_selection1
+        return render(request, 'manipulate_schedule.html', return_dict)
 
 
 def manipulate_certain_class(request, class_id):  # 打开处理特定课程的页面
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return HttpResponseRedirect(reverse('login'))
     if request.method == 'GET':
-        return_dic = {'web_title': '手动课程调整',
-                      'page_title': '手动课程调整',
-                      'request_user': request.user,
-                      'cur_submodule': 'manipulate_schedule'}
-        return render(request, 'manipulate.html', return_dic)
+        return_dict = {'web_title': '手动课程调整',
+                       'page_title': '手动课程调整',
+                       'request_user': request.user,
+                       'cur_submodule': 'manipulate_schedule'}
+        try:
+            class_to_modify = Class.objects.get(pk=class_id)
+            rooms_to_modify = ClassHasRoom.objects.filter(class_id=class_id)
+            campus_list = Campus.objects.all()
+            building_list = Building.objects.all()
+
+        except OperationalError:
+            pass
+        else:
+            return_dict['course'] = class_to_modify
+            return_dict['rooms'] = rooms_to_modify
+            return_dict['campus'] = campus_list
+        return render(request, 'manipulate.html', return_dict)
 
 
 def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针对一个时段）

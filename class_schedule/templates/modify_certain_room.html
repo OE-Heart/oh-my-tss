@@ -13,57 +13,48 @@
 
 {% block card_content %}
 <div id="info_mgt" class="card-content">
-      <form method="post">
       <script>
-          function reset() { //重置所有的选项
-              document.getElementById('campus').value = {{ original_info.building.campus.id }};
-              document.getElementById('building').value = {{ original_info.building.id }};
-              document.getElementById('room_number').value = {{ original_info.room_number }};
-              document.getElementById('room_type').value = {{ original_info.type }};
-              document.getElementById('capacity').value = {{ original_info.capacity }};
-          }
-          reset();
           {% if info_retrieve_failure %}
               alert('信息获取失败，请刷新重试');
           {% endif %}
       </script>
-          {% csrf_token %}
-          校区：<!--{{ original_info.building.campus.name }}-->
-          <br/><br/>
-          <div>
-              <select name="campus" id="campus" style="display: block" class="prefix" onchange="adjust_building_choices(this.value)">
-                  {% if campus_list %}
-                      {% for i in campus_list %}
-                          <option value="{{ i.id }}">i.name</option>
-                      {% endfor %}
-                  {% endif %}
+    <form method="post">
+      {% csrf_token %}
+      校区：<!--{{ original_info.building.campus.name }}-->
+      <br/><br/>
+      <div>
+          <select name="campus" id="campus" style="display: block" class="prefix" onchange="document.getElementById('button1').click()">
+              {% if campus_list %}
+                  {% for i in campus_list %}
+                      {% if selected_campus and i.id == selected_campus %}
+                              <option value="{{ i.id }}" selected>{{ i.name }}</option>
+                      {% else %}
+                            <option value="{{ i.id }}">{{ i.name }}</option>
+                      {% endif %}
+                  {% endfor %}
+              {% endif %}
 {#                  <option value="紫金港">紫金港</option>#}
 {#                  <option value="玉泉">玉泉</option>#}
 {#                  <option value="西溪">西溪</option>#}
 {#                  <option value="华家池">华家池</option>#}
-              </select>
-          </div>
+          </select>
+      </div>
+    <button type="submit" hidden id="button1"></button>
+    </form>
+      <form method="post" action="{% url 'modify_room_submit' original_info.id %}">
+           {% csrf_token %}
           <br>
           教学楼：<!--{{ original_info.building.name }}-->
           <br/><br/>
           <div>
-          <script>
-          function adjust_building_choices(campus_id) //只显示选择的校区对应的教室
-          {
-              let options = '';
-              {% if building_list %}
-                  {% for j in building_list %}
-                      if(campus_id === {{ j.campus.id }})
-                        options += '<option value="{{ j.id }}">{{ j.name }}</option>';
-                  {% endfor %}
-              {% endif %}
-              document.getElementById('building').innerHTML = options;
-          }
-      </script>
-              <select name="building" style="display: block" class="prefix" id="building">
+              <select name="building" style="display: block" class="prefix" id="building" required>
                   {% if building_list %}
                       {% for j in building_list %}
-                          <option value="{{ j.id }}">{{ j.name }}</option>
+                          {% if j.id == original_info.building_id %}
+                            <option value="{{ j.id }}" selected>{{ j.name }}</option>
+                          {% else %}
+                            <option value="{{ j.id }}">{{ j.name }}</option>
+                          {% endif %}
                       {% endfor %}
                   {% endif %}
 {#                  <option value="西一">西一</option>#}
@@ -82,20 +73,33 @@
           </div>
           <br>
           门牌号：<!--{{ original_info.room_number }}-->
-          <input type="number" placeholder="请输入完整门牌号" name="room_number" id="room_number">
-          教室类型：{{ original_info.room_type }}
+          <input type="number" placeholder="请输入完整门牌号" name="room_number" id="room_number" value="{{ original_info.room_number }}" required>
+          教室类型：<!--{{ original_info.room_type }}-->
           <br><br>
           <div>
-              <select name="room_type" style="display: block" class="prefix" id="room_type">
-                  <option value="O">普通教室</option>
-                  <option value="G">体育场馆</option>
-                  <option value="C">电脑机房</option>
+              <select name="room_type" style="display: block" class="prefix" id="room_type" required>
+                  {% if original_info.type == 'O' %}
+                    <option value="O" selected>普通教室</option>
+                  {% else %}
+                    <option value="O">普通教室</option>
+                  {% endif %}
+                  {% if original_info.type == 'G' %}
+                      <option value="G" selected>体育场馆</option>
+                  {% else %}
+                      <option value="G">体育场馆</option>
+                  {% endif %}
+                  {% if original_info.type == 'C' %}
+                      <option value="C" selected>电脑机房</option>
+                  {% else %}
+                      <option value="C">电脑机房</option>
+                  {% endif %}
               </select>
           </div>
           <br>
           教室容量：<!--{{ original_info.capacity }}-->
-          <input type="number" placeholder="请输入新的教室容量" name="room_capacity" id="capacity" min="1">
+          <input type="number" placeholder="请输入新的教室容量" name="room_capacity" id="capacity" min="1" value="{{ original_info.capacity }}">
           <button class="w-100 btn btn-lg btn-primary" type="submit">修改教室</button>
+          <a class="w-100 btn btn-lg btn-primary" href="{% url 'modify_certain_room' original_info.id %}">重置输入</a>
           <!-- 提交之后，数据库中内容进行修改，同时跳转回modify_room.html -->
       </form>
 <div class="operation-btn"></div>
