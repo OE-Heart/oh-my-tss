@@ -50,12 +50,13 @@ def info_add(req, username='#'):
 
         if username != '#':
             this_user = models.User.objects.get(username=new_username)
-            if len(this_user) != 0:
+            if this_user:
                 this_user.username = new_username
                 this_user.last_name = new_last_name
                 this_user.first_name = new_first_name
                 this_user.email = new_email
                 this_user.save()
+                result_0 = True
             else:
                 result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                       first_name=new_first_name, email=new_email)
@@ -68,29 +69,29 @@ def info_add(req, username='#'):
         #     first_name=new_first_name,
         #     email=new_email
         # )
-        # query = models.Avatar.objects.filter(user=this_user)
-        # if len(query) == 0:
-        #     result = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
-        # else:
-        #     result_2 = query.update(user=this_user, avatar=new_avatar)
-        #  if result != 0 and result_2 != 0 else False
-        print("修改成功")
+        query = models.Avatar.objects.filter(user=this_user)
+        if len(query) == 0 and new_avatar is not None:
+            result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+        elif new_avatar is not None:
+            result_2 = query.update(avatar=new_avatar)
+        else:
+            result_2 = True
         return render(req, 'info_edit.html', {
             'web_title': '用户信息修改',
             'page_title': '用户信息修改',
             'request_user': req.user,
-            'form': SelfInfoForm(),
+            'form': SelfInfoForm(instance=this_user),
             'edit': True,
-            'edit_result': True
+            'edit_result': True if result_0 != 0 and result_2 != 0 else False
         })
     elif req.method == 'GET':
         if username != '#':
-            obj = req.user
+            obj = models.User.objects.get(username=username)
             return render(req, 'info_edit.html', {
                 'web_title': '用户信息修改',
                 'page_title': '用户信息修改',
                 'request_user': req.user,
-                'form': SelfInfoForm(instance=req.user),
+                'form': SelfInfoForm(instance=obj),
                 'edit': False
             })
         else:
@@ -113,13 +114,12 @@ def info_edit(req):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
-        print(new_avatar)
         query = models.Avatar.objects.filter(user=req.user)
         if len(query) == 0 :
             result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
             query = models.Avatar.objects.filter(user=req.user)
             print(query)
-        elif new_avatar:
+        elif len(new_avatar) != 0:
             result2 = query.update(avatar=new_avatar)
         query_set = models.User.objects.filter(id=req.user.id)
         print(query_set)
