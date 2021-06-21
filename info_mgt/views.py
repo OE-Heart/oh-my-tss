@@ -2,7 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, AvatarForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from . import models
@@ -34,6 +34,14 @@ def info_edit(req):
         new_last_name = req.POST['last_name']
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
+        new_avatar = req.FILES.get('avatar')
+        query = models.Avatar.objects.filter(user=req.user)
+        if len(query) == 0 :
+            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+            query = models.Avatar.objects.filter(user=req.user)
+            print(query)
+        elif new_avatar:
+            result2 = query.update(avatar=new_avatar)
         query_set = models.User.objects.filter(id=req.user.id)
         print(query_set)
         result = query_set.update(
@@ -47,17 +55,23 @@ def info_edit(req):
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
+            'avatar': query[0].avatar.path,
             'form': SelfInfoForm(instance=req.user),
+            'avatarform': AvatarForm(),
             'edit': True,
             'edit_result': True if result != 0 else False
         })
     elif req.method == 'GET':
         obj = req.user
+        avatarobj = models.Avatar.objects.filter(user=req.user)
+        print(avatarobj)
         return render(req, 'info_edit.html', {
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
+            # 'avatar': avatarobj[0].avatar.path,
             'form': SelfInfoForm(instance=obj),
+            'avatarform': AvatarForm(),
             'edit': False
         })
     else:

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from material import *
-from info_mgt.models import Course
+from info_mgt.models import Course, Avatar
 from oh_my_tss import demo as forms
 
 
@@ -27,6 +27,13 @@ class SelfInfoForm(forms.ModelForm):
         model = User
         fields = ('username', 'last_name', 'first_name', 'email')
         help_texts = {'username':""}
+
+
+class AvatarForm(SelfInfoForm):
+    class Meta:
+        model = Avatar
+        fields = ['avatar']
+
 
 
 class LoginForm(forms.Form):

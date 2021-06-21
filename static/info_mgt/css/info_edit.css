@@ -1,5 +1,12 @@
 .edit-area{
-    width:100% ;
+    width:80% ;
+}
+.avatar-area{
+    width:20% ;
+}
+.img-avatar{
+    width:120px;
+    height:200px;
 }
 .edit-button {
     background-color: #4fb353;
