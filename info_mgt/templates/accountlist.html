@@ -34,7 +34,7 @@
           {% comment %} TODO: use real url {% endcomment %}
           <a href="{% url 'info_mgt:info_view' account.username %}">查看</a>
           <a href="">编辑</a>
-          <a href="">删除</a>
+          <a href="{% url 'info_mgt:account_delete' account.username %}">删除</a>
         </td>
       </tr>
       {% endfor %}
@@ -53,7 +53,7 @@
       <a href="{{ next_page }}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="" title="添加新课程">
+  <a class="add-btn" href="{% url 'info_mgt:info_add' %}" title="添加新课程">
     {% comment %} TODO: use real url {% endcomment %}
   </a>
 </div>
