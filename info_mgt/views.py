@@ -70,8 +70,7 @@ def info_add(req, username='#'):
         #     result = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
         # else:
         #     result_2 = query.update(user=this_user, avatar=new_avatar)
-        result = 1
-        result_2 = 1
+        #  if result != 0 and result_2 != 0 else False
         print("修改成功")
         return render(req, 'info_edit.html', {
             'web_title': '用户信息修改',
@@ -79,7 +78,7 @@ def info_add(req, username='#'):
             'request_user': req.user,
             'form': SelfInfoForm(),
             'edit': True,
-            'edit_result': True if result != 0 and result_2 != 0 else False
+            'edit_result': True
         })
     elif req.method == 'GET':
         obj = req.user
