@@ -162,8 +162,8 @@ def course_list(req, page=0):
         return HttpResponse(403)
 
 
-def course_display(req, name):
-    course = models.Course.objects.filter(name=name)
+def course_detail(req, name):
+    course = models.Course.objects.get(name=name)
     return render(req, 'course_detail.html', {
     'web_title': '课程管理',
     'page_title': '课程详情',
