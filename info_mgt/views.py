@@ -328,6 +328,13 @@ def logout_view(request):
     return HttpResponseRedirect('/info_mgt')
 
 
+def account_delete(req, username):
+    if req.method != 'GET':
+        return HttpResponse(403)
+    
+    User.objects.filter(username=username).delete()
+    return HttpResponseRedirect('/info_mgt/account')
+
 '''
 {% if blog.article %}  <!-- permission to visit articles in the blog -->
     <p>You have permission to do something in this blog app.</p>
