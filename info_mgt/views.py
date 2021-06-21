@@ -40,7 +40,7 @@ def info_view_with_username(req, username):
         'request_user': user,
     })
 
-def info_add(req):
+def info_add(req, username):
     if req.method == 'POST':
         new_username = req.POST['username']
         new_last_name = req.POST['last_name']
@@ -48,22 +48,33 @@ def info_add(req):
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
 
-        query_set = models.User.objects.filter(id=req.user.id)
-        result_1 = models.User.objects.create(
-            username=new_username,
-            last_name=new_last_name,
-            first_name=new_first_name,
-            email=new_email
-        )
-        result_2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
-        print("添加成功")
+        this_user = models.User.objects.get(username=username)
+        this_user.username = new_username
+        this_user.last_name = new_last_name
+        this_user.first_name = new_first_name
+        this_user.email = new_email
+        this_user.save()
+        # result_1 = this_user.update(
+        #     username=new_username,
+        #     last_name=new_last_name,
+        #     first_name=new_first_name,
+        #     email=new_email
+        # )
+        # query = models.Avatar.objects.filter(user=this_user)
+        # if len(query) == 0:
+        #     result = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+        # else:
+        #     result_2 = query.update(user=this_user, avatar=new_avatar)
+        result = 1
+        result_2 = 1
+        print("修改成功")
         return render(req, 'info_edit.html', {
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
-            'form': SelfInfoForm(instance=req.user),
+            'form': SelfInfoForm(),
             'edit': True,
-            'edit_result': True if result_1 != 0 and result_2 != 0 else False
+            'edit_result': True if result != 0 and result_2 != 0 else False
         })
     elif req.method == 'GET':
         obj = req.user
