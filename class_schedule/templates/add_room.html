@@ -1,0 +1,110 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+<link
+        rel="stylesheet"
+        type="text/css"
+        href="{% static 'info_mgt/css/info_mgt.css' %}"
+        xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"/>
+{% endblock extra_head %}
+
+{% block title %}添加教室{% endblock %}
+
+{% block card_content %}
+    <script>
+function check(){
+    {% if add_success %}
+        window.alert('教室添加成功！');
+    {% elif add_failure %}
+        window.alert('教室添加失败，请稍后重试');
+    {% elif duplicate %}
+        window.alert('教室添加失败，请检查新教室门牌号是否和同一教学楼已有教室有重复');
+    {% endif %}
+    {% if info_retrieve_failure %}
+        window.alert('信息加载失败，请刷新重试。');
+    {% endif %}
+}
+    check();
+</script>
+<div id="info_mgt" class="card-content">
+      <form method="post" action="{% url 'add_room_submit' %}">
+          {% csrf_token %}
+
+          <label for="campus_selection">校区：</label><br>
+          <br>
+          <div>
+              <select name="campus" style="display: block" class="prefix" required id="campus_selection" onchange="adjust_building_choices(this.value)">
+                  {% if campus_list %}
+                      {% for i in campus_list %}
+                          <option value="{{ i.id }}">{{ i.name }}</option>
+                      {% endfor %}
+{#                  <option value="紫金港">紫金港</option>#}
+{#                  <option value="玉泉">玉泉</option>#}
+{#                  <option value="西溪">西溪</option>#}
+{#                  <option value="华家池">华家池</option>#}
+                  {% endif %}
+              </select>
+          </div>
+      <script>
+          function adjust_building_choices(campus_id) //只显示选择的校区对应的教室
+          {
+              let options = '';
+              {% if building_list %}
+                  {% for j in building_list %}
+                      if(campus_id === {{ j.campus_id }})
+                        options += '<option value="{{ j.id }}">{{ j.name }}</option>';
+                  {% endfor %}
+              {% endif %}
+              document.getElementById('building').innerHTML = options;
+          }
+      </script>
+          <br>
+          <label for="building">教学楼：</label>
+          <br>
+          <br>
+          <div>
+              <select id="building" name="building" style="display: block" class="prefix" required>
+                  {% if building_list %}
+                      {% for j in building_list %}
+                          {% if j.campus_id == campus_list.first.id %}
+                            <option value="{{ j.id }}">{{ j.name }}</option>
+                          {% endif %}
+                      {% endfor %}
+                  {% endif %}
+{#                  <option value="西一">西一</option>#}
+{#                  <option value="西二">西二</option>#}
+{#                  <option value="西三">西三</option>#}
+{#                  <option value="东一">东一</option>#}
+{#                  <option value="东二">东二</option>#}
+{#                  <option value="东三">东三</option>#}
+{#                  <option value="东四">东四</option>#}
+{#                  <option value="东五">东五</option>#}
+{#                  <option value="东六">东六</option>#}
+{#                  <option value="紫金港机房">紫金港机房</option>#}
+{#                  <option value="东操场">东操场</option>#}
+{#                  <option value="风雨操场">风雨操场</option>#}
+              </select>
+          </div>
+          <br>
+          <label for="room_id">门牌号：</label>
+          <input type="number" placeholder="请输入完整门牌号" name="room_id" id="room_id" required>
+          <label for="room_type">教室类型：</label>
+          <br><br>
+          <div>
+              <select name="room_type" style="display: block" class="prefix" id="room_type" required>
+                  <option value="O">普通教室</option>
+                  <option value="G">体育场馆</option>
+                  <option value="C">电脑机房</option>
+              </select>
+          </div>
+          <br>
+          <label for="room_capacity">教室容量（座位数量）：</label>
+          <input type="number" placeholder="请输入教室容量" name="room_capacity" id="room_capacity" min="0" required>
+          <button class="w-100 btn btn-lg btn-primary" type="submit">提交</button>
+      </form>
+<div class="operation-btn"></div>
+</div>
+{% endblock card_content %}

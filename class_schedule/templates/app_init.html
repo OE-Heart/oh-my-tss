@@ -1,0 +1,39 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+<div id="class_schedule" class="card-content">
+<h5>选择教学班：</h5>
+<form action="{% url 'submit_application' %}" method="POST" style="margin-top:40px">
+<table style="margin-top:30px;margin-bottom:30px">
+    <thead>
+        <tr><th>课程名</th><th>课程时段</th><th>课程地点</th><th>选择</th></tr>
+    </thead>
+    <tbody>
+    {% if my_class_list %}
+        {% for class in my_class_list %}
+        <tr style="border:0">
+            <td>{{ class.course.name }}</td>
+            <td>
+                {% for j in i.ClassHasRoom_set %}
+                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% endfor %}
+            </td>
+            <td>{{ course.location }}</td>
+        </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody>
+</table>
+
+    <span style="font-size:14px;color:#aaa">填写申请理由与期望</span>
+    <textarea id="textarea1" class="materialize-textarea" style="color:#000" required></textarea>
+    <input class="btn btn-default" type="submit" value="提交" style="display:block;margin:30px auto;background:#08c"/>
+</form>
+</div>
+{% endblock card_content %}

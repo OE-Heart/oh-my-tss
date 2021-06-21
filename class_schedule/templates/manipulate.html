@@ -1,0 +1,99 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+<div id="class_schedule" class="card-content">
+<table>
+    <thead>
+        <tr><th>授课教师</th><th>课程编号</th><th>课程名称</th><th>课程时段</th><th>课程地点</th></tr>
+    </thead>
+    <tbody>
+        <tr style="border:0">
+            <td>{{ course.teacher }}</td><td>{{ course.no }}</td><td>{{ course.name }}</td><td>{{ course.time }}</td><td>{{ course.location }}</td>
+        </tr>
+    </tbody>
+</table>
+<form action="../submit_manipulate" method="POST" style="margin-top:30px">
+    <table class="tab_03">
+    <tbody>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="skrq" id="skrq" class="form-control">
+            <option value="" disabled selected>设置上课日期</option>
+            <option value="1">星期一</option>
+            <option value="2">星期二</option>
+            <option value="3">星期三</option>
+            <option value="4">星期四</option>
+            <option value="5">星期五</option>
+            <option value="6">星期六</option>
+            <option value="7">星期日</option>
+            </select>
+        </td>
+        <td width="30%">
+            <select name="skjs" id="skjs" class="form-control">
+            <option value="" disabled selected>设置上课节数</option>
+            <option value="12">1,2节</option>
+            <option value="34">3,4节</option>
+            <option value="345">3,4,5节</option>
+            <option value="67">6,7节</option>
+            <option value="678">6,7,8节</option>
+            <option value="78">7,8节</option>
+            <option value="910">9,10节</option>
+            <option value="111213">11,12,13节</option>
+            </select>
+        </td>
+        </tr>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="skxq" id="skxq" class="form-control">
+            <option value="" disabled selected>设置上课校区</option>
+            <option value="zjg">紫金港</option>
+            <option value="yq">玉泉</option>
+            <option value="xx">西溪</option>
+            <option value="hjc">华家池</option>
+            <option value="zj">之江</option>
+            <option value="zs">舟山</option>
+            </select>
+        </td>
+        <td width="30%">
+            <select name="skjxl" id="skjxl" class="form-control">
+            <option value="" disabled selected>设置上课教学楼</option>
+            <option value="?">这里后续添加动态选项</option>
+            </select>
+        </td>
+        <td>
+            <input placeholder="设置上课教室" type="text" name="jshm" value="" id="jshm" class="form-control">
+        </td>
+        <tr style="border:0">
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 提交更改 </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        </tr>
+    </tbody>
+    </table>
+</form>
+</div>
+<script language="javascript">
+    $(document).ready(function(){
+    $('select').formSelect();
+    //等待完善
+    $("#skxq").bind("change",function(){
+        var skxq = $(this).val();
+        var url = "findjxlbyxq";
+        $.post(url,{"skxq":skxq},function(rd){
+            $("#skjxl").empty();
+	        $("#skjxl").append("<option value=‘’ disabled selected>设置上课教学楼</option>");
+            var dataObj=eval("("+rd+")");
+            for(var i=0;i<dataObj.length;i++){
+                var jxlid=dataObj[i].jxlid;
+                var jxlmc=dataObj[i].jxlmc;
+                $("#skjxl").append("<option value='"+jxlid+"'>"+jxlmc+"</option>");
+            }
+        });
+    });
+    });
+</script>
+{% endblock card_content %}

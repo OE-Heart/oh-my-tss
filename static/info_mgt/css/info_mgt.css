@@ -36,3 +36,11 @@
   bottom: 0;
   text-align: center;
 }
+
+.done-msg{
+  color: #66CC99;
+}
+
+.err-msg {
+  color: #ff0000;
+}

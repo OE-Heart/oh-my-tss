@@ -2,11 +2,11 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from . import models
-from .models import Major
-
+from .models import Major, Student
 
 def index(req):
     return render(req, 'info_mgt.html', {
@@ -25,6 +25,7 @@ def info_view(req):
         'page_title': '个人信息',
         'request_user': req.user,
     })
+
 
 def info_edit(req):
     ''' TODO: repair it '''
@@ -56,49 +57,93 @@ def info_edit(req):
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
-            'form':SelfInfoForm(instance=obj),
+            'form': SelfInfoForm(instance=obj),
             'edit': False
         })
     else:
         return HttpRequest(404)
 
 
-def account_list(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
+def account_list(req, page=0):
+
+    accounts = []
+
+    if req.user.has_perm('info_mgt.view_student') and req.user.has_perm('info_mgt.view_teacher'):
+
+        account_sum = len(User.objects.all())
+
+        for i in range(account_sum):
+            groups = User.objects.all()[i].groups.all()
+            account = User.objects.all()[i]
+            if(len(groups) > 0):
+                if groups.all()[0].name == 'student':
+                    try:
+                        accounts.append({
+                            'name': account.first_name + ' ' + account.last_name,
+                            'major': account.student.major.name,
+                        })
+                    except:
+                        pass
+                elif groups.all()[0].name == 'teacher':
+                    try:
+                        accounts.append({
+                            'name': account.first_name + ' ' + account.last_name,
+                            'major': account.teacher.department.name,
+                        })
+                    except:
+                        pass
+        # accounts.append(User.objects.all()[4].student)
+
+        if req.method == 'POST' and req.POST['name']:
+            accounts = [x for x in accounts if x['name'] == req.POST['name']]
+
+        page_sum = len(accounts) // 10 + 1
+
+        if page >= page_sum:
+            return HttpResponse(404)
+
+    else:
+        return HttpResponse(403)
+
+    # if req.user.has_perm('info_mgt.view_course'):
+
+    #     if req.method == 'POST' and req.POST['name']:
+    #         courses = models.Course.objects.filter(name=req.POST['name'])
+    #     else:
+    #         courses = models.Course.objects.all()[page * 10: page * 10 + 10]
+
+    #     page_sum = len(courses) // 10 + 1
+
+    #     if page >= page_sum:
+    #         return HttpResponse(404)
+
+    return render(req, 'accountlist.html', {
         'web_title': '信息管理',
         'page_title': '账户信息管理',
-        'cur_submodule': 'account'
+        'cur_submodule': 'account',
+        'accounts': accounts,
+        'cur_page': page + 1,
+        'prev_page': page - 1,
+        'prev_disabled': page == 0,
+        'next_page': page + 1,
+        'next_disabled': page + 1 >= page_sum,
+        'page_sum': page_sum,
+        'last_search': req.POST['name'] if req.method == 'POST' else None,
     })
 
 
-def account_display(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '信息管理',
-        'page_title': '账户信息',
-        'cur_submodule': 'account'
-    })
-
-
-def account_edit(req, option):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '信息管理',
-        'page_title': '修改账户信息' if option == 'edit' else '添加账户',
-        'cur_submodule': 'account'
-    })
-
-
-def course_list(req, page):
+def course_list(req, page=0):
     if req.user.has_perm('info_mgt.view_course'):
 
         if req.method == 'POST' and req.POST['name']:
             courses = models.Course.objects.filter(name=req.POST['name'])
         else:
-            courses = models.Course.objects.all()[page: page + 10]
+            courses = models.Course.objects.all()[page * 10: page * 10 + 10]
 
         page_sum = len(courses) // 10 + 1
+
+        if page >= page_sum:
+            return HttpResponse(404)
 
         return render(req, 'courselist.html', {
             'web_title': '课程管理',
@@ -117,31 +162,77 @@ def course_list(req, page):
         return HttpResponse(403)
 
 
-def course_display(req):
-    ''' TODO: render by another template '''
-    return render(req, 'info_mgt.html', {
-        'web_title': '课程管理',
-        'page_title': '课程详情',
-        'cur_submodule': 'course'
+def course_display(req, name):
+    course = models.Course.objects.filter(name=name)
+    return render(req, 'course_detail.html', {
+    'web_title': '课程管理',
+    'page_title': '课程详情',
+    'cur_submodule': 'course',
+    'request_course': course
     })
 
 
-def course_edit(req, option):
+def course_edit(req, option, in_course_name):
     ''' TODO: render by another template '''
-
-    if option == 'edit':
-        page_title = '修改课程详情'
-    elif option == 'new':
-        page_title = '添加课程'
-    else:
-        # TODO: report a 404 error
-        return HttpRequest(404)
-
-    return render(req, 'info_mgt.html', {
-        'web_title': '课程管理',
-        'page_title': '修改课程详情' if option == 'edit' else '添加课程',
-        'cur_submodule': 'course'
-    })
+    if req.method == 'POST':
+        course_name = req.POST.get('name')
+        course_desc = req.POST.get('description')
+        course_credit = req.POST.get('credit')
+        course_capacity = req.POST.get('capacity')
+        course_duration = req.POST.get('duration')
+        if option == 'edit':
+            query_set = models.Course.objects.filter(name=in_course_name)
+            n_updates = query_set.update(
+                name=course_name,
+                description=course_desc,
+                credit=course_credit,
+                capacity=course_capacity,
+                duration=course_duration
+            )
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '修改课程详情',
+                'cur_submodule': 'course',
+                'form': CourseEditForm(instance=models.Course.objects.filter(name=course_name)[0]),
+                'edit_result': True if n_updates != 0 else False
+            })
+        elif option == 'new':
+            ins = models.Course.objects.create(
+                name=course_name,
+                description=course_desc,
+                credit=course_credit,
+                capacity=course_capacity,
+                duration=course_duration
+            )
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '添加课程',
+                'cur_submodule': 'course',
+                'form': CourseEditForm,
+                'new_result': True if ins else False
+            })
+        else:
+            # TODO: report a 404 error
+            return HttpRequest(404)
+    elif req.method == 'GET':
+        if option == 'edit':
+            page_title = '修改课程详情'
+            course_data = models.Course.objects.get(name=in_course_name)
+            form_obj = CourseEditForm(instance=course_data)
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '修改课程详情',
+                'cur_submodule': 'course',
+                'form': form_obj
+            })
+        elif option == 'new':
+            page_title = '添加课程'
+            return render(req, 'course_edit.html', {
+                'web_title': '课程管理',
+                'page_title': '添加课程',
+                'cur_submodule': 'course',
+                'form': CourseEditForm
+            })
 
 
 def login_view(req):

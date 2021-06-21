@@ -1,0 +1,91 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock  %}
+
+{% block card_content %}
+<div class="card-content">
+  <form method='POST'>
+    <a class="w-100 btn btn-lg btn-primary" type="submit" href="{% url 'do_auto_schedule' %}">自动排课</a>
+      {% if class_not_schedule %}
+        <font style="color:red;text-align:center">&nbsp;&nbsp;&nbsp;部分课程暂未排入课表</font>
+      {% endif %}
+      {% if class_schedule %}
+        <font style="color:cornflowerblue;text-align:center">&nbsp;&nbsp;&nbsp;所有课程均已顺利安排</font>
+      {% endif %}
+  </form>
+  <table>
+    <thead>
+      <tr>
+        <th>课程名称</th>
+        <th>上课时间</th>
+{#        <th>开始时间</th>#}
+{#        <th>持续时间</th>#}
+        <th>教室</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- 这里的想法是把所有的课程全部列出来，优先列出没有排好的课程。然后点击排课按钮，如果顺利的话，就显示所有排课结果,提示所有课程以安排好；
+      如果有课程没有排上，那么就先列出没有排上的课，再列出排上的课（如果没排上，那么class_date之后的属性全部为空），同时显示部分课程没有排进去
+      的提示 -->
+      {% if schedule_list %}
+      {% for i in schedule_list %}
+      <tr>
+        <td>{{ i.course.name }}</td>
+        <td>
+            {% for j in i.classhasroom_set %}
+                <div>
+                    {% if j.day %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </td>
+        <td>
+            {% for j in i.classhasroom_set %}
+                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+            {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p align="center">暂无课程</p>
+  {% endif %}
+
+  <div class="pager">
+    {% if prev_disabled %}
+      <span style="color: silver">上一页</span>
+    {% else %}
+      <a href="{{ prev_page }}">上一页</a>
+    {% endif %}
+    {{ cur_page }} / {{ page_sum }} 页
+    {% if next_disabled %}
+      <span style="color: silver">下一页</span>
+    {% else %}
+      <a href="{{ next_page }}">下一页</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock card_content %}

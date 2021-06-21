@@ -1,0 +1,30 @@
+{% extends 'skeleton.html' %}
+
+{% block card_content %}
+<div id="info_mgt" class="card-content">
+    <table>
+        <thead>
+            <tr>
+                <th>课程名称</th>
+                <th>{{ request_course.name }}</th>
+            </tr>
+            <tr>
+                <th>课程描述</th>
+                <th>{{ request_course.description }}</th>
+            </tr>
+            <tr>
+                <th>学分</th>
+                <th>{{ request_course.credit }}</th>
+            </tr>
+            <tr>
+                <th>容量</th>
+                <th>{{ request_course.capacity }}</th>
+            </tr>
+            <tr>
+                <th>学期</th>
+                <th>{{ request_course.duration }}</th>
+            </tr>
+        </thead>
+    </table>
+</div>
+{% endblock card_content %}
