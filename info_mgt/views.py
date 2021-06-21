@@ -5,7 +5,10 @@ from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+
+from oh_my_tss.settings import BASE_DIR
 from . import models
+import os
 from .models import Major, Student
 
 
@@ -47,7 +50,7 @@ def info_add(req, username='#'):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
-
+        print(len(new_avatar))
         if username != '#':
             this_user = models.User.objects.get(username=new_username)
             if this_user:
@@ -72,8 +75,16 @@ def info_add(req, username='#'):
         query = models.Avatar.objects.filter(user=this_user)
         if len(query) == 0 and new_avatar is not None:
             result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         elif new_avatar is not None:
             result_2 = query.update(avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         else:
             result_2 = True
         return render(req, 'info_edit.html', {
@@ -114,13 +125,23 @@ def info_edit(req):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
+        print(len(new_avatar))
+        print("上传头像")
         query = models.Avatar.objects.filter(user=req.user)
-        if len(query) == 0 :
+        if len(query) == 0:
             result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
-            query = models.Avatar.objects.filter(user=req.user)
-            print(query)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
+            # query = models.Avatar.objects.filter(user=req.user)
+            # print(query)
         elif len(new_avatar) != 0:
             result2 = query.update(avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         query_set = models.User.objects.filter(id=req.user.id)
         print(query_set)
         result = query_set.update(
