@@ -20,16 +20,8 @@
         {% csrf_token %}
         {{ form }}
         <input type="file" name="avatar"/>
-    <input type="submit" value="修改信息" class="edit-button"/>
+    <input type="submit" value="添加用户" class="edit-button"/>
     </form>
-{#    <form action="{{ app_path }}" method="post" name = "sub">#}
-{#        {% csrf_token %}#}
-{#        {{ avatarform }}#}
-{#    <input type="submit" value="submit" class="edit-button"/>#}
-{#    </form>#}
-{#    <div class="avatar-area">#}
-{#        <img src="{{ avatarpath }}" class="img-avatar"/>#}
-{#    </div>#}
     {% if edit_result and edit %}
         <script>
         $(document).ready(function(){

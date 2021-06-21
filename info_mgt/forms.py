@@ -28,11 +28,11 @@ class SelfInfoForm(forms.ModelForm):
         fields = ('username', 'last_name', 'first_name', 'email')
         help_texts = {'username':""}
 
-
-class AvatarForm(SelfInfoForm):
-    class Meta:
-        model = Avatar
-        fields = ['avatar']
+#
+# class AvatarForm(SelfInfoForm):
+#     class Meta:
+#         model = Avatar
+#         fields = ['avatar']
 
 
 

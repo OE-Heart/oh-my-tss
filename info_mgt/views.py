@@ -2,7 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, AvatarForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from . import models
@@ -40,6 +40,42 @@ def info_view_with_username(req, username):
         'request_user': user,
     })
 
+def info_add(req):
+    if req.method == 'POST':
+        new_username = req.POST['username']
+        new_last_name = req.POST['last_name']
+        new_first_name = req.POST['first_name']
+        new_email = req.POST['email']
+        new_avatar = req.FILES.get('avatar')
+
+        query_set = models.User.objects.filter(id=req.user.id)
+        result_1 = models.User.objects.create(
+            username=new_username,
+            last_name=new_last_name,
+            first_name=new_first_name,
+            email=new_email
+        )
+        result_2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+        print("添加成功")
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改',
+            'page_title': '个人信息修改',
+            'request_user': req.user,
+            'form': SelfInfoForm(instance=req.user),
+            'edit': True,
+            'edit_result': True if result_1 != 0 and result_2 != 0 else False
+        })
+    elif req.method == 'GET':
+        obj = req.user
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改',
+            'page_title': '个人信息修改',
+            'request_user': req.user,
+            'form': SelfInfoForm(),
+            'edit': False
+        })
+    else:
+        return HttpRequest(404)
 
 def info_edit(req):
     ''' TODO: repair it '''
@@ -49,6 +85,7 @@ def info_edit(req):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
+        print(new_avatar)
         query = models.Avatar.objects.filter(user=req.user)
         if len(query) == 0 :
             result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
@@ -69,11 +106,9 @@ def info_edit(req):
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
-            'avatar': query[0].avatar.path,
             'form': SelfInfoForm(instance=req.user),
-            'avatarform': AvatarForm(),
             'edit': True,
-            'edit_result': True if result != 0 else False
+            'edit_result': True if result != 0 and result2 != 0 else False
         })
     elif req.method == 'GET':
         obj = req.user
@@ -83,9 +118,7 @@ def info_edit(req):
             'web_title': '个人信息修改',
             'page_title': '个人信息修改',
             'request_user': req.user,
-            # 'avatar': avatarobj[0].avatar.path,
             'form': SelfInfoForm(instance=obj),
-            'avatarform': AvatarForm(),
             'edit': False
         })
     else:

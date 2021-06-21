@@ -18,4 +18,5 @@ urlpatterns = [
     path('info/view', views.info_view, name='info_view'),
     path('info/view/<str:username>', views.info_view_with_username, name='info_view'),
     path('info/edit', views.info_edit, name="info_edit"),
+    path('info/add', views.info_add, name="info_add")
 ]
