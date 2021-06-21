@@ -8,6 +8,7 @@ from django.contrib.auth.models import User
 from . import models
 from .models import Major, Student
 
+
 def index(req):
     return render(req, 'info_mgt.html', {
         'web_title': '信息管理',
@@ -24,6 +25,19 @@ def info_view(req):
         'web_title': '个人信息',
         'page_title': '个人信息',
         'request_user': req.user,
+    })
+
+
+def info_view_with_username(req, username):
+    try:
+        user = models.User.objects.get(username=username)
+    except:
+        return HttpResponse(404)
+
+    return render(req, 'info_view.html', {
+        'web_title': '个人信息',
+        'page_title': '个人信息',
+        'request_user': user,
     })
 
 
@@ -95,6 +109,7 @@ def account_list(req, page=0):
                         accounts.append({
                             'name': account.first_name + ' ' + account.last_name,
                             'major': account.student.major.name,
+                            'username': account.username,
                         })
                     except:
                         pass
@@ -103,6 +118,7 @@ def account_list(req, page=0):
                         accounts.append({
                             'name': account.first_name + ' ' + account.last_name,
                             'major': account.teacher.department.name,
+                            'username': account.username,
                         })
                     except:
                         pass
@@ -176,13 +192,13 @@ def course_list(req, page=0):
         return HttpResponse(403)
 
 
-def course_display(req, name):
-    course = models.Course.objects.filter(name=name)
+def course_detail(req, name):
+    course = models.Course.objects.get(name=name)
     return render(req, 'course_detail.html', {
-    'web_title': '课程管理',
-    'page_title': '课程详情',
-    'cur_submodule': 'course',
-    'request_course': course
+        'web_title': '课程管理',
+        'page_title': '课程详情',
+        'cur_submodule': 'course',
+        'request_course': course
     })
 
 

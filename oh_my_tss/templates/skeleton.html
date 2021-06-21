@@ -54,11 +54,11 @@
                 {% for submodule in module.submodules %}
                   {% if cur_submodule == submodule.name %}
                     <li class="sub-nav sub-active">
-                      <a href="{{ submodule.link }}">{{ submodule.text }}</a>
+                      <a href="{{ module.index_url }}{{ submodule.link }}">{{ submodule.text }}</a>
                     </li>
                   {% else %}
                     <li class="sub-nav">
-                      <a href="{{ submodule.link }}">{{ submodule.text }}</a>
+                      <a href="{{ module.index_url }}{{ submodule.link }}">{{ submodule.text }}</a>
                     </li>
                   {% endif %}
                 {% endfor %}
