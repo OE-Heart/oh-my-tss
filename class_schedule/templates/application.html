@@ -11,17 +11,41 @@
 <span style="font-size:30px">当前申请记录</span>
 <table style="margin-top:30px;margin-bottom:30px">
     <thead>
-        <tr><th>课程名</th><th>原时段</th><th>原地点</th><th>处理结果</th></tr>
+        <tr>
+            <th>申请编号</th>
+            <th>课程编号</th>
+            <th>课程名</th>
+            <th>教学班编号</th>
+            <th>提交时间</th>
+            <th>处理时间</th>
+            <th>处理结果</th>
+        </tr>
     </thead>
     <tbody>
         {% for app in applications %}
-        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='app_spec?application_id={{app.id}}'">
-            <td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td><td>{{ app.result }}</td>
+        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='{% url 'view_spec_app' app.id %}'">
+            <td>{{ app.id }}</td>
+            <td>{{ app.Class.course.id }}</td>
+            <td>{{ app.Class.course.name }}</td>
+            <td>{{ app.Class.id }}</td>
+            <td>{{ app.submit_time }}</td>
+            <td>
+                {% if app.reply_time %}
+                    {{ app.reply_time }}
+                {% endif %}
+            </td>
+            <td>
+                {% if app.is_accepted == True %}
+                    同意
+                {% elif app.is_accepted == False %}
+                    不同意
+                {% endif %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-<span style="font-size:30px">{{user.name}}的{{schedule.term}}课表</span>
-<div style="margin-top:30px">此处需要使用查询页面的课表组件</div>
+{#<span style="font-size:30px">{{user.name}}的{{schedule.term}}课表</span>#}
+{#<div style="margin-top:30px">此处需要使用查询页面的课表组件</div>#}
 </div>
 {% endblock card_content %}

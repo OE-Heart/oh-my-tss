@@ -9,22 +9,46 @@
 {% block card_content %}
 
 <div id="class_schedule" class="card-content">
-<form class="input-field" action="manipulate_schedule" method="GET" style="margin-bottom:30px">
+<script>
+    function change_search_type(selection, input_id, select_id){
+        if(selection === 'kcsd'){
+            document.getElementById(input_id).setAttribute('hidden', '');
+            document.getElementById(select_id).removeAttribute('hidden');
+        }
+        else {
+            document.getElementById(input_id).removeAttribute('hidden');
+            document.getElementById(select_id).setAttribute('hidden', '');
+        }
+    }
+</script>
+<form class="input-field" method="GET" style="margin-bottom:30px">
     <table class="tab_03">
     <tbody>
         <tr style="border:0">
         <td width="30%">
-            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control">
+            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control" onchange="change_search_type(this.value, 'input_1', 'day_select_1')">
             <option value="" disabled selected>选择查询类别</option>
             <option value="skjs">授课教师</option>
-            <option value="kcbh">课程代码</option>
             <option value="kcmc">课程名称</option>
-            <option value="kcsd">课程时段</option>
+            <option value="sksj">上课时间</option>
             <option value="kcdd">课程地点</option>
             </select>
         </td>
-        <td>
-            <input type="text" name="cx_cxnr_1" value="" id="cx_cxnr_1" class="form-control">
+        <td id="search1">
+            <div id="input_1">
+                <input type="text" name="cx_cxnr_1" value="" id="cx_cxnr_1" class="form-control">
+            </div>
+            <div id="day_select_1" hidden>
+                <select name="day1" id="day1" class="form-control">
+                    <option value="1">星期一</option>
+                    <option value="2">星期二</option>
+                    <option value="3">星期三</option>
+                    <option value="4">星期四</option>
+                    <option value="5">星期五</option>
+                    <option value="6">星期六</option>
+                    <option value="7">星期日</option>
+                </select>
+            </div>
         </td>
         </tr>
         <tr style="border:0">
@@ -41,17 +65,29 @@
         </tr>
         <tr style="border:0">
         <td>
-            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control">
-            <option value="" disabled selected>选择查询类别</option>
-            <option value="skjs">授课教师</option>
-            <option value="kcbh">课程代码</option>
-            <option value="kcmc">课程名称</option>
-            <option value="kcsd">课程时段</option>
-            <option value="kcdd">课程地点</option>
+            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control" onchange="change_search_type(this.value, 'input_2', 'day_select_2')">
+                <option value="" disabled selected>选择查询类别</option>
+                <option value="skjs">授课教师</option>
+                <option value="kcmc">课程名称</option>
+                <option value="sksj">上课时间</option>
+                <option value="kcdd">课程地点</option>
             </select>
         </td>
-        <td>
-            <input type="text" name="cx_cxnr_2" value="" id="cx_cxnr_2" class="form-control">
+        <td id="search2">
+            <div id="input_2">
+                <input type="text" name="cx_cxnr_2" value="" id="cx_cxnr_2" class="form-control">
+            </div>
+            <div id="day_select_2" hidden>
+                <select name="day2" id="day2" class="form-control">
+                    <option value="1">星期一</option>
+                    <option value="2">星期二</option>
+                    <option value="3">星期三</option>
+                    <option value="4">星期四</option>
+                    <option value="5">星期五</option>
+                    <option value="6">星期六</option>
+                    <option value="7">星期日</option>
+                </select>
+            </div>
         </td>
         </tr>
         <tr>
@@ -68,8 +104,41 @@
     </thead>
     <tbody>
         {% for course in courses %}
-        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='manipulate?course_id={{course.id}}'">
-            <td>{{ course.teacher }}</td><td>{{ course.no }}</td><td>{{ course.name }}</td><td>{{ course.time }}</td><td>{{ course.location }}</td>
+        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='{% url 'manipulate_certain_class' course.id %}'">
+            <td>{{ course.teacher }}</td>
+            <td>{{ course.id }}</td>
+            <td>{{ course.name }}</td>
+            <td>
+                {% for j in course.classhasroom_set %}
+                <div>
+                    {% if j.day %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+                {% for j in course.classhasroom_set %}
+                    <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% endfor %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>

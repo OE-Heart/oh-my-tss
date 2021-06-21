@@ -1,3 +1,5 @@
+import datetime
+
 from django.db import OperationalError, transaction
 from django.http.response import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render
@@ -199,7 +201,7 @@ def delete_room(request, room_id):
             return HttpResponseRedirect(reverse('modify_room') + success)
 
 
-def auto_schedule(request):  # 打开自动排课页面
+def auto_schedule(request, page=0):  # 打开自动排课页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
         return HttpResponseRedirect(reverse('login'))
@@ -230,6 +232,15 @@ def auto_schedule(request):  # 打开自动排课页面
         else:
             schedule_list = schedule_list.union(scheduled_list)
             return_dict['schedule_list'] = schedule_list
+            page_sum = len(schedule_list) // 10 + 1
+            if page >= page_sum:
+                return HttpResponse(404)
+            return_dict['cur_page'] = page + 1
+            return_dict['prev_page'] = (page - 1)
+            return_dict['prev_disabled'] = (page == 0)
+            return_dict['next_page'] = page + 1
+            return_dict['next_disabled'] = (page + 1 >= page_sum)
+            return_dict['page_sum'] = page_sum
         return render(request, 'auto_schedule.html', return_dict)
 
 
@@ -358,17 +369,80 @@ def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针�
 
 
 def application(request):  # 打开提出调课申请页面
+    # TODO: 补充身份验证为教师组
     if request.method == 'GET':
-        return_dic = {'web_title': '提出调课申请',
-                      'page_title': '提出调课申请',
-                      'request_user': request.user,
-                      'cur_submodule': 'application'}
-        return render(request, 'app_init.html', return_dic)
+        return_dict = {'web_title': '提出调课申请',
+                       'page_title': '提出调课申请',
+                       'request_user': request.user,
+                       'cur_submodule': 'application'}
+        if request.GET.get('succeeded'):
+            return_dict['success'] = True
+        if request.GET.get('failed'):
+            return_dict['failure'] = True
+        try:
+            class_list = Class.objects.filter(teacher_id=request.user.id)
+        except OperationalError:
+            pass
+        else:
+            for i in class_list:
+                i.not_scheduled = False
+                for c in i.classhasroom_set.all():
+                    if not c.classroom:
+                        i.not_scheduled = True
+                        break
+            return_dict['my_class_list'] = class_list
+        return render(request, 'app_init.html', return_dict)
 
 
 def submit_application(request):  # 提交调课申请
+    # TODO: 同上
     if request.method == 'POST':
-        return HttpResponseRedirect(reverse('application'))
+        class_id = request.POST.get('class_selection')
+        content = request.POST.get('content')
+        new_application = Application(teacher_id=request.user.id, Class_id=class_id, content=content, submit_time=datetime.datetime.now())
+        try:
+            new_application.save()
+        except OperationalError:
+            return HttpResponseRedirect(reverse('application') + '?failed=1')
+        else:
+            return HttpResponseRedirect(reverse('application') + '?succeeded=1')
+
+
+def view_application(request):
+    if request.method == 'GET':
+        return_dict = {'web_title': '查看调课申请',
+                       'page_title': '查看调课申请',
+                       'request_user': request.user,
+                       'cur_submodule': 'application'}
+        try:
+            app_list = Application.objects.filter(teacher_id=request.user.id).order_by('submit_time')
+        except OperationalError:
+            pass
+        else:
+            return_dict['applications'] = app_list
+        return render(request, 'application.html', return_dict)
+
+
+def view_spec_application(request, app_id):
+    if request.method == 'GET':
+        return_dict = {'web_title': '查看调课申请',
+                       'page_title': '查看调课申请',
+                       'request_user': request.user,
+                       'cur_submodule': 'application'}
+        try:
+            app = Application.objects.get(pk=app_id)
+        except Application.DoesNotExist:
+            return_dict['no_such_app'] = True
+        except OperationalError:
+            pass
+        else:
+            app.Class.unscheduled = False
+            for c in app.Class.classhasroom_set.all():
+                if not c.classroom:
+                    app.Class.unscheduled = True
+                    break
+            return_dict['app'] = app
+        return render(request, 'app_spec.html', return_dict)
 
 
 def handle_application(request, page=0):  # 打开处理调课申请页面
@@ -380,12 +454,23 @@ def handle_application(request, page=0):  # 打开处理调课申请页面
                        'page_title': '处理调课申请',
                        'request_user': request.user,
                        'cur_submodule': 'handle_application'}
+        if request.GET.get('failed'):
+            return_dict['failure'] = True
+        if request.GET.get('succeeded'):
+            return_dict['success'] = True
         try:
-            application_list = Application.objects.filter(reply__isnull=True)
+            application_list = Application.objects.filter(reply_time__isnull=True)
         except OperationalError:
             pass
         else:
-            return_dict['applications_list'] = application_list
+            for i in application_list:
+                i.applicant = i.teacher.first_name + ' ' + i.teacher.last_name
+                for k in i.Class.classhasroom_set.all():
+                    if not k.classroom:
+                        i.Class.unscheduled = True
+                        break
+                    i.Class.unscheduled = False
+            return_dict['applications_unhandled_list'] = application_list
             page_sum = len(application_list) // 10 + 1
             if page >= page_sum:
                 return HttpResponse(404)
@@ -399,19 +484,56 @@ def handle_application(request, page=0):  # 打开处理调课申请页面
 
 
 def handle_certain_application(request, application_id):  # 打开一条特定的申请的处理页面
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return HttpResponseRedirect(reverse('login'))
     if request.method == 'GET':
-        return_dic = {'web_title': '处理调课申请',
-                      'page_title': '处理调课申请',
-                      'request_user': request.user,
-                      'cur_submodule': 'handle_application'}
-        return render(request, 'process.html', return_dic)
+        return_dict = {'web_title': '处理调课申请',
+                       'page_title': '处理调课申请',
+                       'request_user': request.user,
+                       'cur_submodule': 'handle_application'}
+        try:
+            application_to_handle = Application.objects.get(pk=application_id)
+        except:
+            pass
+        else:
+            application_to_handle.applicant = application_to_handle.teacher.first_name + ' ' + application_to_handle.teacher.last_name
+            for k in application_to_handle.Class.classhasroom_set.all():
+                if not k.classroom:
+                    application_to_handle.Class.unscheduled = True
+                    break
+                application_to_handle.Class.unscheduled = False
+            return_dict['app'] = application_to_handle
+        return render(request, 'process.html', return_dict)
 
 
 def submit_handle(request, application_id):  # 提交申请处理结果
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return HttpResponseRedirect(reverse('login'))
     if not application_id:
         return Http404
     if request.method == 'POST':
-        pass
+        reply = request.POST.get('reply')
+        accepted_or_not = request.POST.get('choice')
+        try:
+            application_to_handle = Application.objects.get(pk=application_id)
+        except:
+            return HttpResponseRedirect(reverse('handle_application'))
+        else:
+            application_to_handle.reply = reply
+            if accepted_or_not == 'accepted':
+                application_to_handle.is_accepted = True
+            else:
+                application_to_handle.is_accepted = False
+            application_to_handle.admin = request.user
+            application_to_handle.reply_time = datetime.datetime.now()
+            try:
+                application_to_handle.save()
+            except OperationalError:
+                return HttpResponseRedirect(reverse('handle_application') + '?failed=1')
+            else:
+                return HttpResponseRedirect(reverse('handle_application') + '?succeeded=1')
 
 
 def teacher_class(request):  # 按教师查询课表页面

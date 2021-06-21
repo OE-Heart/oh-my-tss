@@ -10,37 +10,81 @@
 <div id="class_schedule" class="card-content">
 <table>
     <thead>
-        <tr><th>申请人</th><th>课程编号</th><th>课程名</th><th>课程时段</th><th>课程地点</th></tr>
+        <tr>
+            <th>申请人</th>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+            <th>申请时间</th>
+        </tr>
     </thead>
     <tbody>
         <tr style="border:0">
-            <td>{{ app.applicant }}</td><td>{{ app.course_no }}</td><td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td>
+            <td>{{ app.applicant }}</td>
+            <td>{{ app.Class.course.id }}</td>
+            <td>{{ app.Class.course.name }}</td>
+            <td>{{ app.Class_id }}</td>
+            <td>
+                {% for j in app.Class.classhasroom_set.all %}
+                <div>
+                    {% if app.Class.not_scheduled == False %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+            {% for j in app.Class.classhasroom_set.all %}
+                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+            {% endfor %}
+            </td>
+        <td>{{ app.submit_time }}</td>
         </tr>
     </tbody>
 </table>
 <div style="margin-top:40px">
     <span style="font-size:14px;color:#aaa">申请理由与期望</span>
-    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.spec}}</textarea>
+    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.content}}</textarea>
 </div>
-<form action="../submit_handle" method="POST">
+<form action="{% url 'submit_handle' app.id %}" method="POST">
+    {% csrf_token %}
     <div style="margin-top:30px;margin-bottom:30px;display:flex;align-items:center;justify-content:space-between">
         <div style="display:inline-block;margin-right:30px;">
         <p>
           <label>
-            <input class="with-gap" name="choice" type="radio"/>
+            <input class="with-gap" name="choice" type="radio" value="accepted" checked/>
             <span>同意</span>
           </label>
         </p>
         <p>
           <label>
-            <input class="with-gap" name="choice" type="radio"/>
+            <input class="with-gap" name="choice" type="radio" value="denied"/>
             <span>拒绝</span>
           </label>
         </p>
         </div>
         <div style="width:75%">
         <div class="input-field col s12">
-          <textarea id="textarea2" class="materialize-textarea" required></textarea>
+          <textarea id="textarea2" class="materialize-textarea" name="reply" required></textarea>
           <label for="textarea2">处理意见</label>
         </div>
         </div>

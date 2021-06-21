@@ -38,10 +38,10 @@ class ClassHasRoom(models.Model):
 
 class Application(models.Model):
     submit_time = models.DateTimeField(default=datetime.datetime.now)
-    teacher = models.ForeignKey(Teacher, on_delete=models.CASCADE)
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='T')
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
     content = models.TextField(max_length=100)
     reply_time = models.DateTimeField(null=True, blank=True)
-    admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    admin = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='A')
     is_accepted = models.BooleanField(null=True, blank=True)
     reply = models.TextField(max_length=100, null=True, blank=True)

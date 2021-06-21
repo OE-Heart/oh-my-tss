@@ -20,10 +20,10 @@
   <table>
     <thead>
       <tr>
+        <th>课程编号</th>
         <th>课程名称</th>
+        <th>教学班编号</th>
         <th>上课时间</th>
-{#        <th>开始时间</th>#}
-{#        <th>持续时间</th>#}
         <th>教室</th>
       </tr>
     </thead>
@@ -34,11 +34,13 @@
       {% if schedule_list %}
       {% for i in schedule_list %}
       <tr>
+        <td>{{ i.course.id }}</td>
         <td>{{ i.course.name }}</td>
+        <td>{{ i.id }}</td>
         <td>
-            {% for j in i.classhasroom_set %}
+            {% for j in i.classhasroom_set.all %}
                 <div>
-                    {% if j.day %}
+                    {% if i.not_scheduled == False %}
                         {% if j.day == 1 %}
                             周一
                         {% elif j.day == 2 %}
@@ -62,7 +64,7 @@
             {% endfor %}
         </td>
         <td>
-            {% for j in i.classhasroom_set %}
+            {% for j in i.classhasroom_set.all %}
                 <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
             {% endfor %}
         </td>

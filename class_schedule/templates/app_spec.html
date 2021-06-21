@@ -7,27 +7,79 @@
 {% endblock extra_head %}
 
 {% block card_content %}
+     <script>
+        {% if no_such_app %}
+        alert('申请不存在')
+        {% endif %}
+    </script>
 <div id="class_schedule" class="card-content">
 <table style="margin-top:30px;margin-bottom:30px">
     <thead>
-        <tr><th>课程名</th><th>原时段</th><th>原地点</th><th>处理结果</th></tr>
+        <tr>
+            <th>申请编号</th>
+            <th>课程编号</th>
+            <th>课程名</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+            <th>处理意见</th>
+        </tr>
     </thead>
     <tbody>
         <tr style="border:0">
-            <td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td><td>{{ app.result }}</td>
+            <td>{{ app.id }}</td>
+            <td>{{ app.Class.course_id }}</td>
+            <td>{{ app.Class.course.name }}</td>
+            <td>{{ app.Class_id }}</td>
+            <td>
+                {% for j in app.Class.classhasroom_set.all %}
+                <div>
+                    {% if app.Class.not_scheduled == False %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+                {% for j in app.Class.classhasroom_set.all %}
+                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% endfor %}
+            </td>
+            <td>
+                {% if app.is_accepted == True %}
+                    同意
+                {% elif app.is_accepted == False %}
+                    不同意
+                {% endif %}
+            </td>
         </tr>
     </tbody>
 </table>
 <div style="margin-top:40px;border:0">
     <span style="font-size:14px;color:#aaa">申请理由与期望</span>
-    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.spec}}</textarea>
+    <textarea id="textarea1" class="materialize-textarea" style="color:#000" disabled>{{app.content}}</textarea>
 </div>
 <div style="margin-top:40px">
     <span style="font-size:14px;color:#aaa">处理意见</span>
-    <textarea id="textarea2" class="materialize-textarea" style="color:#000" disabled>{{app.suggestion}}</textarea>
+    <textarea id="textarea2" class="materialize-textarea" style="color:#000" disabled>{{app.reply}}</textarea>
 </div>
-<form action="application" method="GET" style="margin-top:30px">
-    <input class="btn btn-default" type="submit" value="返回" style="display:block;margin:0 auto;background:#08c"/>
-</form>
+    <a class="btn btn-default" style="display:block;margin:0 auto;background:#08c" href="{% url 'view_my_application' %}">返回</a>
 </div>
 {% endblock card_content %}
