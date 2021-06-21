@@ -16,7 +16,7 @@
 
 {% block card_content %}
     <div class="edit-area">
-    <form action="{{ app_path }}" method="post" id="edit-form">
+    <form action="{{ app_path }}" method="post" id="edit-form" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
         <input type="file" name="avatar"/>

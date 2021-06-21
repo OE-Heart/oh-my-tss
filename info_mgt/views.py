@@ -40,6 +40,7 @@ def info_view_with_username(req, username):
         'request_user': user,
     })
 
+
 def info_add(req, username='#'):
     if req.method == 'POST':
         new_username = req.POST['username']
@@ -50,12 +51,13 @@ def info_add(req, username='#'):
 
         if username != '#':
             this_user = models.User.objects.get(username=new_username)
-            if len(this_user) != 0:
+            if this_user:
                 this_user.username = new_username
                 this_user.last_name = new_last_name
                 this_user.first_name = new_first_name
                 this_user.email = new_email
                 this_user.save()
+                result_0 = True
             else:
                 result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                       first_name=new_first_name, email=new_email)
@@ -68,29 +70,29 @@ def info_add(req, username='#'):
         #     first_name=new_first_name,
         #     email=new_email
         # )
-        # query = models.Avatar.objects.filter(user=this_user)
-        # if len(query) == 0:
-        #     result = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
-        # else:
-        #     result_2 = query.update(user=this_user, avatar=new_avatar)
-        #  if result != 0 and result_2 != 0 else False
-        print("修改成功")
+        query = models.Avatar.objects.filter(user=this_user)
+        if len(query) == 0 and new_avatar is not None:
+            result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+        elif new_avatar is not None:
+            result_2 = query.update(avatar=new_avatar)
+        else:
+            result_2 = True
         return render(req, 'info_edit.html', {
             'web_title': '用户信息修改',
             'page_title': '用户信息修改',
             'request_user': req.user,
-            'form': SelfInfoForm(),
+            'form': SelfInfoForm(instance=this_user),
             'edit': True,
-            'edit_result': True
+            'edit_result': True if result_0 != 0 and result_2 != 0 else False
         })
     elif req.method == 'GET':
         if username != '#':
-            obj = req.user
+            obj = models.User.objects.get(username=username)
             return render(req, 'info_edit.html', {
                 'web_title': '用户信息修改',
                 'page_title': '用户信息修改',
                 'request_user': req.user,
-                'form': SelfInfoForm(instance=req.user),
+                'form': SelfInfoForm(instance=obj),
                 'edit': False
             })
         else:
@@ -105,6 +107,7 @@ def info_add(req, username='#'):
     else:
         return HttpRequest(404)
 
+
 def info_edit(req):
     ''' TODO: repair it '''
     if req.method == 'POST':
@@ -113,13 +116,13 @@ def info_edit(req):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
-        print(new_avatar)
         query = models.Avatar.objects.filter(user=req.user)
-        if len(query) == 0 :
-            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+        if len(query) == 0:
+            result2 = models.Avatar.objects.create(
+                user=req.user, avatar=new_avatar)
             query = models.Avatar.objects.filter(user=req.user)
             print(query)
-        elif new_avatar:
+        elif len(new_avatar) != 0:
             result2 = query.update(avatar=new_avatar)
         query_set = models.User.objects.filter(id=req.user.id)
         print(query_set)
@@ -164,37 +167,38 @@ def account_list(req, page=0):
         for i in range(account_sum):
             groups = User.objects.all()[i].groups.all()
             account = User.objects.all()[i]
-            if(len(groups) > 0):
-                if groups.all()[0].name == 'student':
-                    try:
-                        accounts.append({
-                            'name': account.first_name + ' ' + account.last_name,
-                            'major': account.student.major.name,
-                            'username': account.username,
-                        })
-                    except:
-                        pass
-                elif groups.all()[0].name == 'teacher':
-                    try:
-                        accounts.append({
-                            'name': account.first_name + ' ' + account.last_name,
-                            'major': account.teacher.department.name,
-                            'username': account.username,
-                        })
-                    except:
-                        pass
+
+            name = account.first_name + ' ' + account.last_name
+            major = ''
+            username = account.username
+
+            try:
+                major = account.student.major.name
+            except:
+                try:
+                    major = account.teacher.department.name
+                except:
+                    major = ''
+
+            accounts.append({
+                'name': name,
+                'major': major,
+                'username': username
+            })
         # accounts.append(User.objects.all()[4].student)
 
         if req.method == 'POST' and req.POST['name']:
             accounts = [x for x in accounts if x['name'] == req.POST['name']]
 
-        page_sum = len(accounts) // 10 + 1
+        page_sum = (len(accounts) - 1) // 10 + 1
 
         if page >= page_sum:
             return HttpResponse(404)
 
     else:
         return HttpResponse(403)
+
+    disp_accounts = accounts[page * 10:(page + 1) * 10]
 
     # if req.user.has_perm('info_mgt.view_course'):
 
@@ -212,7 +216,7 @@ def account_list(req, page=0):
         'web_title': '信息管理',
         'page_title': '账户信息管理',
         'cur_submodule': 'account',
-        'accounts': accounts,
+        'accounts': disp_accounts,
         'cur_page': page + 1,
         'prev_page': page - 1,
         'prev_disabled': page == 0,
@@ -231,7 +235,7 @@ def course_list(req, page=0):
         else:
             courses = models.Course.objects.all()[page * 10: page * 10 + 10]
 
-        page_sum = len(courses) // 10 + 1
+        page_sum = (len(courses) - 1) // 10 + 1
 
         if page >= page_sum:
             return HttpResponse(404)
@@ -329,12 +333,14 @@ def course_edit(req, option, in_course_name):
             models.Course.objects.get(name=in_course_name).delete()
             return HttpResponseRedirect('/info_mgt/course')
 
+
 def course_delete(req, name):
     if req.method == 'GET':
         models.Course.objects.get(name=name).delete()
         return HttpResponseRedirect('/info_mgt/course')
     else:
         return HttpResponse(403)
+
 
 def login_view(req):
     if req.method == 'GET':
@@ -369,9 +375,10 @@ def logout_view(request):
 def account_delete(req, username):
     if req.method != 'GET':
         return HttpResponse(403)
-    
+
     User.objects.filter(username=username).delete()
     return HttpResponseRedirect('/info_mgt/account')
+
 
 '''
 {% if blog.article %}  <!-- permission to visit articles in the blog -->

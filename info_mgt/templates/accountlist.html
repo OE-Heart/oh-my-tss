@@ -13,14 +13,14 @@
     {% if last_search %}
       <input class="search-input" type="text" name="name" value={{ last_search }} />
     {% else %}
-      <input class="search-input" type="text" name="name" placeholder="输入课程名.." />
+      <input class="search-input" type="text" name="name" placeholder="输入用户名.." />
     {% endif %}
     <input class="search-submit" type="submit" name="提交" />
   </form>
   <table>
     <thead>
       <tr>
-        <th>名称</th>
+        <th>姓名</th>
         <th>专业/院系</th>
         <th>操作</th>
       </tr>
@@ -33,7 +33,7 @@
         <td>
           {% comment %} TODO: use real url {% endcomment %}
           <a href="{% url 'info_mgt:info_view' account.username %}">查看</a>
-          <a href="">编辑</a>
+          <a href="{% url 'info_mgt:info_add' account.username %}">编辑</a>
           <a href="{% url 'info_mgt:account_delete' account.username %}">删除</a>
         </td>
       </tr>
@@ -44,16 +44,16 @@
     {% if prev_disabled %}
       <span style="color: silver">上一页</span>
     {% else %}
-      <a href="{{ prev_page }}">上一页</a>
+      <a href="{% url 'info_mgt:account_list' prev_page %}">上一页</a>
     {% endif %}
     {{ cur_page }} / {{ page_sum }} 页
     {% if next_disabled %}
       <span style="color: silver">下一页</span>
     {% else %}
-      <a href="{{ next_page }}">下一页</a>
+      <a href="{% url 'info_mgt:account_list' next_page %}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="{% url 'info_mgt:info_add' %}" title="添加新课程">
+  <a class="add-btn" href="{% url 'info_mgt:info_add' %}" title="添加新账户">
     {% comment %} TODO: use real url {% endcomment %}
   </a>
 </div>
