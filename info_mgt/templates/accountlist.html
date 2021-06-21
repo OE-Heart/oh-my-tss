@@ -53,7 +53,7 @@
       <a href="{{ next_page }}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="" title="添加新课程">
+  <a class="add-btn" href="{% url 'info_mgt:info_add' %}" title="添加新课程">
     {% comment %} TODO: use real url {% endcomment %}
   </a>
 </div>
