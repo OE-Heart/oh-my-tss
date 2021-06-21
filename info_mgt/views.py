@@ -329,12 +329,12 @@ def course_edit(req, option, in_course_name):
             models.Course.objects.get(name=in_course_name).delete()
             return HttpResponseRedirect('/info_mgt/course')
 
-#def course_delete(req, name):
-#    if req.method == 'GET':
-#        models.Course.objects.get(name=name).delete()
-#        return HttpResponseRedirect('/info_mgt/course')
-#    else:
-#        return HttpResponse(403)
+def course_delete(req, name):
+    if req.method == 'GET':
+        models.Course.objects.get(name=name).delete()
+        return HttpResponseRedirect('/info_mgt/course')
+    else:
+        return HttpResponse(403)
 
 def login_view(req):
     if req.method == 'GET':
