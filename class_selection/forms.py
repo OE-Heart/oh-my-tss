@@ -17,5 +17,3 @@ class Course(forms.Form):
     credit = forms.FloatField()
     capacity = forms.IntegerField()
     duration = forms.CharField(max_length=15)
-
-class
