@@ -22,6 +22,7 @@ urlpatterns = [
     path('major_scheme/', views.major_scheme),
     path('stu_class/', views.stu_class),
     path('tea_class/', views.tea_class),
+    path('time_control/', views.time_control),
     path('admin_class/', views.admin_class),
     path('stu_select/', views.stu_select),
 ]

@@ -14,11 +14,14 @@ from info_mgt.models import Campus, Department, Major, Teacher, Course, MajorHas
 # TODO: those following pages' templates are not implemented yet.
 
 def index(request):
-    return render(request, 'major_scheme.html')
+    return render(request, 'index.html', {
+        'web_title': '在线选课',
+        'page_title': '在线选课',
+        'request_user': request.user,
+    })
 
 
 def major_scheme(request):
-
     if request.method == 'GET':
         return_dict = {'web_title': '培养方案',
                        'page_title': '培养方案',
@@ -54,11 +57,21 @@ def stu_select(req):
 
 
 def admin_class(req):
-    return render(req, 'admin_class.html', {
-        'web_title': '管理员界面',
-        'page_title': '管理员界面',
-        'request_user': req.user,
-    })
+    if req.method == 'GET':
+        return render(req, 'admin_class.html', {
+            'web_title': '手动选课',
+            'page_title': '手动选课',
+            'request_user': req.user,
+        })
+
+
+def time_control(req):
+    if req.method == 'GET':
+        return render(req, 'time_control.html', {
+            'web_title': '管理时间',
+            'page_title': '管理时间',
+            'request_user': req.user,
+        })
 
 
 def stu_class(req):
@@ -77,7 +90,7 @@ def tea_class(request):
                        'request_user': request.user,
                        'cur_submodule': 'tea_class', }
         try:
-            course_list =Course.objects.all()
+            course_list = Course.objects.all()
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:

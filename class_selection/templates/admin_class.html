@@ -1,0 +1,60 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+
+<div id="class_selection" class="card-content">
+<form class="input-field" action="manipulate_schedule" method="GET" style="margin-bottom:30px">
+    <table class="tab_03">
+    <tbody>
+        <tr style="border:0">
+            <td width="30%">
+                选择操作：
+            </td>
+        </tr>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control">
+            <option value="" disabled selected>选课/退选</option>
+            <option value="skjs">手动选课</option>
+            <option value="kcbh">手动退课</option>
+
+            <lect>
+        </td>
+
+        </tr>
+
+
+        <tr style="border:0">
+            <td width="30%">
+                <input type="text" name="stu_ID" placeholder="请输入学生学号..">
+            </td>
+            <td width="30%">
+                <input type="text" name="class_ID" placeholder="请输入教学班编号..">
+            </td>
+        </tr>
+
+
+        <tr>
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 确认 <tton> </td>
+        </tr>
+    </tbody>
+    </table>
+</form>
+
+</div>
+<script>
+    $(document).ready(function(){
+    $('select').formSelect();
+    });
+</script>
+{% endblock card_content %}
+
+
+
+
