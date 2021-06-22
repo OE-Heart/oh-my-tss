@@ -1,0 +1,91 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+<div id="class_selection" class="card-content">
+<form class="input-field" action="manipulate_selection" method="GET" style="margin-bottom:30px">
+    <table class="tab_03">
+    <tbody>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="学院" id="学院" class="form-control" required id="department_selection" onchange="adjust_major_choices(this.value)">
+            <option disabled selected>所在学院</option>
+                {% if department_list %}
+                      {% for i in department_list %}
+                          <option value="{{ i.id }}">{{ i.name }}</option>
+                      {% endfor %}
+                {% endif %}
+           <!-- <option>计算机科学与技术学院</option>
+            <option>数学科学学院</option>
+            <option>教育学院</option>-->
+
+            <lect>
+        </td>
+
+        <script>
+            function adjust_major_choices(department_id) {
+                let options = '';
+                {% if major_list %}
+                    {% for j in major_list %}
+                        if(department_id == {{ j.id }})
+                            options += '<option value="{{ j.id }}">{{ j.name }}</option>';
+                    {% endfor %}
+                {% endif %}
+                document.getElementById('major').innerHTML = options;
+            }
+        </script>
+
+        <td width="30%">
+            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control" required>
+            <option disabled selected>所在专业</option>
+                {% if major_list %}
+                    {% for j in major_list %}
+                        if(j.department_id == {{ department_list.first.id }})
+                            options += '<option value="{{ j.id }}">{{ j.name }}</option>';
+                    {% endfor %}
+                {% endif %}
+
+            <!--<option>计算机科学与技术</option>
+            <option>软件工程</option>
+            <option>信息安全</option>-->
+
+            <lect>
+        </td>
+        </tr>
+        <tr>
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 查看培养方案 <tton> </td>
+        </tr>
+    </tbody>
+    </table>
+</form>
+
+<span style="font-size:25px">培养方案</span>
+<table style="margin-top:30px">
+    <thead>
+        <tr><th>课程学分</th><th>课程编号</th><th>课程名称</th><th>推荐修读学期</th><th>详细信息</th></tr>
+    </thead>
+    <tbody>
+    {% if course_list %}
+        {% for i in course_list %}
+            <tr>
+                <th>课程学分</th><th>课程编号</th><th>{{ i.name }}</th><th>推荐修读学期</th>
+                <th><a href="{% url 'info_mgt:course_display' i.name %}">查看</a></th>
+            </tr>
+        {% endfor %}
+    {% endif %}
+    </tbody>
+</table>
+</div>
+<script>
+
+$(document).ready(function(){
+    $('select').formSelect();
+    });
+</script>
+{% endblock card_content %}
+

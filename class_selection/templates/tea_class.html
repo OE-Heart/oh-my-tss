@@ -1,0 +1,47 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock extra_head %}
+
+{% block card_content %}
+
+<div  class="card-content">
+
+<span style="font-size:30px">课程信息</span>
+<table>
+    <thead>
+        <tr><th>授课教师</th>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>课程时段</th>
+            <th>课程地点</th>
+            <th>课程剩余容量</th>
+            <th>详细信息</th>
+            <th>学生列表</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if course_list %}
+        {% for i in course_list %}
+            <tr>
+            <td>张引</td>
+            <td>001</td>
+            <td>{{ i.name }}</td>
+            <td>周一</td>
+            <td>紫金港</td>
+            <td>20/30</td>
+                <td><a href="{% url 'info_mgt:course_display' i.name %}">查看</a>
+            <td><button class="operation-btn">查看</button></td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+
+    </tbody>
+</table>
+</div>
+
+{% endblock card_content %}
