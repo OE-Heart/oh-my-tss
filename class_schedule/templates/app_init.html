@@ -17,6 +17,7 @@
     </script>
 <div id="class_schedule" class="card-content">
 <h5>选择教学班：</h5>
+<form action="{% url 'submit_application' %}" method="POST" style="margin-top:40px">
 <table style="margin-top:30px;margin-bottom:30px">
     <thead>
         <tr>
@@ -66,15 +67,17 @@
                 <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
                 {% endfor %}
             </td>
-            <td width="10%">
+            <td>
+                <label>
                 <input type="radio" name="class_selection" value="{{ class.id }}"/>
+                    <span></span>
+                </label>
             </td>
         </tr>
         {% endfor %}
     {% endif %}
     </tbody>
 </table>
-<form action="{% url 'submit_application' %}" method="POST" style="margin-top:40px">
     {% csrf_token %}
     <span style="font-size:14px;color:#aaa"></span>
     <label for="textarea1">填写申请理由与期望</label>

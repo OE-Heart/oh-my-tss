@@ -1,5 +1,4 @@
 from django.urls import path
-from django.views import generic
 from . import views
 
 urlpatterns = [
@@ -20,10 +19,11 @@ urlpatterns = [
     path('view_application/<int:app_id>', views.view_spec_application, name='view_spec_app'),
     path('handle_application/', views.handle_application, name='handle_application'),
     path('handle_application/<int:page>', views.handle_application, name='handle_application'),
-    path('handle_certain_application/<int:application_id>', views.handle_certain_application, name='handle_certain_application'),
+    path('handle_certain_application/<int:application_id>', views.handle_certain_application,
+         name='handle_certain_application'),
     path('submit_handle/<int:application_id>', views.submit_handle, name='submit_handle'),
     path('manipulate_schedule/', views.manipulate_schedule, name='manipulate_schedule'),
-    path('manipulate_schedule/<int:class_id>', views.manipulate_certain_class, name='manipulate_certain_class'),
+    path('manipulate_schedule/<int:section_id>', views.manipulate_certain_class, name='manipulate_certain_class'),
     path('submit_manipulate/<int:class_has_room_id>', views.submit_manipulate, name='manipulate_submit'),
     path('teacher_class/', views.teacher_class, name='teacher_class'),
     path('room_class/', views.room_class, name='room_class'),

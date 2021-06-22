@@ -10,14 +10,24 @@
 
 <div id="class_schedule" class="card-content">
 <script>
-    function change_search_type(selection, input_id, select_id){
-        if(selection === 'kcsd'){
+    function change_search_type(selection, input_id, select_day_id, select_campus_id){
+        if(selection === 'sksj'){
             document.getElementById(input_id).setAttribute('hidden', '');
-            document.getElementById(select_id).removeAttribute('hidden');
+            document.getElementById(input_id).setAttribute('disabled', '');
+            document.getElementById(select_day_id).removeAttribute('hidden');
+            document.getElementById(select_campus_id).setAttribute('hidden', '');
+        }
+        else if(selection === 'skxq'){
+            document.getElementById(input_id).setAttribute('hidden', '');
+            document.getElementById(input_id).setAttribute('disabled', '');
+            document.getElementById(select_day_id).setAttribute('hidden', '');
+            document.getElementById(select_campus_id).removeAttribute('hidden');
         }
         else {
             document.getElementById(input_id).removeAttribute('hidden');
-            document.getElementById(select_id).setAttribute('hidden', '');
+            document.getElementById(input_id).removeAttribute('disabled');
+            document.getElementById(select_day_id).setAttribute('hidden', '');
+            document.getElementById(select_campus_id).setAttribute('hidden', '');
         }
     }
 </script>
@@ -26,12 +36,14 @@
     <tbody>
         <tr style="border:0">
         <td width="30%">
-            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control" onchange="change_search_type(this.value, 'input_1', 'day_select_1')">
-            <option value="" disabled selected>选择查询类别</option>
-            <option value="skjs">授课教师</option>
-            <option value="kcmc">课程名称</option>
-            <option value="sksj">上课时间</option>
-            <option value="kcdd">课程地点</option>
+            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control" onchange="change_search_type(this.value, 'input_1', 'day_select_1', 'campus_select_1')">
+                <option value="none" disabled selected>选择查询类别</option>
+                <option value="kcbh">课程编号</option>
+                <option value="skjs">授课教师</option>
+                <option value="jxbbh">教学班编号</option>
+                <option value="kcmc">课程名称</option>
+                <option value="sksj">上课时间</option>
+                <option value="skxq">上课校区</option>
             </select>
         </td>
         <td id="search1">
@@ -47,6 +59,13 @@
                     <option value="5">星期五</option>
                     <option value="6">星期六</option>
                     <option value="7">星期日</option>
+                </select>
+            </div>
+            <div id="campus_select_1" hidden>
+                <select name="campus1" id="campus1" class="form-control">
+                    {% for i in campus_list %}
+                        <option value="{{ i.id }}">{{ i.name }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </td>
@@ -65,12 +84,14 @@
         </tr>
         <tr style="border:0">
         <td>
-            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control" onchange="change_search_type(this.value, 'input_2', 'day_select_2')">
-                <option value="" disabled selected>选择查询类别</option>
+            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control" onchange="change_search_type(this.value, 'input_2', 'day_select_2', 'campus_select_2')">
+                <option value="none" disabled selected>选择查询类别</option>
+                <option value="kcbh">课程编号</option>
                 <option value="skjs">授课教师</option>
+                <option value="jxbbh">教学班编号</option>
                 <option value="kcmc">课程名称</option>
                 <option value="sksj">上课时间</option>
-                <option value="kcdd">课程地点</option>
+                <option value="skxq">上课校区</option>
             </select>
         </td>
         <td id="search2">
@@ -88,6 +109,13 @@
                     <option value="7">星期日</option>
                 </select>
             </div>
+            <div id="campus_select_2" hidden>
+                <select name="campus2" id="campus2" class="form-control">
+                    {% for i in campus_list %}
+                        <option value="{{ i.id }}">{{ i.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
         </td>
         </tr>
         <tr>
@@ -100,18 +128,26 @@
 <span style="font-size:30px">查询结果</span>
 <table style="margin-top:30px">
     <thead>
-        <tr><th>授课教师</th><th>课程编号</th><th>课程名称</th><th>课程时段</th><th>课程地点</th></tr>
+        <tr>
+            <th>授课教师</th>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+        </tr>
     </thead>
     <tbody>
         {% for course in courses %}
-        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='{% url 'manipulate_certain_class' course.id %}'">
-            <td>{{ course.teacher }}</td>
+        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='{% url 'manipulate_certain_class' course.first_section_id %}'">
+            <td>{{ course.teacher_name }}</td>
+            <td>{{ course.course.id }}</td>
+            <td>{{ course.course.name }}</td>
             <td>{{ course.id }}</td>
-            <td>{{ course.name }}</td>
             <td>
-                {% for j in course.classhasroom_set %}
+                {% for j in course.classhasroom_set.all %}
                 <div>
-                    {% if j.day %}
+                    {% if j.classroom %}
                         {% if j.day == 1 %}
                             周一
                         {% elif j.day == 2 %}
@@ -135,7 +171,7 @@
             {% endfor %}
             </td>
             <td>
-                {% for j in course.classhasroom_set %}
+                {% for j in course.classhasroom_set.all %}
                     <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
                 {% endfor %}
             </td>

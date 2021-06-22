@@ -30,7 +30,7 @@ function check(){
 </script>
 <div id="info_mgt" class="card-content">
 
-<form method="post">
+<form method="post" action="{% url 'add_room' %}">
       {% csrf_token %}
           <label for="campus_selection">校区：</label><br>
           <br>
