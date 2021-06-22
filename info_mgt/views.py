@@ -271,7 +271,7 @@ def course_detail(req, name):
 
 
 def course_edit(req, option, in_course_name):
-    if req.method == 'POST':
+    if req.user.has_perm('info_mgt.course_edit'):
         course_name = req.POST.get('name')
         course_desc = req.POST.get('description')
         course_credit = req.POST.get('credit')
@@ -335,6 +335,8 @@ def course_edit(req, option, in_course_name):
         elif option == 'delete':
             models.Course.objects.get(name=in_course_name).delete()
             return HttpResponseRedirect('/info_mgt/course')
+    else:
+        return HttpResponse(403)
 
 
 def course_delete(req, name):
