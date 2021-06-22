@@ -44,9 +44,7 @@ INSTALLED_APPS = [
     'material',
     'class_schedule',
     'online_exam',
-    'class_selection',
-    'grade_mgt',
-    'resource_share',
+    'class_selection'
 ]
 
 MIDDLEWARE = [
