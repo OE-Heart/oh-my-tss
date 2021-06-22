@@ -18,4 +18,4 @@ class Course(forms.Form):
     capacity = forms.IntegerField()
     duration = forms.CharField(max_length=15)
 
-
+class
