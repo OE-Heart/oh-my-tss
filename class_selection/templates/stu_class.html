@@ -1,0 +1,67 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
+{% endblock extra_css %}
+ <h5 style="margin:0 0 0 0">课程表</h5>
+{% block card_content %}
+
+<table style="margin:0 0 0 0" border="0" cellpadding="9" >
+    <tr>
+	    <th colspan="2">节次\日期</th>
+	    <th>周一</th>
+	    <th>周二</th>
+	    <th>周三</th>
+	    <th>周四</th>
+	    <th>周五</th>
+        <th>周六</th>
+        <th>周日</th>
+
+    </tr>
+
+    <tr>
+	    <th rowspan="2">上午</th>
+	    <th>1</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+    </tr>
+
+    <tr>
+	    <th>10:25-11:10</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构
+        </th>
+	    <th>数据结构</th>
+    </tr>
+
+
+
+    <tr>
+	    <th rowspan="2">下午</th>
+	    <th>14:30-15:15</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>v</th>
+    </tr>
+
+    <tr>
+	    <th>15:25-16:10</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+	    <th>数据结构</th>
+    </tr>
+ </table>
+
+{% endblock card_content %}

@@ -18,9 +18,7 @@ def index(request):
 
 
 def major_scheme(request):
-    current_user_group = request.user.groups.first()
-    if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+
     if request.method == 'GET':
         return_dict = {'web_title': '培养方案',
                        'page_title': '培养方案',
@@ -72,6 +70,7 @@ def stu_class(req):
 
 
 def tea_class(request):
+    current_user_id = request.user.groups.first()
     if request.method == 'GET':
         return_dict = {'web_title': '教师课表',
                        'page_title': '教师课表',

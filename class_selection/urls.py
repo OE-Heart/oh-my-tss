@@ -18,6 +18,7 @@ from django.views import generic
 from . import views
 
 urlpatterns = [
+    path('', views.index, name='index'),
     path('major_scheme/', views.major_scheme),
     path('stu_class/', views.stu_class),
     path('tea_class/', views.tea_class),
