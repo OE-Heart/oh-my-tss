@@ -299,7 +299,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
                     class_list_1 = Class.objects.filter(classhasroom__day=day)
                 except:
                     pass
-            elif type1 == 'skxq':   # 查询上课校区
+            elif type1 == 'skxq':  # 查询上课校区
                 campus_id = request.GET.get('campus1')
                 try:
                     classroom_list = Classroom.objects.filter(campus_id=campus_id)
@@ -379,18 +379,43 @@ def manipulate_certain_class(request, section_id):  # 打开处理特定课程�
                        'page_title': '手动课程调整',
                        'request_user': request.user,
                        'cur_submodule': 'manipulate_schedule'}
-        # try:
-        #     class_to_modify = Class.objects.get(pk=class_id)
-        #     rooms_to_modify = ClassHasRoom.objects.filter(Class_id=class_id)
-        #     campus_list = Campus.objects.all()
-        #     building_list = Building.objects.all()
-        # except OperationalError:
-        #     pass
-        # else:
-        #     class_to_modify.teacher_name = class_to_modify.teacher.first_name + ' ' + class_to_modify.teacher.last_name
-        #     return_dict['course'] = class_to_modify
-        #     return_dict['rooms'] = rooms_to_modify
-        #     return_dict['campus'] = campus_list
+        if request.GET.get('failed'):
+            return_dict['failure'] = True
+        if request.GET.get('succeeded'):
+            return_dict['success'] = True
+        if request.GET.get('conflict'):
+            return_dict['conflict'] = True
+        try:
+            room_to_modify = ClassHasRoom.objects.get(pk=section_id)
+            class_to_modify = room_to_modify.Class
+            class_to_modify.teacher_name = class_to_modify.teacher.first_name + ' ' + class_to_modify.teacher.last_name
+            campus_list = Campus.objects.all()
+            selected_campus_id = request.GET.get('campus')
+            selected_building_id = request.GET.get('building')
+            if not selected_campus_id:
+                if room_to_modify.classroom:
+                    selected_campus_id = room_to_modify.classroom.building.campus_id
+                else:
+                    selected_campus_id = Campus.objects.all().first().id
+            if not selected_building_id:
+                if room_to_modify.classroom and int(selected_campus_id) == room_to_modify.classroom.building.campus_id:
+                    selected_building_id = room_to_modify.classroom.building.id
+                else:
+                    selected_building_id = Building.objects.filter(campus_id=selected_campus_id).first().id
+            building_list = Building.objects.filter(campus_id=selected_campus_id)
+            classroom_list = Classroom.objects.filter(building_id=selected_building_id)
+        except OperationalError:
+            pass
+        except ClassHasRoom.DoesNotExist:
+            return HttpResponseRedirect(reverse('manipulate_schedule'))
+        else:
+            return_dict['room_to_modify'] = room_to_modify
+            return_dict['course'] = class_to_modify
+            return_dict['campus'] = campus_list
+            return_dict['building_list'] = building_list
+            return_dict['selected_campus'] = int(selected_campus_id)
+            return_dict['selected_building'] = int(selected_building_id)
+            return_dict['classroom_list'] = classroom_list
         return render(request, 'manipulate.html', return_dict)
 
 
@@ -398,11 +423,42 @@ def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针�
     if not class_has_room_id:
         return Http404
     if request.method == 'POST':
-        pass
+        new_day = int(request.POST.get('skrq'))
+        new_start_at = int(request.POST.get('qssj'))
+        new_room_id = int(request.POST.get('jshm'))
+        try:
+            section_to_modify = ClassHasRoom.objects.get(pk=class_has_room_id)
+        except ClassHasRoom.DoesNotExist:
+            return HttpResponseRedirect(reverse('manipulate_schedule'))
+        else:
+            new_end_at = new_start_at + section_to_modify.duration - 1
+            try:
+                conflict_check = ClassHasRoom.objects.filter(Q(classroom_id=new_room_id)
+                                                             & ~Q(Q(end_at__lt=new_start_at)
+                                                                  | Q(start_at__gt=new_end_at))
+                                                             & Q(day=new_day) & ~Q(id=class_has_room_id))
+            except OperationalError:
+                return HttpResponseRedirect(reverse('manipulate_certain_class', args=[class_has_room_id]) + '?failed=1')
+            else:
+                if len(conflict_check) > 0:
+                    return HttpResponseRedirect(
+                        reverse('manipulate_certain_class', args=[class_has_room_id]) + '?conflict=1')
+                else:
+                    section_to_modify.day = new_day
+                    section_to_modify.start_at = new_start_at
+                    section_to_modify.end_at = new_end_at
+                    section_to_modify.classroom_id = new_room_id
+                    try:
+                        section_to_modify.save()
+                    except OperationalError:
+                        return HttpResponseRedirect(
+                            reverse('manipulate_certain_class', args=[class_has_room_id]) + '?failed=1')
+                    else:
+                        return HttpResponseRedirect(
+                            reverse('manipulate_certain_class', args=[class_has_room_id]) + '?succeeded=1')
 
 
 def application(request):  # 打开提出调课申请页面
-    # TODO: 补充身份验证为教师组
     if request.method == 'GET':
         return_dict = {'web_title': '提出调课申请',
                        'page_title': '提出调课申请',
@@ -428,11 +484,11 @@ def application(request):  # 打开提出调课申请页面
 
 
 def submit_application(request):  # 提交调课申请
-    # TODO: 同上
     if request.method == 'POST':
         class_id = request.POST.get('class_selection')
         content = request.POST.get('content')
-        new_application = Application(teacher_id=request.user.id, Class_id=class_id, content=content, submit_time=datetime.datetime.now())
+        new_application = Application(teacher_id=request.user.id, Class_id=class_id, content=content,
+                                      submit_time=datetime.datetime.now())
         try:
             new_application.save()
         except OperationalError:

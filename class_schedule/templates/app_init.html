@@ -64,7 +64,11 @@
             </td>
             <td>
                 {% for j in class.classhasroom_set.all %}
+                    {% if j.classroom %}
                 <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% else %}
+                    <br/>
+                    {% endif %}
                 {% endfor %}
             </td>
             <td>

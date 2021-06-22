@@ -172,7 +172,11 @@
             </td>
             <td>
                 {% for j in course.classhasroom_set.all %}
-                    <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% if j.classroom %}
+                        <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% else %}
+                        <br/>
+                    {% endif %}
                 {% endfor %}
             </td>
         </tr>
