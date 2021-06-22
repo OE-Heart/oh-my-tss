@@ -1,0 +1,82 @@
+{% extends 'skeleton.html' %}
+
+{% load static %} 
+{% load material_form %} 
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+
+<div id="class_selection" class="card-content">
+<form class="input-field" action="manipulate_schedule" method="GET" style="margin-bottom:30px">
+    <table class="tab_03">
+    <tbody>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control">
+            <option value="" disabled selected>选择查询类别</option>
+            <option value="skjs">授课教师</option>
+            <option value="kcbh">课程代码</option>
+            <option value="kcmc">课程名称</option>
+
+            <lect>
+        </td>
+        <td>
+            <input type="text" name="cx_cxnr_1" value="" id="cx_cxnr_1" class="form-control">
+        </td>
+        </tr>
+        <tr style="border:0">
+        <td colspan="5">
+            <label>
+                <input style="margin-left:15px" name="logic" type="radio" id="cx_zbgx_and" value="and" checked/>
+                <span>与</span>
+            </label>
+            <label>
+                <input style="margin-left:15px" name="logic" type="radio" id="cx_zbgx_or" value="or" />
+                <span>或</span>
+            </label>
+        </td>
+        </tr>
+        <tr style="border:0">
+        <td>
+            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control">
+            <option value="" disabled selected>选择查询类别</option>
+            <option value="skjs">授课教师</option>
+            <option value="kcbh">课程代码</option>
+            <option value="kcmc">课程名称</option>
+
+            <lect>
+        </td>
+        <td>
+            <input type="text" name="cx_cxnr_2" value="" id="cx_cxnr_2" class="form-control">
+        </td>
+        </tr>
+        <tr>
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 查询课程 <tton> </td>
+        </tr>
+    </tbody>
+    </table>
+</form>
+
+<span style="font-size:25px">可选课程</span>
+<table style="margin-top:30px">
+    <thead>
+        <tr><th>授课教师</th><th>课程编号</th><th>课程名称</th><th>课程时段</th><th>课程地点</th><th>课程剩余容量</th><th>详细信息</th><th>选课状态</th></tr>
+    </thead>
+    <tbody>
+        {% for course in courses %}
+        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='manipulate?course_id={{course.id}}'">
+            <td>{{ course.teacher }}</td><td>{{ course.no }}</td><td>{{ course.name }}</td><td>{{ course.time }}</td><td>{{ course.location }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+<script>
+    $(document).ready(function(){
+    $('select').formSelect();
+    });
+</script>
+{% endblock card_content %}
+

@@ -48,8 +48,8 @@
     {% if room_list %}
       {% for i in room_list %}
       <tr>
-        <td>{{ i.Building.Campus.name }}</td>
-        <td>{{ i.Building.name }}</td>
+        <td>{{ i.building.campus.name }}</td>
+        <td>{{ i.building.name }}</td>
         <td>{{ i.room_number }}</td>
         <td>
             {% if i.type == 'O' %}
@@ -60,7 +60,7 @@
                 机房
             {% endif %}
         </td>
-        <td>{{ i.room_capacity }}</td>
+        <td>{{ i.capacity }}</td>
         <td>
            <a class="operation-btn" name="modify_room" href="{% url 'modify_certain_room' i.id %}">修改</a>
            <!-- 点击修改的时候，会跳转到modify_certain_room.html界面，对特定教室进行修改 -->

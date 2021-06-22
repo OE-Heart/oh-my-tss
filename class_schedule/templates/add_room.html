@@ -11,7 +11,6 @@
         xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html"/>
 {% endblock extra_head %}
 
-{% block title %}添加教室{% endblock %}
 
 {% block card_content %}
     <script>
@@ -30,17 +29,21 @@ function check(){
     check();
 </script>
 <div id="info_mgt" class="card-content">
-      <form method="post" action="{% url 'add_room_submit' %}">
-          {% csrf_token %}
 
+<form method="post">
+      {% csrf_token %}
           <label for="campus_selection">校区：</label><br>
           <br>
           <div>
-              <select name="campus" style="display: block" class="prefix" required id="campus_selection" onchange="adjust_building_choices(this.value)">
+              <select name="campus" style="display: block" class="prefix" required id="campus_selection" onchange="document.getElementById('button1').click()">
                   {% if campus_list %}
                       {% for i in campus_list %}
-                          <option value="{{ i.id }}">{{ i.name }}</option>
-                      {% endfor %}
+                      {% if selected_campus and i.id == selected_campus %}
+                              <option value="{{ i.id }}" selected>{{ i.name }}</option>
+                      {% else %}
+                            <option value="{{ i.id }}">{{ i.name }}</option>
+                      {% endif %}
+                    {% endfor %}
 {#                  <option value="紫金港">紫金港</option>#}
 {#                  <option value="玉泉">玉泉</option>#}
 {#                  <option value="西溪">西溪</option>#}
@@ -48,20 +51,11 @@ function check(){
                   {% endif %}
               </select>
           </div>
-      <script>
-          function adjust_building_choices(campus_id) //只显示选择的校区对应的教室
-          {
-              let options = '';
-              {% if building_list %}
-                  {% for j in building_list %}
-                      if(campus_id === {{ j.campus_id }})
-                        options += '<option value="{{ j.id }}">{{ j.name }}</option>';
-                  {% endfor %}
-              {% endif %}
-              document.getElementById('building').innerHTML = options;
-          }
-      </script>
+    <button type="submit" hidden id="button1"></button>
+</form>
           <br>
+      <form method="post" action="{% url 'add_room_submit' %}">
+          {% csrf_token %}
           <label for="building">教学楼：</label>
           <br>
           <br>
@@ -69,9 +63,7 @@ function check(){
               <select id="building" name="building" style="display: block" class="prefix" required>
                   {% if building_list %}
                       {% for j in building_list %}
-                          {% if j.campus_id == campus_list.first.id %}
                             <option value="{{ j.id }}">{{ j.name }}</option>
-                          {% endif %}
                       {% endfor %}
                   {% endif %}
 {#                  <option value="西一">西一</option>#}
@@ -91,9 +83,9 @@ function check(){
           <br>
           <label for="room_id">门牌号：</label>
           <input type="number" placeholder="请输入完整门牌号" name="room_id" id="room_id" required>
-          <label for="room_type">教室类型：</label>
           <br><br>
           <div>
+              <label for="room_type">教室类型：</label>
               <select name="room_type" style="display: block" class="prefix" id="room_type" required>
                   <option value="O">普通教室</option>
                   <option value="G">体育场馆</option>

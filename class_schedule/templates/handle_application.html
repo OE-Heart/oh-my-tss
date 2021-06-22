@@ -24,44 +24,72 @@
 {% endblock extra_head %} 
 
 {% block card_content %}
+    <script>
+        {% if success %}
+            alert('提交成功')
+        {% endif %}
+        {% if failure %}
+            alert('提交失败')
+        {% endif %}
+    </script>
 <div id="class_schedule" class="card-content">
 <span style="font-size:30px">待处理申请</span>
 <table style="margin-top:30px">
     <thead>
-        <tr><th>申请人</th><th>课程编号</th><th>课程名</th><th>课程时段</th><th>课程地点</th></tr>
+        <tr>
+            <th>申请人</th>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+            <th>申请时间</th>
+        </tr>
     </thead>
     <tbody>
-        {% for app in applications_list %}
+        {% for app in applications_unhandled_list %}
         <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='{% url 'handle_certain_application' app.id %}'">
-            <td>{{ app.applicant }}</td><td>{{ app.course_no }}</td><td>{{ app.course_name }}</td><td>{{ app.time }}</td><td>{{ app.location }}</td>
+            <td>{{ app.applicant }}</td>
+            <td>{{ app.Class.course.id }}</td>
+            <td>{{ app.Class.course.name }}</td>
+            <td>{{ app.Class_id }}</td>
+            <td>
+                {% for j in app.Class.classhasroom_set.all %}
+                <div>
+                    {% if app.Class.not_scheduled == False %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+            {% for j in app.Class.classhasroom_set.all %}
+                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+            {% endfor %}
+            </td>
+            <td>{{ app.submit_time }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-{#<div class="table-foot-bar">#}
-{#<nav class="pagination">#}
-{#    <li><a href="{% url 'class_schedule:handle_application' %}?page=1">首页</a></li>#}
-{#    {% if applications.has_previous %}#}
-{#        <li class="long"><a href="?{{ applications.previous_page_number.querystring }}">上一页</a></li>#}
-{#    {% endif %}#}
-{#    {% for page in applications.pages %}#}
-{#        {% if page %}#}
-{#            {% ifequal page applications.number %}#}
-{#                <li><a href="?{{ page.querystring }}" style="color:#aaa;">{{ page }}</a></li>#}
-{#            {% else %}#}
-{#                <li><a href="?{{ page.querystring }}" class="page">{{ page }}</a></li>#}
-{#            {% endifequal %}#}
-{#        {% else %}#}
-{#            <li class="none"><a href="">...</a></li>#}
-{#        {% endif %}#}
-{#    {% endfor %}#}
-{#    {% if applications.has_next %}#}
-{#        <li class="long"><a href="?{{ applications.next_page_number.querystring }}">下一页</a></li>#}
-{#    {% endif %}#}
-{#    <li><a href="{% url 'class_schedule:handle_application' %}?page={{ applications.paginator.num_pages }}">尾页</a></li>#}
-{#    &nbsp;&nbsp;&nbsp;共&nbsp;{{ applications.paginator.num_pages }}&nbsp;页#}
-{#</nav>#}
-{#</div>#}
+
   <div class="pager">
     {% if prev_disabled %}
       <span style="color: silver">上一页</span>

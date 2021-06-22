@@ -14,16 +14,50 @@
     </thead>
     <tbody>
         <tr style="border:0">
-            <td>{{ course.teacher }}</td><td>{{ course.no }}</td><td>{{ course.name }}</td><td>{{ course.time }}</td><td>{{ course.location }}</td>
+            <td>{{ course.teacher }}</td>
+            <td>{{ course.no }}</td>
+            <td>{{ course.name }}</td>
+            <td>
+                {% for j in rooms %}
+                <div>
+                    {% if j.day %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+                {% for j in rooms %}
+                    <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% endfor %}
+            </td>
         </tr>
     </tbody>
 </table>
-<form action="../submit_manipulate" method="POST" style="margin-top:30px">
+<form action="{% url 'manipulate_certain_class' course.id %}" method="POST" style="margin-top:30px">
     <table class="tab_03">
     <tbody>
+    {% for j in rooms %}
         <tr style="border:0">
         <td width="30%">
-            <select name="skrq" id="skrq" class="form-control">
+            <select name="skrq" id="skrq" class="form-control" value="{{ j.day }}">
             <option value="" disabled selected>设置上课日期</option>
             <option value="1">星期一</option>
             <option value="2">星期二</option>
@@ -35,29 +69,23 @@
             </select>
         </td>
         <td width="30%">
-            <select name="skjs" id="skjs" class="form-control">
-            <option value="" disabled selected>设置上课节数</option>
-            <option value="12">1,2节</option>
-            <option value="34">3,4节</option>
-            <option value="345">3,4,5节</option>
-            <option value="67">6,7节</option>
-            <option value="678">6,7,8节</option>
-            <option value="78">7,8节</option>
-            <option value="910">9,10节</option>
-            <option value="111213">11,12,13节</option>
-            </select>
+            上课节数：{{ j.duration }}
         </td>
         </tr>
         <tr style="border:0">
         <td width="30%">
             <select name="skxq" id="skxq" class="form-control">
-            <option value="" disabled selected>设置上课校区</option>
-            <option value="zjg">紫金港</option>
-            <option value="yq">玉泉</option>
-            <option value="xx">西溪</option>
-            <option value="hjc">华家池</option>
-            <option value="zj">之江</option>
-            <option value="zs">舟山</option>
+                <option value="" disabled selected>设置上课校区</option>
+                {% for c in campus %}
+                    <option value="{{ c.id }}">{{ c.name }}</option>
+                {% endfor %}
+{#            <option value="" disabled selected>设置上课校区</option>#}
+{#            <option value="zjg">紫金港</option>#}
+{#            <option value="yq">玉泉</option>#}
+{#            <option value="xx">西溪</option>#}
+{#            <option value="hjc">华家池</option>#}
+{#            <option value="zj">之江</option>#}
+{#            <option value="zs">舟山</option>#}
             </select>
         </td>
         <td width="30%">
@@ -72,6 +100,7 @@
         <tr style="border:0">
             <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 提交更改 </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
         </tr>
+    {% endfor %}
     </tbody>
     </table>
 </form>

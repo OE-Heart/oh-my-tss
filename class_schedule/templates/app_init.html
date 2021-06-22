@@ -7,33 +7,80 @@
 {% endblock extra_head %}
 
 {% block card_content %}
+    <script>
+        {% if success %}
+            alert('申请提交成功')
+        {% endif %}
+        {% if failure %}
+            alert('申请提交失败，请稍后重试')
+        {% endif %}
+    </script>
 <div id="class_schedule" class="card-content">
 <h5>选择教学班：</h5>
-<form action="{% url 'submit_application' %}" method="POST" style="margin-top:40px">
 <table style="margin-top:30px;margin-bottom:30px">
     <thead>
-        <tr><th>课程名</th><th>课程时段</th><th>课程地点</th><th>选择</th></tr>
+        <tr>
+            <th>课程编号</th>
+            <th>课程名</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+            <th>选择</th>
+        </tr>
     </thead>
     <tbody>
     {% if my_class_list %}
         {% for class in my_class_list %}
         <tr style="border:0">
+            <td>{{ class.course.id }}</td>
             <td>{{ class.course.name }}</td>
+            <td>{{ class.id }}</td>
             <td>
-                {% for j in i.ClassHasRoom_set %}
+                {% for j in class.classhasroom_set.all %}
+                <div>
+                    {% if class.not_scheduled == False %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+                {% for j in class.classhasroom_set.all %}
                 <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
                 {% endfor %}
             </td>
-            <td>{{ course.location }}</td>
+            <td width="10%">
+                <input type="radio" name="class_selection" value="{{ class.id }}"/>
+            </td>
         </tr>
         {% endfor %}
     {% endif %}
     </tbody>
 </table>
-
-    <span style="font-size:14px;color:#aaa">填写申请理由与期望</span>
-    <textarea id="textarea1" class="materialize-textarea" style="color:#000" required></textarea>
+<form action="{% url 'submit_application' %}" method="POST" style="margin-top:40px">
+    {% csrf_token %}
+    <span style="font-size:14px;color:#aaa"></span>
+    <label for="textarea1">填写申请理由与期望</label>
+    <textarea id="textarea1" name="content" class="materialize-textarea" style="color:#000" required></textarea>
     <input class="btn btn-default" type="submit" value="提交" style="display:block;margin:30px auto;background:#08c"/>
 </form>
+    <a class="btn btn-default" href="{% url 'view_my_application' %}">查看我的申请</a>
 </div>
 {% endblock card_content %}

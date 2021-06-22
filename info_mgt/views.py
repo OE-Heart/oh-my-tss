@@ -5,7 +5,10 @@ from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
+
+from oh_my_tss.settings import BASE_DIR
 from . import models
+import os
 from .models import Major, Student
 
 
@@ -48,7 +51,7 @@ def info_add(req, username='#'):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
-
+        print(len(new_avatar))
         if username != '#':
             this_user = models.User.objects.get(username=new_username)
             if this_user:
@@ -64,17 +67,20 @@ def info_add(req, username='#'):
         else:
             result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                   first_name=new_first_name, email=new_email)
-        # result_1 = this_user.update(
-        #     username=new_username,
-        #     last_name=new_last_name,
-        #     first_name=new_first_name,
-        #     email=new_email
-        # )
+
         query = models.Avatar.objects.filter(user=this_user)
         if len(query) == 0 and new_avatar is not None:
             result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         elif new_avatar is not None:
             result_2 = query.update(avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         else:
             result_2 = True
         return render(req, 'info_edit.html', {
@@ -116,48 +122,45 @@ def info_edit(req):
         new_first_name = req.POST['first_name']
         new_email = req.POST['email']
         new_avatar = req.FILES.get('avatar')
+
         query = models.Avatar.objects.filter(user=req.user)
+
         if len(query) == 0:
-            result2 = models.Avatar.objects.create(
-                user=req.user, avatar=new_avatar)
-            query = models.Avatar.objects.filter(user=req.user)
-            print(query)
+            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
         elif len(new_avatar) != 0:
             result2 = query.update(avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
+        else:
+            result2 = True
+
         query_set = models.User.objects.filter(id=req.user.id)
-        print(query_set)
-        result = query_set.update(
-            username=new_username,
-            last_name=new_last_name,
-            first_name=new_first_name,
-            email=new_email
-        )
-        print("更新成功")
+        result = query_set.update(username=new_username, last_name=new_last_name,
+                                  first_name=new_first_name, email=new_email)
+
         return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改',
-            'page_title': '个人信息修改',
-            'request_user': req.user,
-            'form': SelfInfoForm(instance=req.user),
-            'edit': True,
+            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
+            'form': SelfInfoForm(instance=req.user), 'edit': True,
             'edit_result': True if result != 0 and result2 != 0 else False
         })
     elif req.method == 'GET':
         obj = req.user
-        avatarobj = models.Avatar.objects.filter(user=req.user)
-        print(avatarobj)
+        # avatar_obj = models.Avatar.objects.filter(user=req.user)
+        # print(avatar_obj)
         return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改',
-            'page_title': '个人信息修改',
-            'request_user': req.user,
-            'form': SelfInfoForm(instance=obj),
-            'edit': False
-        })
+            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
+            'form': SelfInfoForm(instance=obj), 'edit': False})
     else:
         return HttpRequest(404)
 
 
 def account_list(req, page=0):
-
     accounts = []
 
     if req.user.has_perm('info_mgt.view_student') and req.user.has_perm('info_mgt.view_teacher'):
