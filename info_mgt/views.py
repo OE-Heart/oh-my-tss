@@ -22,7 +22,6 @@ def index(req):
 
 # TODO: those following pages' templates are not implemented yet.
 
-
 def info_view(req):
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
@@ -43,8 +42,52 @@ def info_view_with_username(req, username):
         'request_user': user,
     })
 
+def info_edit(req):
+    ''' TODO: repair it '''
+    if req.method == 'POST':
+        new_username = req.POST['username']
+        new_last_name = req.POST['last_name']
+        new_first_name = req.POST['first_name']
+        new_email = req.POST['email']
+        new_avatar = req.FILES.get('avatar')
 
-def info_add(req, username='#'):
+        query = models.Avatar.objects.filter(user=req.user)
+
+        if len(query) == 0:
+            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
+        elif len(new_avatar) != 0:
+            result2 = query.update(avatar=new_avatar)
+            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+            for chunk in new_avatar.chunks():
+                f.write(chunk)
+            f.close()
+        else:
+            result2 = True
+
+        query_set = models.User.objects.filter(id=req.user.id)
+        result = query_set.update(username=new_username, last_name=new_last_name,
+                                  first_name=new_first_name, email=new_email)
+
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
+            'form': SelfInfoForm(instance=req.user), 'edit': True,
+            'edit_result': True if result != 0 and result2 != 0 else False
+        })
+    elif req.method == 'GET':
+        obj = req.user
+        # avatar_obj = models.Avatar.objects.filter(user=req.user)
+        # print(avatar_obj)
+        return render(req, 'info_edit.html', {
+            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
+            'form': SelfInfoForm(instance=obj), 'edit': False})
+    else:
+        return HttpRequest(404)
+
+def account_add(req, username='#'):
     if req.method == 'POST':
         new_username = req.POST['username']
         new_last_name = req.POST['last_name']
@@ -112,53 +155,6 @@ def info_add(req, username='#'):
             })
     else:
         return HttpRequest(404)
-
-
-def info_edit(req):
-    ''' TODO: repair it '''
-    if req.method == 'POST':
-        new_username = req.POST['username']
-        new_last_name = req.POST['last_name']
-        new_first_name = req.POST['first_name']
-        new_email = req.POST['email']
-        new_avatar = req.FILES.get('avatar')
-
-        query = models.Avatar.objects.filter(user=req.user)
-
-        if len(query) == 0:
-            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
-            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-            for chunk in new_avatar.chunks():
-                f.write(chunk)
-            f.close()
-        elif len(new_avatar) != 0:
-            result2 = query.update(avatar=new_avatar)
-            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-            for chunk in new_avatar.chunks():
-                f.write(chunk)
-            f.close()
-        else:
-            result2 = True
-
-        query_set = models.User.objects.filter(id=req.user.id)
-        result = query_set.update(username=new_username, last_name=new_last_name,
-                                  first_name=new_first_name, email=new_email)
-
-        return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
-            'form': SelfInfoForm(instance=req.user), 'edit': True,
-            'edit_result': True if result != 0 and result2 != 0 else False
-        })
-    elif req.method == 'GET':
-        obj = req.user
-        # avatar_obj = models.Avatar.objects.filter(user=req.user)
-        # print(avatar_obj)
-        return render(req, 'info_edit.html', {
-            'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
-            'form': SelfInfoForm(instance=obj), 'edit': False})
-    else:
-        return HttpRequest(404)
-
 
 def account_list(req, page=0):
     accounts = []
@@ -229,6 +225,12 @@ def account_list(req, page=0):
         'last_search': req.POST['name'] if req.method == 'POST' else None,
     })
 
+def account_delete(req, username):
+    if req.user.has_perm('info_mgt.account_edit') and req.method == 'GET':
+        User.objects.filter(username=username).delete()
+        return HttpResponseRedirect('/info_mgt/account')
+    else:
+        return HttpResponse(403)
 
 def course_list(req, page=0):
     if req.user.has_perm('info_mgt.view_course'):
@@ -259,88 +261,93 @@ def course_list(req, page=0):
     else:
         return HttpResponse(403)
 
-
 def course_detail(req, name):
-    course = models.Course.objects.get(name=name)
-    return render(req, 'course_detail.html', {
-        'web_title': '课程管理',
-        'page_title': '课程详情',
-        'cur_submodule': 'course',
-        'request_course': course
-    })
+    if req.user.has_perm('info_mgt.view_course'):
+        course = models.Course.objects.get(name=name)
+        return render(req, 'course_detail.html', {
+            'web_title': '课程管理',
+            'page_title': '课程详情',
+            'cur_submodule': 'course',
+            'request_course': course
+        })
+    else:
+        return HttpResponse(403)
 
 
 def course_edit(req, option, in_course_name):
     if req.user.has_perm('info_mgt.course_edit'):
-        course_name = req.POST.get('name')
-        course_desc = req.POST.get('description')
-        course_credit = req.POST.get('credit')
-        course_capacity = req.POST.get('capacity')
-        course_duration = req.POST.get('duration')
-        if option == 'edit':
-            query_set = models.Course.objects.filter(name=in_course_name)
-            n_updates = query_set.update(
-                name=course_name,
-                description=course_desc,
-                credit=course_credit,
-                capacity=course_capacity,
-                duration=course_duration
-            )
-            return render(req, 'course_edit.html', {
-                'web_title': '课程管理',
-                'page_title': '修改课程详情',
-                'cur_submodule': 'course',
-                'form': CourseEditForm(instance=models.Course.objects.filter(name=course_name)[0]),
-                'edit_result': True if n_updates != 0 else False
-            })
-        elif option == 'new':
-            ins = models.Course.objects.create(
-                name=course_name,
-                description=course_desc,
-                credit=course_credit,
-                capacity=course_capacity,
-                duration=course_duration
-            )
-            return render(req, 'course_edit.html', {
-                'web_title': '课程管理',
-                'page_title': '添加课程',
-                'cur_submodule': 'course',
-                'form': CourseEditForm,
-                'new_result': True if ins else False
-            })
-        elif option == 'delete':
-            return HttpResponse(403)
+        if req.method == 'POST':
+            course_name = req.POST.get('name')
+            course_desc = req.POST.get('description')
+            course_credit = req.POST.get('credit')
+            course_capacity = req.POST.get('capacity')
+            course_duration = req.POST.get('duration')
+            if option == 'edit':
+                query_set = models.Course.objects.filter(name=in_course_name)
+                n_updates = query_set.update(
+                    name=course_name,
+                    description=course_desc,
+                    credit=course_credit,
+                    capacity=course_capacity,
+                    duration=course_duration
+                )
+                return render(req, 'course_edit.html', {
+                    'web_title': '课程管理',
+                    'page_title': '修改课程详情',
+                    'cur_submodule': 'course',
+                    'form': CourseEditForm(instance=models.Course.objects.  filter(name=course_name)[0]),
+                    'edit_result': True if n_updates != 0 else False
+                })
+            elif option == 'new':
+                ins = models.Course.objects.create(
+                    name=course_name,
+                    description=course_desc,
+                    credit=course_credit,
+                    capacity=course_capacity,
+                    duration=course_duration
+                )
+                return render(req, 'course_edit.html', {
+                    'web_title': '课程管理',
+                    'page_title': '添加课程',
+                    'cur_submodule': 'course',
+                    'form': CourseEditForm,
+                    'new_result': True if ins else False
+                })
+            elif option == 'delete':
+                return HttpResponse(403)
+            else:
+                # TODO: report a 404 error
+                return HttpResponse(404)
+        elif req.method == 'GET':
+            if option == 'edit':
+                page_title = '修改课程详情'
+                course_data = models.Course.objects.get(name=in_course_name)
+                form_obj = CourseEditForm(instance=course_data)
+                return render(req, 'course_edit.html', {
+                    'web_title': '课程管理',
+                    'page_title': '修改课程详情',
+                    'cur_submodule': 'course',
+                    'form': form_obj
+                })
+            elif option == 'new':
+                page_title = '添加课程'
+                return render(req, 'course_edit.html', {
+                    'web_title': '课程管理',
+                    'page_title': '添加课程',
+                    'cur_submodule': 'course',
+                    'form': CourseEditForm
+                })
+            elif option == 'delete':
+                models.Course.objects.get(name=in_course_name).delete()
+                return HttpResponseRedirect('/info_mgt/course')
         else:
-            # TODO: report a 404 error
-            return HttpResponse(404)
-    elif req.method == 'GET':
-        if option == 'edit':
-            page_title = '修改课程详情'
-            course_data = models.Course.objects.get(name=in_course_name)
-            form_obj = CourseEditForm(instance=course_data)
-            return render(req, 'course_edit.html', {
-                'web_title': '课程管理',
-                'page_title': '修改课程详情',
-                'cur_submodule': 'course',
-                'form': form_obj
-            })
-        elif option == 'new':
-            page_title = '添加课程'
-            return render(req, 'course_edit.html', {
-                'web_title': '课程管理',
-                'page_title': '添加课程',
-                'cur_submodule': 'course',
-                'form': CourseEditForm
-            })
-        elif option == 'delete':
-            models.Course.objects.get(name=in_course_name).delete()
-            return HttpResponseRedirect('/info_mgt/course')
+            return HttpResponse(403)
     else:
         return HttpResponse(403)
 
 
 def course_delete(req, name):
-    if req.method == 'GET':
+    if req.user.has_perm('info_mgt.course_edit') and req.method == 'GET':
         models.Course.objects.get(name=name).delete()
         return HttpResponseRedirect('/info_mgt/course')
     else:
@@ -375,15 +382,6 @@ def logout_view(request):
     logout(request)
     # TODO: Redirect to a success page.
     return HttpResponseRedirect('/info_mgt')
-
-
-def account_delete(req, username):
-    if req.method != 'GET':
-        return HttpResponse(403)
-
-    User.objects.filter(username=username).delete()
-    return HttpResponseRedirect('/info_mgt/account')
-
 
 '''
 {% if blog.article %}  <!-- permission to visit articles in the blog -->

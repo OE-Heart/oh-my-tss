@@ -31,9 +31,8 @@
         <td>{{ account.name }}</td>
         <td>{{ account.major }}</td>
         <td>
-          {% comment %} TODO: use real url {% endcomment %}
           <a href="{% url 'info_mgt:info_view' account.username %}">查看</a>
-          <a href="{% url 'info_mgt:info_add' account.username %}">编辑</a>
+          <a href="{% url 'info_mgt:account_add' account.username %}">编辑</a>
           <a href="{% url 'info_mgt:account_delete' account.username %}">删除</a>
         </td>
       </tr>
@@ -53,8 +52,6 @@
       <a href="{% url 'info_mgt:account_list' next_page %}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="{% url 'info_mgt:info_add' %}" title="添加新账户">
-    {% comment %} TODO: use real url {% endcomment %}
-  </a>
+  <a class="add-btn" href="{% url 'info_mgt:account_add' %}" title="添加新账户"></a>
 </div>
 {% endblock card_content %}

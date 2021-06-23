@@ -33,7 +33,6 @@
         <td>{{ course.credit }}</td>
         <td>{{ course.capacity }}</td>
         <td>
-          {% comment %} TODO: use real url {% endcomment %}
           <a href="{% url 'info_mgt:course_display' course.name %}">查看</a>
           <a href="{% url 'info_mgt:course_edit' 'edit' course.name %}">编辑</a>
           <a href="{% url 'info_mgt:course_delete' course.name %}">删除</a>
@@ -55,8 +54,6 @@
       <a href="{% url 'info_mgt:account_list' next_page %}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="{% url 'info_mgt:course_edit' 'new' 'new' %}" title="添加新课程">
-    {% comment %} TODO: use real url {% endcomment %}
-  </a>
+  <a class="add-btn" href="{% url 'info_mgt:course_edit' 'new' 'new' %}" title="添加新课程"></a>
 </div>
 {% endblock card_content %}
