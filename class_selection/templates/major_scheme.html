@@ -7,62 +7,55 @@
 {% endblock extra_head %}
 
 {% block card_content %}
+
 <div id="class_selection" class="card-content">
-<form class="input-field" action="manipulate_selection" method="GET" style="margin-bottom:30px">
-    <table class="tab_03">
-    <tbody>
-        <tr style="border:0">
-        <td width="30%">
-            <select name="学院" id="学院" class="form-control" required id="department_selection" onchange="adjust_major_choices(this.value)">
-            <option disabled selected>所在学院</option>
+<form method="POST" style="margin-bottom:30px">
+    {% csrf_token %}
+        <div>
+        <select name="dept" id="dept"  class="form-control" required onchange="document.getElementById('sub1').click()">
+            <option selected>请选择所在学院..</option>
                 {% if department_list %}
                       {% for i in department_list %}
-                          <option value="{{ i.id }}">{{ i.name }}</option>
+                          {% if selected_dept and  i.id  == selected_dept %}
+                              <option value="{{ i.id }}" selected>{{ i.name }}</option>
+                           {% else %}
+                             <option value="{{ i.id }}">{{ i.name }}</option>
+                          {% endif %}
                       {% endfor %}
                 {% endif %}
            <!-- <option>计算机科学与技术学院</option>
             <option>数学科学学院</option>
             <option>教育学院</option>-->
+            </select>
+        </div>
 
-            <lect>
-        </td>
+    <button type="submit" hidden id="sub1"> </button>
+</form>
 
-        <script>
-            function adjust_major_choices(department_id) {
-                let options = '';
-                {% if major_list %}
-                    {% for j in major_list %}
-                        if(department_id == {{ j.id }})
-                            options += '<option value="{{ j.id }}">{{ j.name }}</option>';
-                    {% endfor %}
-                {% endif %}
-                document.getElementById('major').innerHTML = options;
-            }
-        </script>
+<br>
 
-        <td width="30%">
-            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control" required>
-            <option disabled selected>所在专业</option>
-                {% if major_list %}
-                    {% for j in major_list %}
-                        if(j.department_id == {{ department_list.first.id }})
-                            options += '<option value="{{ j.id }}">{{ j.name }}</option>';
-                    {% endfor %}
-                {% endif %}
-
+<form method="POST" style="margin-bottom:30px">
+    {% csrf_token %}
+    <div>
+        <select name="major" id="major" class="form-control" required>
+            <option selected>请选择所在专业..</option>
+            {% if major_list %}
+                {% for j in major_list %}
+                    <option value="{{ j.id }}">{{ j.name }}</option>
+                {% endfor %}
+            {% endif %}
             <!--<option>计算机科学与技术</option>
             <option>软件工程</option>
             <option>信息安全</option>-->
+            </select>
+    </div>
+<br>
+    <div style="text-align: center">
+        <button type="submit" style="background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 查看培养方案 </button>
+    </div>
 
-            <lect>
-        </td>
-        </tr>
-        <tr>
-            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 查看培养方案 <tton> </td>
-        </tr>
-    </tbody>
-    </table>
 </form>
+
 
 <span style="font-size:25px">培养方案</span>
 <table style="margin-top:30px">
