@@ -24,4 +24,5 @@ urlpatterns = [
     path('tea_class/', views.tea_class),
     path('admin_class/', views.admin_class),
     path('stu_select/', views.stu_select),
+    path('tea_class/detail/<str:class_id>', views.stu_detail, name='stu_display'),
 ]

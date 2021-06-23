@@ -1,0 +1,32 @@
+{% extends 'skeleton.html' %}
+
+{% block card_content %}
+<div  class="card-content">
+
+<span style="font-size:30px">选课学生列表</span>
+<table>
+    <thead>
+        <tr>
+            <th>学号</th>
+            <th colspan="2" >姓名</th>
+            <th>专业</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% if students_list %}
+        {% for i in students_list %}
+
+            <tr>
+            <td>{{ i.Student_id }}</td>
+
+            <td>{{ i.Student.user.first_name}}</td>
+            <td>{{ i.Student.user.last_name}}</td>
+            <td>{{ i.Student.major.name}}</td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+
+    </tbody>
+</table>
+</div>
+{% endblock card_content %}
