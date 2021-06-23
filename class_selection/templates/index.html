@@ -1,0 +1,29 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+    <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock extra_head %}
+
+{% block card_content %}
+
+<div  class="card-content">
+
+<span style="font-size:30px">选课时间</span>
+<br>
+<table>
+    <thead>
+        <tr><th>    </th><th>初选阶段</th><th>补选阶段</th></tr>
+    </thead>
+    <tbody>
+        <tr><th>开始时间</th></tr>
+        <tr><th>结束时间</th></tr>
+    </tbody>
+
+</table>
+</div>
+
+{% endblock card_content %}
+

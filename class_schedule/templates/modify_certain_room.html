@@ -27,7 +27,9 @@
               {% if campus_list %}
                   {% for i in campus_list %}
                       {% if selected_campus and i.id == selected_campus %}
-                              <option value="{{ i.id }}" selected>{{ i.name }}</option>
+                          <option value="{{ i.id }}" selected>{{ i.name }}</option>
+                      {% elif not selected_campus and i.id == original_info.building.campus_id %}
+                          <option value="{{ i.id }}" selected>{{ i.name }}</option>
                       {% else %}
                             <option value="{{ i.id }}">{{ i.name }}</option>
                       {% endif %}

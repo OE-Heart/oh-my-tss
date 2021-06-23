@@ -17,9 +17,12 @@
         <font style="color:cornflowerblue;text-align:center">&nbsp;&nbsp;&nbsp;所有课程均已顺利安排</font>
       {% endif %}
   </form>
+<br/>
+<h6>教学班列表（优先显示时间地点未安排的教学班）：</h6>
   <table>
     <thead>
       <tr>
+        <th>授课教师</th>
         <th>课程编号</th>
         <th>课程名称</th>
         <th>教学班编号</th>
@@ -34,13 +37,14 @@
       {% if schedule_list %}
       {% for i in schedule_list %}
       <tr>
+        <td>{{ i.teacher_name }}</td>
         <td>{{ i.course.id }}</td>
         <td>{{ i.course.name }}</td>
         <td>{{ i.id }}</td>
         <td>
             {% for j in i.classhasroom_set.all %}
                 <div>
-                    {% if i.not_scheduled == False %}
+                    {% if j.classroom %}
                         {% if j.day == 1 %}
                             周一
                         {% elif j.day == 2 %}
@@ -65,7 +69,11 @@
         </td>
         <td>
             {% for j in i.classhasroom_set.all %}
-                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% if j.classroom %}
+                        <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% else %}
+                        <br/>
+                {% endif %}
             {% endfor %}
         </td>
       </tr>

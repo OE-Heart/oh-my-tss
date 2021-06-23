@@ -23,6 +23,7 @@
             <th>上课时间</th>
             <th>上课地点</th>
             <th>处理意见</th>
+            <th>处理人</th>
         </tr>
     </thead>
     <tbody>
@@ -59,7 +60,11 @@
             </td>
             <td>
                 {% for j in app.Class.classhasroom_set.all %}
-                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% if j.classroom %}
+                        <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% else %}
+                        <br/>
+                    {% endif %}
                 {% endfor %}
             </td>
             <td>
@@ -69,6 +74,7 @@
                     不同意
                 {% endif %}
             </td>
+            <td>{{ app.handler }}</td>
         </tr>
     </tbody>
 </table>

@@ -19,6 +19,7 @@
             <th>提交时间</th>
             <th>处理时间</th>
             <th>处理结果</th>
+            <th>处理人</th>
         </tr>
     </thead>
     <tbody>
@@ -41,10 +42,13 @@
                     不同意
                 {% endif %}
             </td>
+            <td>{{ app.handler }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+<a class="btn btn-default" style="display:block;margin:0 auto;background:#08c" href="{% url 'application' %}">返回</a>
+
 {#<span style="font-size:30px">{{user.name}}的{{schedule.term}}课表</span>#}
 {#<div style="margin-top:30px">此处需要使用查询页面的课表组件</div>#}
 </div>

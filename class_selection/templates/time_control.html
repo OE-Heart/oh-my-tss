@@ -1,0 +1,69 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_head %}
+{% endblock extra_head %}
+
+{% block card_content %}
+
+<div id="class_selection" class="card-content">
+<form class="input-field" action="manipulate_schedule" method="GET" style="margin-bottom:30px">
+    <table class="tab_03">
+    <tbody>
+        <tr style="border:0">
+            <td width="30%">
+                选择选课阶段：
+            </td>
+        </tr>
+        <tr style="border:0">
+        <td width="30%">
+            <select name="stage" id="stage" class="form-control">
+            <option value="" disabled selected>初选/补选</option>
+            <option value="cxjd">初选阶段</option>
+            <option value="bxjd">补选阶段</option>
+
+            <lect>
+        </td>
+
+        </tr>
+
+        <tr style="border:0">
+            <td width="30%">
+                开始时间：
+            </td>
+
+            <td width="30%">
+                截止时间：
+            </td>
+        </tr>
+
+        <tr style="border:0">
+            <td width="30%">
+                <input type="datetime-local" value="开始时间" name="stage_time1">
+            </td>
+            <td width="30%">
+                <input type="datetime-local" value="截止时间" name="stage_time2">
+            </td>
+        </tr>
+
+
+        <tr>
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 修改选课时间 <tton> </td>
+        </tr>
+    </tbody>
+    </table>
+</form>
+
+</div>
+<script>
+    $(document).ready(function(){
+    $('select').formSelect();
+    });
+</script>
+{% endblock card_content %}
+
+
+
+

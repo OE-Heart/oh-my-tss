@@ -56,7 +56,7 @@
             <td>
                 {% for j in app.Class.classhasroom_set.all %}
                 <div>
-                    {% if app.Class.not_scheduled == False %}
+                    {% if j.classroom %}
                         {% if j.day == 1 %}
                             周一
                         {% elif j.day == 2 %}
@@ -81,7 +81,11 @@
             </td>
             <td>
             {% for j in app.Class.classhasroom_set.all %}
-                <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% if j.classroom %}
+                        <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                {% else %}
+                        <br/>
+                {% endif %}
             {% endfor %}
             </td>
             <td>{{ app.submit_time }}</td>

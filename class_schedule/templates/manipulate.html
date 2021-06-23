@@ -7,20 +7,39 @@
 {% endblock extra_head %}
 
 {% block card_content %}
+    <script>
+        {% if success %}
+            alert('课程安排调整成功！')
+        {% endif %}
+        {% if conflict %}
+            alert('选择的时间和地点和其他课程冲突！')
+        {% endif %}
+        {% if failure %}
+            alert('调整失败，请稍后重试')
+        {% endif %}
+    </script>
 <div id="class_schedule" class="card-content">
 <table>
     <thead>
-        <tr><th>授课教师</th><th>课程编号</th><th>课程名称</th><th>课程时段</th><th>课程地点</th></tr>
+        <tr>
+            <th>授课教师</th>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>教学班编号</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+        </tr>
     </thead>
     <tbody>
         <tr style="border:0">
-            <td>{{ course.teacher }}</td>
-            <td>{{ course.no }}</td>
-            <td>{{ course.name }}</td>
+            <td>{{ course.teacher_name }}</td>
+            <td>{{ course.course.id }}</td>
+            <td>{{ course.course.name }}</td>
+            <td>{{ course.id }}</td>
             <td>
-                {% for j in rooms %}
+                {% for j in course.classhasroom_set.all %}
                 <div>
-                    {% if j.day %}
+                    {% if j.classroom %}
                         {% if j.day == 1 %}
                             周一
                         {% elif j.day == 2 %}
@@ -44,63 +63,128 @@
             {% endfor %}
             </td>
             <td>
-                {% for j in rooms %}
+                {% for j in course.classhasroom_set.all %}
+                    {% if j.classroom %}
                     <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                    {% else %}
+                        <br/>
+                    {% endif %}
                 {% endfor %}
             </td>
         </tr>
     </tbody>
 </table>
-<form action="{% url 'manipulate_certain_class' course.id %}" method="POST" style="margin-top:30px">
+<form action="{% url 'manipulate_submit' room_to_modify.id %}" method="POST" style="margin-top:30px">
+{% csrf_token %}
     <table class="tab_03">
     <tbody>
-    {% for j in rooms %}
+        <tr style="border:0">
+            <td colspan="3">
+            <script>
+                function alter_section() {
+                    let obj = document.getElementById('section_selection');
+                    let index = obj.selectedIndex;
+                    let section_id = obj.options[index].value;
+                    window.location.replace('./' + section_id)
+                }
+            </script>
+                <label for="section_selection">选择要修改的上课时段：</label>
+                <select class="form-control" name="section_selection" id="section_selection" onchange="alter_section()">
+                    {% for i in course.classhasroom_set.all %}
+                        {% if i.id == room_to_modify.id %}
+                        <option value="{{ i.id }}" selected>
+                            时段{{ forloop.counter }}：共{{ i.duration }}节课
+                        </option>
+                        {% else %}
+                        <option value="{{ i.id }}">
+                            时段{{ forloop.counter }}：共{{ i.duration }}节课
+                        </option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+            </td>
+        </tr>
         <tr style="border:0">
         <td width="30%">
-            <select name="skrq" id="skrq" class="form-control" value="{{ j.day }}">
+        <label for="skrq">设置上课日期：</label>
+            <select name="skrq" id="skrq" class="form-control">
             <option value="" disabled selected>设置上课日期</option>
-            <option value="1">星期一</option>
-            <option value="2">星期二</option>
-            <option value="3">星期三</option>
-            <option value="4">星期四</option>
-            <option value="5">星期五</option>
-            <option value="6">星期六</option>
-            <option value="7">星期日</option>
+            <option value="1" {% if room_to_modify.day == 1 %}selected{% endif %}>星期一</option>
+            <option value="2" {% if room_to_modify.day == 2 %}selected{% endif %}>星期二</option>
+            <option value="3" {% if room_to_modify.day == 3 %}selected{% endif %}>星期三</option>
+            <option value="4" {% if room_to_modify.day == 4 %}selected{% endif %}>星期四</option>
+            <option value="5" {% if room_to_modify.day == 5 %}selected{% endif %}>星期五</option>
+            <option value="6" {% if room_to_modify.day == 6 %}selected{% endif %}>星期六</option>
+            <option value="7" {% if room_to_modify.day == 7 %}selected{% endif %}>星期日</option>
             </select>
         </td>
-        <td width="30%">
-            上课节数：{{ j.duration }}
+        <td width="60%" colspan="2">
+        <label for="qssj">设置上课时间：</label>
+            <select name="qssj" id="qssj" class="form-control">
+                {% if room_to_modify.duration == 4 %}
+                    <option value="1" {% if room_to_modify.start_at == 1 %}selected{% endif %}>1，2，3，4节</option>
+                    <option value="6" {% if room_to_modify.start_at == 6 %}selected{% endif %}>6，7，8，9节</option>
+                {% elif room_to_modify.duration == 3 %}
+                    <option value="3" {% if room_to_modify.start_at == 3 %}selected{% endif %}>3，4，5节</option>
+                    <option value="6" {% if room_to_modify.start_at == 6 %}selected{% endif %}>6，7，8节</option>
+                    <option value="11" {% if room_to_modify.start_at == 11 %}selected{% endif %}>11，12，13节</option>
+                {% elif room_to_modify.duration == 2 %}
+                    <option value="1" {% if room_to_modify.start_at == 1 %}selected{% endif %}>1，2节</option>
+                    <option value="3" {% if room_to_modify.start_at == 3 %}selected{% endif %}>3，4节</option>
+                    <option value="6" {% if room_to_modify.start_at == 6 %}selected{% endif %}>6，7节</option>
+                    <option value="7" {% if room_to_modify.start_at == 7 %}selected{% endif %}>7，8节</option>
+                    <option value="9" {% if room_to_modify.start_at == 9 %}selected{% endif %}>9，10节</option>
+                    <option value="11" {% if room_to_modify.start_at == 11 %}selected{% endif %}>11，12节</option>
+                {% elif room_to_modify.duration == 1 %}
+                    <option value="1" {% if room_to_modify.start_at == 1 %}selected{% endif %}>1节</option>
+                    <option value="2" {% if room_to_modify.start_at == 2 %}selected{% endif %}>2节</option>
+                    <option value="3" {% if room_to_modify.start_at == 3 %}selected{% endif %}>3节</option>
+                    <option value="4" {% if room_to_modify.start_at == 4 %}selected{% endif %}>4节</option>
+                    <option value="5" {% if room_to_modify.start_at == 5 %}selected{% endif %}>5节</option>
+                    <option value="6" {% if room_to_modify.start_at == 6 %}selected{% endif %}>6节</option>
+                    <option value="7" {% if room_to_modify.start_at == 7 %}selected{% endif %}>7节</option>
+                    <option value="8" {% if room_to_modify.start_at == 8 %}selected{% endif %}>8节</option>
+                    <option value="9" {% if room_to_modify.start_at == 9 %}selected{% endif %}>9节</option>
+                    <option value="10" {% if room_to_modify.start_at == 10 %}selected{% endif %}>10节</option>
+                    <option value="11" {% if room_to_modify.start_at == 11 %}selected{% endif %}>11节</option>
+                    <option value="12" {% if room_to_modify.start_at == 12 %}selected{% endif %}>12节</option>
+                    <option value="13" {% if room_to_modify.start_at == 13 %}selected{% endif %}>13节</option>
+                {% endif %}
+            </select>
         </td>
         </tr>
         <tr style="border:0">
         <td width="30%">
-            <select name="skxq" id="skxq" class="form-control">
-                <option value="" disabled selected>设置上课校区</option>
+        <label for="skxq">设置上课校区</label>
+            <select name="skxq" id="skxq" class="form-control" onchange="window.location.href='?campus=' + this.options[this.selectedIndex].value">
                 {% for c in campus %}
-                    <option value="{{ c.id }}">{{ c.name }}</option>
+                    <option value="{{ c.id }}" {% if c.id == selected_campus %}selected{% endif %}>{{ c.name }}</option>
                 {% endfor %}
-{#            <option value="" disabled selected>设置上课校区</option>#}
-{#            <option value="zjg">紫金港</option>#}
-{#            <option value="yq">玉泉</option>#}
-{#            <option value="xx">西溪</option>#}
-{#            <option value="hjc">华家池</option>#}
-{#            <option value="zj">之江</option>#}
-{#            <option value="zs">舟山</option>#}
             </select>
         </td>
         <td width="30%">
-            <select name="skjxl" id="skjxl" class="form-control">
-            <option value="" disabled selected>设置上课教学楼</option>
-            <option value="?">这里后续添加动态选项</option>
+        <label for="skjxl">设置上课教学楼：</label>
+            <select name="skjxl" id="skjxl" class="form-control" onchange="window.location.href='?campus=' + {{ selected_campus }} + '&building=' + this.options[this.selectedIndex].value">
+            {% for i in building_list %}
+                <option value="{{ i.id }}" {% if i.id == selected_building %}selected{% endif %}>{{ i.name }}</option>
+            {% endfor %}
             </select>
         </td>
         <td>
-            <input placeholder="设置上课教室" type="text" name="jshm" value="" id="jshm" class="form-control">
+        <label for="jshm">设置上课教室</label>
+            <select name="jshm" id="jshm" class="form-control">
+            {% for i in classroom_list %}
+                <option value="{{ i.id }}" {% if i.id == room_to_modify.classroom_id %}selected{% endif %}>
+                    {{ i.room_number }}（{% if i.type == 'O' %}普通教室{% elif i.type == 'G' %}体育馆{% elif i.type == 'C' %}机房{% endif %}）
+                </option>
+            {% endfor %}
+            </select>
+            <span></span>
         </td>
-        <tr style="border:0">
+        </tr>
+            <tr style="border:0">
             <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 提交更改 </button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
         </tr>
-    {% endfor %}
     </tbody>
     </table>
 </form>
@@ -109,20 +193,20 @@
     $(document).ready(function(){
     $('select').formSelect();
     //等待完善
-    $("#skxq").bind("change",function(){
-        var skxq = $(this).val();
-        var url = "findjxlbyxq";
-        $.post(url,{"skxq":skxq},function(rd){
-            $("#skjxl").empty();
-	        $("#skjxl").append("<option value=‘’ disabled selected>设置上课教学楼</option>");
-            var dataObj=eval("("+rd+")");
-            for(var i=0;i<dataObj.length;i++){
-                var jxlid=dataObj[i].jxlid;
-                var jxlmc=dataObj[i].jxlmc;
-                $("#skjxl").append("<option value='"+jxlid+"'>"+jxlmc+"</option>");
-            }
-        });
-    });
+    {#$("#skxq").bind("change",function(){#}
+    {#    var skxq = $(this).val();#}
+    {#    var url = "findjxlbyxq";#}
+    {#    $.post(url,{"skxq":skxq},function(rd){#}
+    {#        $("#skjxl").empty();#}
+	{#        $("#skjxl").append("<option value=‘’ disabled selected>设置上课教学楼</option>");#}
+    {#        var dataObj=eval("("+rd+")");#}
+    {#        for(var i=0;i<dataObj.length;i++){#}
+    {#            var jxlid=dataObj[i].jxlid;#}
+    {#            var jxlmc=dataObj[i].jxlmc;#}
+    {#            $("#skjxl").append("<option value='"+jxlid+"'>"+jxlmc+"</option>");#}
+    {#        }#}
+    {#    });#}
+    {# });#}
     });
 </script>
 {% endblock card_content %}
