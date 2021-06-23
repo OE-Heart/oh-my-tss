@@ -1,0 +1,74 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %} 
+{% load material_form %} 
+
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'info_mgt/css/info_mgt.css' %}"
+/>
+{% endblock extra_head %} 
+
+{% block card_content %}
+<div id="rsdetail" class="card-content">
+    <label style="font-size: 25px;">课程名 共享资源</label>
+	<p></p>
+	<div>
+	<button onclick="" title="上传新文件" class="btn btn-default btn-sm" type="button" style="margin-right: 5px;">
+			上传新文件
+		</button>
+		<button onclick="  " title="新建文件夹" class="btn btn-default btn-sm"	type="button" style="margin-right: 5px;">
+			新建文件夹
+		</button>
+		<button onclick=" " id="dataRecycle"
+			title="返回课程列表" class="btn btn-default btn-sm" style="margin-left: 5px;">
+			返回课程列表
+			</button>
+        <span style="float:right">
+            <button onclick="  " id="dataRecycle"
+            title="搜索" class="btn btn-default btn-sm" style="margin-left: 5px;margin-top: 5px;">
+            搜索
+            </button>
+        </span>
+        <span style="float:right">
+			<input type="text" placeholder="搜索文件" class="file_search_input" size=20>
+		</span>
+	</div>
+    
+
+    
+
+
+
+    <table><thead>
+    <tr><th>文件名</th><th>文件大小</th><th>上传时间</th><th>上传人</th><th>操作</th><th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>第一次小组报告PPT</td>
+            <td>文件夹</td>
+            <td>20200621 21:00</td>
+			<td>助教</td>
+            <td>
+                <button class="operation-btn">重命名</button>
+				<button class="operation-btn">下载</button>
+				<button class="operation-btn">删除</button>
+            </td>
+        </tr>
+		<tr>
+            <td>第一课课件.pptx</td>
+            <td>512KB</td>
+            <td>20200621 21:00</td>
+			<td>李老师</td>
+            <td>
+                <button class="operation-btn">重命名</button>
+				<button class="operation-btn">下载</button>
+				<button class="operation-btn">删除</button>
+            </td>
+        </tr>
+    </tbody>
+    </table>
+     </div>
+{% endblock card_content %}

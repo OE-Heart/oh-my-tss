@@ -1,0 +1,49 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %} 
+{% load material_form %} 
+
+{% block extra_head %}
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'info_mgt/css/info_mgt.css' %}"
+/>
+{% endblock extra_head %} 
+
+{% block card_content %}
+<div id="resource_share" class="card-content">
+    <label style="font-size: 25px;">学期</label>
+    <form action="#" method="post">
+        <select id="term" name="term">
+            <option value="大一">大一秋冬</option>
+            <option value="大一">大一春夏</option>
+            <option value="大二">大二秋冬</option>
+            <option value="大二">大二春夏</option>
+            <option value="大三">大三秋冬</option>
+            <option value="大三">大三春夏</option>
+            <option value="大四">大四秋冬</option>
+            <option value="大四">大四春夏</option>
+            
+
+        </select>
+    </form>
+    <table><thead>
+    <tr><th>课程号</th><th>课程名</th><th>上课时间</th><th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>22120032</td>
+            <td>软件工程基础</td>
+            <td>周一678</td>
+            <td>
+                <button class="operation-btn" onclick="window.location.href='resource_share_detail'">查看资源</button>
+            </td>
+        </tr>
+    </tbody>
+    </table>
+
+    <!--div class="float-new-btn"></div-->
+    <div class="table-foot-bar">上一页&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 - 6, 共 1 页&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;下一页</div>
+    </div>
+{% endblock card_content %}
