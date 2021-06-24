@@ -1,0 +1,59 @@
+
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
+{% endblock extra_css %}
+
+{% block card_content %}
+<style type="text/css">
+    .mytable{
+
+    }
+    .col_1{
+        width: 500px;
+        text-align: center;
+    }
+    .col_2{
+        width: 500px;
+        text-align: center;
+    }
+    .col_3{
+        width: 500px;
+        text-align: center;
+    }
+    .mbutton{
+        width: 100px;
+        text-align: center;
+        height: 40px;
+        background-color: red;
+        color: #ffffff;
+        border: none;
+        border-radius: 5px;
+        padding: 0.3em;
+        float: right;
+    }
+</style>
+    <form method="post" action="../handle_end/">
+    {% csrf_token %}
+    <input hidden name="course" value="{{ course }}">
+<table class="mytable">
+        <tr>
+            <th class="col_1" style="font-size: 20px;">Question</th>
+            <th class="col_2" style="font-size: 20px;">Value</th>
+            <th class="col_3" style="font-size: 20px;">Select</th>
+        </tr>
+        {% for row in questionlist %}
+        <tr>
+            <td class="col_1">{{ row.0 }}</td>
+            <td class="col_2">{{ row.1 }}</td>
+            <td class="col_3"><input type="checkbox" name="uid" value="{{ row.2 }}"></td>
+        </tr>
+        {% endfor %}
+    </table>
+        <input type="submit" class="mbutton" value="确认">
+    </form>
+</table>
+{% endblock card_content %}

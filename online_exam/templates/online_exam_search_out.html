@@ -90,7 +90,7 @@
             <br />
         </div>
         <hr size="10px"/>
-        <button onclick="" class="button1">添加题目</button>
+        <button onclick="window.location.href='./add_question/?course={{ course }}'" class="button1">添加题目</button>
         <button onclick="window.location.href='/online_exam/'" class="button2">返回</button>
         <table class="mytable">
         <tr>
@@ -107,7 +107,6 @@
                     <td><button onclick="window.location.href='#'" class="mybutton">Change</button></td>
                 </tr>
             {% endfor %}
-
     </table>
     </div>
 {% endblock card_content %}

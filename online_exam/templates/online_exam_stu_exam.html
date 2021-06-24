@@ -1,0 +1,86 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>在线答题考试系统</title>
+
+    <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
+    <style>
+        .hasBeenAnswer {
+            background: #5d9cec;
+            color:#fff;
+        }
+    </style>
+
+</head>
+<body>
+
+<nav class="navbar navbar-expand-sm bg-light navbar-light ">
+    <ul class="navbar-nav">
+        <li class="nav-item active">
+            <a class="nav-link"><h3>在线考试系统</h3></a>
+        </li>
+
+        <li class="nav-item active">
+            <a class="nav-link"><h3>当前科目:{{ course }}</h3></a>
+        </li>
+        <li style="position: fixed;right: 70px; font-size: 30px;color: #9fcdff">{{ user.id }}</li>
+
+    </ul>
+</nav>
+<div class="main">
+    <!--nr start-->
+    <div class="test_main">
+        <div class="nr_left">
+            <div class="test">
+                <form action="/calGrade/" method="post">
+                    <input type ="hidden" name = "pid" value = "{{ pid }}">
+                    <input type = "hidden" name = "paper1" value = "{{ paper1 }}">
+                    <div class="test_title">
+                        <p class="test_time">
+                            <i class="icon iconfont">&#xe6fb;</i><b class="alt-1">01:40</b>
+                        </p>
+                        <font><input type="submit" name="tijiao" value="交卷"></font>
+                    </div>
+
+                    <div class="test_content">
+                        <div class="test_content_title">
+                            <h2>题目列表</h2>
+                            <p>
+                                {% for test in paper1.questions.all %}
+                                {% endfor %}
+                                <span>共</span><i class="content_lit">{{ forloop.counter }}</i><span>题，</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="test_content_nr">
+                        <ul>
+                            {% for test in paper1.questions.all %}
+                                <li id="{{ forloop.counter }}">
+                                    <div class="test_content_nr_tt">
+                                        <i>{{ forloop.counter}}</i><span>({{ test.value }}分)</span>
+                                        <font>{{ test.content }}</font>
+
+                                    </div>
+                                    <div class="test_content_nr_main">
+                                        <ul>
+                                            <p>{{  test.content }}</p>
+                                        </ul>
+                                    </div>
+                                    <input type="text" name="answer{{ forloop.counter }}" value=" ">
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+    <div class="foot"></div>
+</div>
+
+</body>
+</html>

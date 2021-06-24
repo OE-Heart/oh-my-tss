@@ -1,0 +1,36 @@
+{% extends 'skeleton.html' %}
+
+{% load static %}
+{% load material_form %}
+
+{% block extra_css %}
+    <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
+{% endblock extra_css %}
+
+{% block card_content %}
+    <style type="text/css">
+        .f1{
+            display: block;
+        }
+    </style>
+    <div class="f1">
+    <p>配置完成，试卷正在生成中            </p>
+    </div>
+    <div class="f1">
+    <p>5秒钟后跳转...</p>
+    </div>
+    <script type="text/javascript">
+        var s = document.getElementById('s');
+        var time = 5; //时间,秒            　　　　　　　　
+        function Redirect() {
+            window.location = "..";
+        }
+        var i = 0;
+        function dis() {
+            s.innerHTML = "还剩" + (time - i) + "秒";
+            i++;
+        }
+        timer = setInterval('dis()', 1000); //显示时间            　　　　　　　　
+        timer = setTimeout('Redirect()', time * 1000); //跳转
+    </script>
+{% endblock card_content %}
