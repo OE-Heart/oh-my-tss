@@ -87,33 +87,28 @@ def info_edit(req):
     else:
         return HttpRequest(404)
 
-def account_add(req, username='#'):
-    if req.user.has_perm('info_mgt.add_student') or req.user.has_perm('info_mgt.add_teacher'):
+def account_edit(req, username='#'):
+    if req.user.has_perm('info_mgt.change_student') and req.user.has_perm('info_mgt.change_teacher'):
         if req.method == 'POST':
             new_username = req.POST['username']
             new_last_name = req.POST['last_name']
             new_first_name = req.POST['first_name']
             new_email = req.POST['email']
             new_avatar = req.FILES.get('avatar')
-            print(len(new_avatar))
-            if username != '#':
-                this_user = models.User.objects.get(username=new_username)
-                if this_user:
-                    this_user.username = new_username
-                    this_user.last_name = new_last_name
-                    this_user.first_name = new_first_name
-                    this_user.email = new_email
-                    this_user.save()
-                    result_0 = True
-                else:
-                    result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
-                                                          first_name=new_first_name, email=new_email)
+
+            this_user = models.User.objects.get(username=username)
+            if this_user:
+                this_user.username = new_username
+                this_user.last_name = new_last_name
+                this_user.first_name = new_first_name
+                this_user.email = new_email
+                this_user.save()
+                result_0 = True
             else:
-                result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
-                                                      first_name=new_first_name, email=new_email)
+                result_0 = False
 
             query = models.Avatar.objects.filter(user=this_user)
-            if len(query) == 0 and new_avatar is not None:
+            if len(query) == 0 and new_avatar is not None and result_0:
                 result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
                 f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
                 for chunk in new_avatar.chunks():
@@ -147,13 +142,64 @@ def account_add(req, username='#'):
                 })
             else:
                 obj = req.user
-                return render(req, 'info_edit.html', {
+                return render(req, 'account_add.html', {
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
                     'form': SelfInfoForm(),
                     'edit': False
                 })
+        else:
+            return HttpRequest(404)
+    else:
+        return HttpRequest(403)
+
+
+def account_add(req):
+    if req.user.has_perm('info_mgt.add_student') or req.user.has_perm('info_mgt.add_teacher'):
+        if req.method == 'POST':
+            new_username = req.POST['username']
+            new_last_name = req.POST['last_name']
+            new_first_name = req.POST['first_name']
+            new_email = req.POST['email']
+            new_avatar = req.FILES.get('avatar')
+
+            result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
+                                                  first_name=new_first_name, email=new_email)
+
+            this_user = models.User.objects.get(username=new_username)
+            query = models.Avatar.objects.filter(user=this_user)
+            if len(query) == 0 and new_avatar is not None and result_0:
+                result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                for chunk in new_avatar.chunks():
+                    f.write(chunk)
+                f.close()
+            elif new_avatar is not None and result_0:
+                result_2 = query.update(avatar=new_avatar)
+                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                for chunk in new_avatar.chunks():
+                    f.write(chunk)
+                f.close()
+            else:
+                result_2 = True
+            return render(req, 'account_add.html', {
+                'web_title': '用户信息添加',
+                'page_title': '用户信息添加',
+                'request_user': req.user,
+                'form': SelfInfoForm(instance=this_user),
+                'edit': True,
+                'edit_result': True if result_0 != 0 and result_2 != 0 else False
+            })
+        elif req.method == 'GET':
+            obj = req.user
+            return render(req, 'account_add.html', {
+                'web_title': '用户信息添加',
+                'page_title': '用户信息添加',
+                'request_user': req.user,
+                'form': SelfInfoForm(),
+                'edit': False
+            })
         else:
             return HttpRequest(404)
     else:

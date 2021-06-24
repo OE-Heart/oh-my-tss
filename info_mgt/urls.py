@@ -10,6 +10,8 @@ urlpatterns = [
     path('account/<int:page>', views.account_list, name='account_list'),
     path('account/add', views.account_add, name="account_add"),
     path('account/add/<str:username>', views.account_add, name="account_add"),
+    path('account/edit', views.account_edit, name="account_edit"),
+    path('account/edit/<str:username>', views.account_edit, name="account_edit"),
     path('account/delete/<str:username>', views.account_delete, name='account_delete'),
 
     path('info', views.info_view, name='info_view'),
