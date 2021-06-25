@@ -234,18 +234,19 @@ def account_add(req):
 
             this_user = models.User.objects.get(username=new_username)
             print(new_group)
+
             if this_user and new_group:
                 if new_group == 'teacher':
                     print(new_group)
-                    target_group = Group.objects.get(name='student')
-                    print(target_group)
-                    this_user.groups.add(target_group)
-                    this_user.major = new_major
-                elif new_group == 'student':
                     target_group = Group.objects.get(name='teacher')
                     print(target_group)
                     this_user.groups.add(target_group)
-                    this_user.major = new_major
+                    this_user.department.name = new_major
+                elif new_group == 'student':
+                    target_group = Group.objects.get(name='student')
+                    print(target_group)
+                    this_user.groups.add(target_group)
+                    this_user.major.name = new_major
 
             query = models.Avatar.objects.filter(user=this_user)
             if len(query) == 0 and new_avatar is not None and result_0:
