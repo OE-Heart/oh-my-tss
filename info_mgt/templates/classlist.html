@@ -25,7 +25,7 @@
         <td>{{ class.course.name }}</td>
         <td>{{ class.year }}</td>
         <td>{{ class.term }}</td>
-        <td>{{ "TODO" }}</td>
+        <td>{{ class.memberCnt }}</td>
       </tr>
       {% endfor %}
     </tbody>
@@ -43,6 +43,6 @@
       <a href="{% url 'info_mgt:class_list' next_page %}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="" title="添加新班级"></a>
+  <a class="add-btn" href="{% url 'info_mgt:class_add' %}" title="添加新班级"></a>
 </div>
 {% endblock card_content %}
