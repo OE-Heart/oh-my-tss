@@ -26,6 +26,6 @@ urlpatterns = [
     path('course/<str:option>/<str:in_course_name>', views.course_edit, name='course_edit'),
 
     path('class', views.class_list, name='class_list'),
-    path('class/add', views.views.class_add, name='class_add'),
+    path('class/add', views.class_add, name='class_add'),
     path('class/<int:page>', views.class_list, name='class_list'),
 ]

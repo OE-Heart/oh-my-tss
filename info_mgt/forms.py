@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from material import *
-from info_mgt.models import Course, Avatar, Class
+from info_mgt.models import Course, Avatar, Student, Teacher
 from oh_my_tss import demo as forms
 
 
@@ -21,7 +21,7 @@ class SelfInfoForm(forms.ModelForm):
         'username',
         Row('last_name', 'first_name'),
         'email'
-    )
+    ),
 
     class Meta:
         model = User
@@ -61,7 +61,6 @@ class CourseEditForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = '__all__'
-
 
 class ClassAddForm(forms.Form):
     course = forms.CharField(max_length=20)
