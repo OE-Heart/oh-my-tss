@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+
 <html>
 <head>
     <meta charset="UTF-8">
@@ -24,14 +24,18 @@
 <form method="post" style="display: block">
     {% csrf_token %}
     <p>学科：</p>
-    <input type="text" name="course" value="{{ course }}" style="display: block;height: 30px"></input>
+    <input type="text" name="course" value="{{ course }}" style="display: block;height: 30px"/>
 请选择题目类型:
-<select style="font-size: 30px;display: block" name="question_type">
-    <option value="0">选择</option>
-    <option value="1">判断</option>
-</select>
+    <label>
+        <select style="font-size: 30px;display: block" name="question_type">
+            <option value="0">选择</option>
+            <option value="1">判断</option>
+        </select>
+    </label>
     <p>请输入题目：</p>
-<textarea name="content" style="width: 800px;height: 220px;display: block"></textarea>
+    <label>
+        <textarea name="content" style="width: 800px;height: 220px;display: block"></textarea>
+    </label>
     A<input type="radio" name="right_answer" value="1">
     B<input type="radio" name="right_answer" value="2"/>
     C<input type="radio" name="right_answer" value="3"/>
@@ -46,5 +50,10 @@
     <input type="text" name="difficulty">
     <input type="submit" value="确认">
 </form>
+<script>
+    $(document).ready(function(){
+        $('input').formSelect();
+    });
+</script>
 </body>
 </html>

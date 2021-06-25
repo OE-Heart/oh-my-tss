@@ -1,5 +1,8 @@
+import datetime
+import random
+
 import pymysql
-import requests
+from django.db import connection
 from django.shortcuts import render,redirect
 from info_mgt.models import Course
 from online_exam.models import Question,Paper
@@ -103,7 +106,151 @@ def release(req):
     })
 
 def testinfo(req):
+    conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
+    cursor = conn.cursor()
+    list = []
+    cursor.execute("select * from online_exam_test")
+    tests = cursor.fetchall()
+    for item in tests:
+        cursor.execute("select course_id from online_exam_test_courses where test_id='%s'"%(item[0]))
+        courseid = cursor.fetchall()
+        cursor.execute("select count(*) from online_exam_test_students where test_id='%s'"%(item[0]))
+        stu_num = cursor.fetchall()
+        list.append((item[0],item[1],item[2],courseid[0][0],stu_num[0][0],item[3]))
+    conn.close()
+    time1 = datetime.datetime.now()
     return render(req, 'online_exam_test_info.html', {
+        'list': list,
+        'time1': time1,
+        'web_title': '在线测验系统',
+        'page_title': '在线测验子系统',
+        'test_param': 'TEST PARAM',
+    })
+
+def calGrade(req):
+    cursor = connection.cursor()
+    dict = {'0': 'A', '1': 'B', '2': 'C', '3': 'D', '4': 'T', '5': 'F'}
+    if req.method == 'POST':
+        list = []
+        num = req.POST.get('num')
+        for i in range(int(num)):
+            list.append(req.POST.get(str(i + 1)))
+        conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
+        cursor = conn.cursor()
+        testid = req.POST.get('testid')
+        cursor.execute("select paper_id from online_exam_test where id='%s'" % (testid))
+        pid = cursor.fetchall()
+        cursor.execute("select * from online_exam_paper_questions where paper_id='%s'" % (pid[0][0]))
+        result = cursor.fetchall()
+        res = 0
+        score = 0
+        i = 0
+        s_id = req.user.id
+        for question in result:
+            cursor.execute("select * from online_exam_question where id = '%s'" % (question[2]))
+            result1 = cursor.fetchall()
+            res += result1[0][4]
+            q_id = question[0]
+            if list[i][0] == dict[result1[0][3]]:
+                score+=result1[0][4]
+                #it = StudentAnswer.objects.create(paper_id = pid[0][0],question_id = q_id,is_right=True,student_id= s_id,score=result[0][4])
+            else:
+                pass
+                #it = StudentAnswer.objects.create(paper_id=pid[0][0], question_id=q_id, is_right=False, student_id=s_id,
+                #score=0)
+            i+=1
+            #it.save()
+        weight = score/res
+        time1 = datetime.datetime.now()
+        print(score,weight)
+        #it = Score.objects.create(paper_id=pid[0][0],student_id=s_id,score=score,weight=weight,date=time1)
+        #it.save()
+    return redirect('../stu_analysis/')
+
+def stu_testinfo(req):
+    conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
+    cursor = conn.cursor()
+    list = []
+    cursor.execute("select * from online_exam_test")
+    tests = cursor.fetchall()
+    time1 = datetime.datetime.now()
+    for item in tests:
+        cursor.execute("select course_id from online_exam_test_courses where test_id='%s'" % (item[0]))
+        courseid = cursor.fetchall()
+        cursor.execute("select count(*) from online_exam_test_students where test_id='%s'" % (item[0]))
+        stu_num = cursor.fetchall()
+        join = time1<item[1] and time1>item[2]
+        list.append((item[0], item[1], item[2], courseid[0][0], stu_num[0][0], item[3],join))
+    conn.close()
+    return render(req,'online_exam_stu_testinfo.html', {
+        'list':list,
+        'web_title': '在线测验系统',
+        'page_title': '在线测验子系统',
+        'test_param': 'TEST PARAM',
+    })
+def stu_exam(req):
+    if req.method == "GET":
+        testid = req.GET.get('test_id')
+        conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
+        cursor = conn.cursor()
+        list = []
+        time1 = datetime.datetime.now()
+        cursor.execute("select course_id from online_exam_test_courses where test_id='%s'" % (testid))
+        courseid = cursor.fetchall()
+        cursor.execute("select count(*) from online_exam_test_students where test_id='%s'" % (testid))
+        stu_num = cursor.fetchall()
+        cursor.execute("select paper_id from online_exam_test where id='%s'" % (testid))
+        pid = cursor.fetchall()
+        cursor.execute("select start from online_exam_test where id='%s'" % (testid))
+        start = cursor.fetchall()
+        cursor.execute("select end from online_exam_test where id='%s'" % (testid))
+        end = cursor.fetchall()
+        cursor.execute("select count(*) from online_exam_paper_questions where paper_id='%s'"%(pid[0][0]))
+        itemn = cursor.fetchall()
+        list.append((testid, start[0][0], end[0][0], courseid[0][0], stu_num[0][0], pid[0][0],itemn[0][0],time1))
+        list1 = []
+        cursor.execute("select * from online_exam_paper_questions where paper_id='%s'" % (pid[0][0]))
+        result = cursor.fetchall()
+        for question in result:
+            cursor.execute("select * from online_exam_question where id = '%s'" % (question[2]))
+            result1 = cursor.fetchall()
+            list1.append(( result1[0][2], result1[0][4]))
+    return render(req,'online_exam_stu_exam.html', {
+        'list1':list1,
+        'list':list,
+        'web_title': '在线测验系统',
+        'page_title': '在线测验子系统',
+        'test_param': 'TEST PARAM',
+    })
+def teach_detail(req):
+    dict = {'0':'A','1' : 'B','2' : 'C', '3':'D','4':'T','5':'F'}
+    if req.method == "GET":
+        testid = req.GET.get('test_id')
+        conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
+        cursor = conn.cursor()
+        list = []
+        time1 = datetime.datetime.now()
+        cursor.execute("select course_id from online_exam_test_courses where test_id='%s'" % (testid))
+        courseid = cursor.fetchall()
+        cursor.execute("select count(*) from online_exam_test_students where test_id='%s'" % (testid))
+        stu_num = cursor.fetchall()
+        cursor.execute("select paper_id from online_exam_test where id='%s'"%(testid))
+        pid = cursor.fetchall()
+        cursor.execute("select start from online_exam_test where id='%s'"%(testid))
+        start = cursor.fetchall()
+        cursor.execute("select end from online_exam_test where id='%s'"%(testid))
+        end = cursor.fetchall()
+        list.append((testid,start[0][0],end[0][0] , courseid[0][0], stu_num[0][0],pid[0][0]))
+        list1 = []
+        cursor.execute("select * from online_exam_paper_questions where paper_id='%s'"%(pid[0][0]))
+        result = cursor.fetchall()
+        for question in result:
+            cursor.execute("select * from online_exam_question where id = '%s'"%(question[2]))
+            result1 = cursor.fetchall()
+            list1.append((result1[0][1],result1[0][2],result1[0][4]))
+    return render(req,'online_exam_teach_detail.html',{
+        'list':list,
+        'list1':list1,
         'web_title': '在线测验系统',
         'page_title': '在线测验子系统',
         'test_param': 'TEST PARAM',
@@ -125,26 +272,31 @@ def generate_paper_auto(request):
         chapterstart = request.POST.get("chapter1")
         chapterend = request.POST.get("chapter2")
         hard = request.POST.get('hard')
-        #generate_auto(course,user_id,chapterstart,chapterend);
-        generate_auto(course,1,chapterstart,chapterend);
+        totalscore = request.POST.get('totalscore')
+        generate_auto(course,user_id,chapterstart,chapterend,hard,int(totalscore))
         return render(request,'online_exam_generate_paper_auto_end.html',{
             'web_title': '在线测验系统',
             'page_title': '生成试卷',
             'test_param': 'TEST PARAM',
         })
 
-def generate_auto(course,teacher_id,chapterstart,chapterend):
+def generate_auto(course,teacher_id,chapterstart,chapterend,hard,totalscore):
     message = Course.objects.get(name=course)
     course_id = message.id
     chapterstart = int(chapterstart)
     chapterend = int(chapterend)
     questionlist = []
-    questionidlist = []
-    paperadd = Paper.objects.create(name='自动出卷',course_id=course_id,teacher_id=teacher_id,generate_time=timezone.now())
+    name = '自动出卷'+str(timezone.now())
+    total_score = 0
+    paperadd = Paper.objects.create(name=name,course_id=course_id,teacher_id=teacher_id,generate_time=timezone.now())
     for i in range(chapterstart,chapterend+1):
         quest = Question.objects.filter(course_id=course_id,chapter=i)
-        print(quest)
-        paperadd.questions.add(*quest)
+        for j in quest:
+            k = random.randint(1,10)
+            if k>5:
+                if total_score+j.value<=totalscore:
+                    total_score+=j.value
+                    paperadd.questions.add(j)
     return
 
 def generate_paper_handle(request):#手动出卷
@@ -154,7 +306,7 @@ def generate_paper_handle(request):#手动出卷
         resultset = Question.objects.filter(course_id=message.id)
         result = []
         for i in resultset:
-            result.append((i.content,i.value,i.id))
+            result.append((i.content,i.value,i.id,i.difficulty))
         return render(request,'online_exam_generate_paper_handle_search.html',{
             'web_title': '在线测验系统',
             'page_title': '手动生成试卷',
@@ -208,27 +360,23 @@ def add_question(request):
 
 def combineanalysis(req):
     # 这里估计要根据html相应的改，暂且发送的请求里叫做paperID吧
-    # paperID = req.GET.get('paperID')
-    conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', password='xkxqjdTVgZRfjV2t', db='fse')
-    cursor = conn.cursor()
+    paperID = req.GET.get('paperID')
+    cursor = connection.cursor()
 
-    # cursor.execute(
+    #cursor.execute(
     #     "select first_name,last_name,date,score from auth_user natural join online_exam_score where paper_id=%d" % paperID)
-    # cursor.execute(
+    #cursor.execute(
     #     "select first_name,last_name,date,score from auth_user natural join online_exam_score where paper_id=1234")
     cursor.execute("select first_name, last_name, date, score, student_id from auth_user, online_exam_score "
-                   "where online_exam_score.student_id = auth_user.id and paper_id=1234")
+                   "where online_exam_score.student_id = auth_user.id and paper_id=%s",[paperID])
     rst1 = cursor.fetchall()
-
+    print(rst1)
     # cursor.execute(
     #     "select question_id,count(id) from online_exam_studentanswer "
     #     "where paper_id=%d and is_right=1 group by question_id" % paperID)
     cursor.execute(
         "select question_id,count(id) from online_exam_studentanswer where is_right=1 group by question_id")
     rst2 = cursor.fetchall()
-
-    cursor.close()
-    conn.close()
     return render(req, 'online_exam_combine_analysis.html', {
         'web_title': '在线测验系统',
         'page_title': '在线测验子系统',
@@ -242,17 +390,13 @@ def stusingleselect(req):
     # nid = req.GET.get('nid')
     # name = req.GET.get('name')
     student_id = req.GET.get('student_id')
-
-    conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
-    cursor = conn.cursor()
+    cursor = connection.cursor()
     # cursor.execute("select id from online_exam_paper where name='%s'" % (name))
     # result = cursor.fetchall()
     # cursor.execute("select student_id,date,score from online_exam_score where paper_id=%d" % (result[0][0]))
     # result2 = cursor.fetchall()
     cursor.execute("select id,name from online_exam_paper")
     result = cursor.fetchall()
-    cursor.close()
-    conn.close()
     return render(req, 'online_exam_stu_single_select.html', {
         'web_title': '在线测验系统',
         'page_title': '在线测验子系统',
@@ -268,8 +412,7 @@ def stusingle(req):
         student_id = req.GET.get('student_id')
 
         id_select = '1234'
-        conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
-        cursor = conn.cursor()
+        cursor = connection.cursor()
         # cursor.execute("select id from online_exam_paper where name='%s'" % (name))
         # result = cursor.fetchall()
         # cursor.execute("select student_id,date,score from online_exam_score where paper_id=%d" % (result[0][0]))
@@ -277,8 +420,6 @@ def stusingle(req):
         cursor.execute("select content,score,is_right from online_exam_studentanswer,online_exam_question "
                        "where student_id= %s and online_exam_studentanswer.question_id = online_exam_question.id and paper_id = %s", [student_id, id_select])
         result = cursor.fetchall()
-        cursor.close()
-        conn.close()
         return render(req, 'online_exam_stu_single.html', {
             'web_title': '在线测验系统',
             'page_title': '在线测验子系统',
@@ -292,8 +433,7 @@ def stusingle(req):
         # name = req.GET.get('name')
         id_select = req.POST.get("id_select")
         student_id = req.POST.get("student_id")
-        conn = pymysql.connect(host='43.129.73.191', port=3306, user='fse', passwd='xkxqjdTVgZRfjV2t', db='fse')
-        cursor = conn.cursor()
+        cursor = connection.cursor()
         # cursor.execute("select id from online_exam_paper where name='%s'" % (name))
         # result = cursor.fetchall()
         # cursor.execute("select student_id,date,score from online_exam_score where paper_id=%d" % (result[0][0]))
@@ -306,8 +446,6 @@ def stusingle(req):
 
 
         result = cursor.fetchall()
-        cursor.close()
-        conn.close()
         return render(req, 'online_exam_stu_single.html', {
             'web_title': '在线测验系统',
             'page_title': '在线测验子系统',
