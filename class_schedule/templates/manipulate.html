@@ -149,6 +149,9 @@
                     <option value="11" {% if room_to_modify.start_at == 11 %}selected{% endif %}>11节</option>
                     <option value="12" {% if room_to_modify.start_at == 12 %}selected{% endif %}>12节</option>
                     <option value="13" {% if room_to_modify.start_at == 13 %}selected{% endif %}>13节</option>
+                {% elif room_to_modify.duration == 5 %}
+                    <option value="1" {% if room_to_modify.start_at == 1 %}selected{% endif %}>1，2，3，4，5节</option>
+                    <option value="6" {% if room_to_modify.start_at == 6 %}selected{% endif %}>6，7，8，9，10节</option>
                 {% endif %}
             </select>
         </td>

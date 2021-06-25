@@ -10,11 +10,12 @@
 <div class="card-content">
   <form method='POST'>
     <a class="w-100 btn btn-lg btn-primary" type="submit" href="{% url 'do_auto_schedule' %}">自动排课</a>
+  &nbsp;&nbsp;当前要排课的学期为：2021-2022秋冬学期&nbsp;&nbsp;
       {% if class_not_schedule %}
-        <font style="color:red;text-align:center">&nbsp;&nbsp;&nbsp;部分课程暂未排入课表</font>
+        <span style="color:red;text-align:center">&nbsp;&nbsp;&nbsp;部分课程暂未排入课表</span>
       {% endif %}
       {% if class_schedule %}
-        <font style="color:cornflowerblue;text-align:center">&nbsp;&nbsp;&nbsp;所有课程均已顺利安排</font>
+        <span style="color:cornflowerblue;text-align:center">&nbsp;&nbsp;&nbsp;所有课程均已顺利安排</span>
       {% endif %}
   </form>
 <br/>

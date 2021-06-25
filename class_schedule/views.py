@@ -1,5 +1,5 @@
 import datetime
-
+from .genetic import *
 from django.db import OperationalError, transaction
 from django.http.response import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render
@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Group
 from .models import Classroom, ClassHasRoom, Application, Building
 from info_mgt.models import Campus, Department, Major, Teacher, Course, MajorHasCourse, Class
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, Count
 
 
 def index(request):
@@ -98,7 +98,7 @@ def modify_room(request, page=0):  # 打开修改教室页面
         elif request.GET.get('delete_failure'):
             return_dict['delete_room_failed'] = True
         try:
-            room_list = Classroom.objects.all()[page * 10: page * 10 + 10]
+            room_list = Classroom.objects.all().order_by('-building_id', 'room_number')[page * 10: page * 10 + 10]
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:
@@ -219,16 +219,20 @@ def auto_schedule(request, page=0):  # 打开自动排课页面
                        'page_title': '自动排课',
                        'request_user': request.user,
                        'cur_submodule': 'auto_schedule'}
+        if request.GET.get('partial'):
+            return_dict['class_not_schedule'] = True
+        elif request.GET.get('all'):
+            return_dict['class_schedule'] = True
         try:
-            schedule_list = Class.objects.filter(classhasroom__classroom__isnull=True).distinct()
-            scheduled_list = Class.objects.filter(classhasroom__classroom__isnull=False).distinct()
+            schedule_list = Class.objects.filter(classhasroom__classroom__isnull=True, year=2021, term__in={'AU', 'WI', 'AW'}).distinct().order_by('id')
+            scheduled_list = Class.objects.filter(classhasroom__classroom__isnull=False, year=2021, term__in={'AU', 'WI', 'AW'}).distinct().order_by('id')
         except OperationalError:
             pass
         else:
             schedule_list = schedule_list.union(scheduled_list)
             for i in schedule_list:
                 i.teacher_name = i.teacher.first_name + ' ' + i.teacher.last_name
-            return_dict['schedule_list'] = schedule_list
+            return_dict['schedule_list'] = schedule_list[page * 10: page * 10 + 10]
             page_sum = len(schedule_list) // 10 + 1
             if page >= page_sum:
                 return HttpResponse(404)
@@ -241,12 +245,55 @@ def auto_schedule(request, page=0):  # 打开自动排课页面
         return render(request, 'auto_schedule.html', return_dict)
 
 
-@transaction.atomic
 def do_auto_schedule(request):  # 进行自动排课。。。麻烦（（（
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
         return HttpResponseRedirect(reverse('login'))
-    return HttpResponseRedirect(reverse('auto_schedule'))
+    section_list = ClassHasRoom.objects.filter(Class__year=2021, Class__term__in={'AU', 'WI', 'AW'})
+    s = []
+    for i in section_list:
+        compulsory_list = Major.objects.filter(majorhascourse__course_id=i.Class.course_id, majorhascourse__course_type='C')
+        if not compulsory_list:
+            compulsory_list = Major.objects.none()
+        s.append(Schedule(i.id, i.Class.course_id, i.Class_id, i.Class.teacher_id, i.duration, compulsory_list,
+                          i.Class.course.capacity, i.Class.term))
+    ga = GeneticOptimize()
+    room_range = Classroom.objects.filter(type='O')
+    for i in room_range:
+        i.campus_id = i.building.campus_id
+    res = ga.evolution(schedules=s, roomRange=room_range, slotnum=13)
+    direct_link = reverse('auto_schedule')
+    conflict_count = 0
+    with transaction.atomic():
+        for i in res:
+            conflict_check = ClassHasRoom.objects.filter(Q(classroom_id=i.roomId) & Q(Class__year=2021) & Q(Class__term=i.term)
+                                                         & ~Q(Q(end_at__lt=i.slot)
+                                                              | Q(start_at__gt=i.slot+i.duration-1))
+                                                         & Q(day=i.weekDay) & ~Q(id=i.sectionId))
+            if len(conflict_check) > 0 or (i.duration == 4 and (i.slot != 1 or i.slot != 6))\
+                    or (i.duration == 3 and i.slot not in {3, 6, 11}) \
+                    or (i.duration == 2 and i.slot not in {1, 3, 6, 7, 9, 11})\
+                    or (i.duration == 5 and i.slot not in {1, 6}):  # 如果有冲突或开始的节数不合适，该课程不被排入课表
+                same_class_section_list = ClassHasRoom.objects.filter(Class_id=i.classId)
+                for j in same_class_section_list:  # 已经排进去同一个教学班的其他时段再删掉
+                    del j.classroom
+                    del j.start_at
+                    del j.end_at
+                    del j.day
+                    j.save()
+                conflict_count += 1
+            else:  # 把这个时段排进去
+                this_section = ClassHasRoom.objects.get(pk=i.sectionId)
+                this_section.classroom_id = i.roomId
+                this_section.start_at = i.slot
+                this_section.end_at = i.slot + this_section.duration - 1
+                this_section.day = i.weekDay
+                this_section.save()
+        if conflict_count > 0:
+            direct_link += '?partial=1'
+        else:
+            direct_link += '?all=1'
+    return HttpResponseRedirect(direct_link)
 
 
 def manipulate_schedule(request):  # 打开手动调课页面
@@ -273,37 +320,37 @@ def manipulate_schedule(request):  # 打开手动调课页面
             if type1 == 'kcbh':  # 查询课程编号
                 if cxnr1:
                     try:
-                        class_list_1 = Class.objects.filter(course_id=cxnr1)
+                        class_list_1 = Class.objects.filter(course_id=cxnr1, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
                         pass
             elif type1 == 'skjs':  # 查询授课教师
                 try:
                     cxnr1 = cxnr1.split()
-                    class_list_1 = Class.objects.filter(teacher__first_name__in=cxnr1, teacher__last_name__in=cxnr1)
+                    class_list_1 = Class.objects.filter(Q(teacher__first_name__in=cxnr1) | Q(teacher__last_name__in=cxnr1), year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type1 == 'jxbbh':  # 查询教学班编号
                 if cxnr1:
                     try:
-                        class_list_1 = Class.objects.filter(id=cxnr1)
+                        class_list_1 = Class.objects.filter(id=cxnr1, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
                         pass
             elif type1 == 'kcmc':  # 查询课程名称
                 try:
-                    class_list_1 = Class.objects.filter(course__name__contains=cxnr1)
+                    class_list_1 = Class.objects.filter(course__name__contains=cxnr1, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type1 == 'sksj':  # 查询上课时间
                 day = request.GET.get('day1')
                 try:
-                    class_list_1 = Class.objects.filter(classhasroom__day=day)
+                    class_list_1 = Class.objects.filter(classhasroom__day=day, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type1 == 'skxq':  # 查询上课校区
                 campus_id = request.GET.get('campus1')
                 try:
                     classroom_list = Classroom.objects.filter(campus_id=campus_id)
-                    class_list_1 = Class.objects.filter(classhasroom__classroom__in=classroom_list)
+                    class_list_1 = Class.objects.filter(classhasroom__classroom__in=classroom_list, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             type2 = request.GET.get('cx_cxlb_2')
@@ -311,37 +358,37 @@ def manipulate_schedule(request):  # 打开手动调课页面
             if type2 == 'kcbh':  # 查询课程编号
                 if cxnr2:
                     try:
-                        class_list_2 = Class.objects.filter(course_id=cxnr2)
+                        class_list_2 = Class.objects.filter(course_id=cxnr2, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
                         pass
             elif type2 == 'skjs':  # 查询授课教师
                 try:
                     cxnr2 = cxnr2.split()
-                    class_list_2 = Class.objects.filter(teacher__first_name__in=cxnr2, teacher__last_name__in=cxnr2)
+                    class_list_2 = Class.objects.filter(Q(teacher__first_name__in=cxnr2) | Q(teacher__last_name__in=cxnr2), year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type2 == 'jxbbh':  # 查询教学班编号
                 if cxnr2:
                     try:
-                        class_list_2 = Class.objects.filter(id=cxnr2)
+                        class_list_2 = Class.objects.filter(id=cxnr2, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
                         pass
             elif type2 == 'kcmc':  # 查询课程名称
                 try:
-                    class_list_2 = Class.objects.filter(course__name__contains=cxnr2)
+                    class_list_2 = Class.objects.filter(course__name__contains=cxnr2, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type2 == 'sksj':  # 查询上课时间
                 day = request.GET.get('day2')
                 try:
-                    class_list_2 = Class.objects.filter(classhasroom__day=day)
+                    class_list_2 = Class.objects.filter(classhasroom__day=day, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             elif type2 == 'skxq':  # 查询上课校区
                 campus_id = request.GET.get('campus2')
                 try:
                     classroom_list = Classroom.objects.filter(campus_id=campus_id)
-                    class_list_2 = Class.objects.filter(classhasroom__classroom__in=classroom_list)
+                    class_list_2 = Class.objects.filter(classhasroom__classroom__in=classroom_list, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
                     pass
             if len(class_list_1) > 0 and len(class_list_2) > 0:
@@ -433,7 +480,7 @@ def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针�
         else:
             new_end_at = new_start_at + section_to_modify.duration - 1
             try:
-                conflict_check = ClassHasRoom.objects.filter(Q(classroom_id=new_room_id)
+                conflict_check = ClassHasRoom.objects.filter(Q(classroom_id=new_room_id) & Q(Class__term=section_to_modify.Class.term) & Q(Class__year=section_to_modify.Class.year)
                                                              & ~Q(Q(end_at__lt=new_start_at)
                                                                   | Q(start_at__gt=new_end_at))
                                                              & Q(day=new_day) & ~Q(id=class_has_room_id))
@@ -469,7 +516,7 @@ def application(request):  # 打开提出调课申请页面
         if request.GET.get('failed'):
             return_dict['failure'] = True
         try:
-            class_list = Class.objects.filter(teacher_id=request.user.id)
+            class_list = Class.objects.filter(teacher_id=request.user.id, year=2021, term__in={'AU', 'WI', 'AW'})
         except OperationalError:
             pass
         else:
@@ -632,12 +679,65 @@ def submit_handle(request, application_id):  # 提交申请处理结果
 
 def teacher_class(request):  # 按教师查询课表页面
     if request.method == 'GET':  # 获取3个查询条件
-        teacher = request.GET.get('teacher_id')
+        if not request.GET.get('term') and not request.GET.get('year'):
+            return HttpResponseRedirect(reverse('teacher_class') + '?year=2021-2022&term=AU')
+        return_dict = {'web_title': '查询本人课表', 'page_title': '查询本人课表', 'request_user': request.user,
+                       'cur_submodule': 'teacher_class', 'name': request.user.first_name + ' ' + request.user.last_name}
         year = request.GET.get('year')
         term = request.GET.get('term')
+        return_dict['year'] = year
+        return_dict['term'] = term
+        if term == 'AU':
+            return_dict['term_char'] = '秋'
+        elif term == 'SP':
+            return_dict['term_char'] = '春'
+        elif term == 'WI':
+            return_dict['term_char'] = '冬'
+        elif term == 'SU':
+            return_dict['term_char'] = '夏'
+        if year == '2021-2022' and (term == 'SP' or term == 'SU'):
+            year = 2022
+        elif year == '2021-2022' and (term == 'AU' or term == 'WI'):
+            year = 2021
+        elif year == '2020-2021' and (term == 'SP' or term == 'SU'):
+            year = 2021
+        elif year == '2020-2021' and (term == 'AU' or term == 'WI'):
+            year = 2020
+        elif year == '2019-2020' and (term == 'SP' or term == 'SU'):
+            year = 2020
+        elif year == '2019-2020' and (term == 'AU' or term == 'WI'):
+            year = 2019
+        elif year == '2018-2019' and (term == 'SP' or term == 'SU'):
+            year = 2019
+        elif year == '2018-2019' and (term == 'AU' or term == 'WI'):
+            year = 2018
+        if term in {'SU', 'SP'}:
+            term_range = {term, 'SS'}
+        else:
+            term_range = {term, 'AW'}
+        section_list = ClassHasRoom.objects.filter(Class__teacher_id=request.user.id, Class__year=year, Class__term__in=term_range, classroom__isnull=False)
+        for i in section_list:
+            i.name = i.Class.course.name
+            i.room = i.classroom.building.campus.name+i.classroom.building.name + str(i.classroom.room_number)
+            for j in range(1, 8):
+                for k in range(1, 14):
+                    if i.day == j and i.start_at == k:
+                        if k < 10:
+                            num = str(k)
+                        elif k == 10:
+                            num = 'A'
+                        elif k == 11:
+                            num = 'B'
+                        elif k == 12:
+                            num = 'C'
+                        elif k == 13:
+                            num = 'D'
+                        return_dict['course' + str(j) + num] = i
+    return render(request, 'teacher_class.html', return_dict)
 
 
 def room_class(request):
     if request.method == 'GET':  # 获取2个查询条件
         year = request.GET.get('year')
         term = request.GET.get('term')
+    return render(request, 'room_class.html')

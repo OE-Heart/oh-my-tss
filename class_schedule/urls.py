@@ -12,6 +12,7 @@ urlpatterns = [
     path('modify_room_submit/<int:room_id>', views.modify_room_submit, name='modify_room_submit'),
     path('delete_room/<int:room_id>', views.delete_room, name='delete_room'),
     path('auto_schedule/', views.auto_schedule, name='auto_schedule'),
+    path('auto_schedule/<int:page>', views.auto_schedule, name='auto_schedule'),
     path('do_auto_schedule/', views.do_auto_schedule, name='do_auto_schedule'),
     path('application/', views.application, name='application'),
     path('submit_application/', views.submit_application, name='submit_application'),
