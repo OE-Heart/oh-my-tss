@@ -22,4 +22,6 @@ urlpatterns = [
     path('course/detail/<str:name>', views.course_detail, name='course_display'),
     path('course/delete/<str:name>', views.course_delete, name='course_delete'),
     path('course/<str:option>/<str:in_course_name>', views.course_edit, name='course_edit'),
+
+    path('class/add', views.class_add, name='class_add'),
 ]

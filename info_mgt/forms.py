@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from material import *
-from info_mgt.models import Course, Avatar
+from info_mgt.models import Course, Avatar, Class
 from oh_my_tss import demo as forms
 
 
@@ -61,3 +61,21 @@ class CourseEditForm(forms.ModelForm):
     class Meta:
         model = Course
         fields = '__all__'
+
+
+class ClassAddForm(forms.Form):
+    course = forms.CharField(max_length=20)
+    teacher = forms.CharField(max_length=20)
+    year = forms.IntegerField(min_value=1980)
+    choices = [
+        ('AW', '秋冬学期'),
+        ('SS', '春夏学期'),
+        ('SP', '春学期'),
+        ('SU', '夏学期'),
+        ('AU', '秋学期'),
+        ('WI', '冬学期'),
+        ('SH', '短学期'),
+    ]
+    term = forms.CharField(widget=forms.Select(choices=choices))
+    layout = Layout('course',
+                    Row('teacher', 'year', 'term'))
