@@ -17,6 +17,10 @@ urlpatterns = [
     path('generate_paper/handle_end/',views.generate_paper_handle_end),
     path('combine_analysis/', views.combineanalysis, name="combine_analysis"),
     path('stu_single/', views.stusingle, name="stu_single"),
-    path('stu_single_select/', views.stusingleselect, name="stu_single_select")
+    path('stu_single_select/', views.stusingleselect, name="stu_single_select"),
+    path('stu_testinfo/', views.stu_testinfo,name="stu_testinfo"),
+    path('stu_exam/',views.stu_exam,name = "stu_exam"),
+    path('teach_detail/',views.teach_detail,name = "teach_detail"),
+    path('stu_exam/calGrade',views.calGrade)
 ]
 

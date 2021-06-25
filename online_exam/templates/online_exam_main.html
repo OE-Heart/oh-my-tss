@@ -3,8 +3,8 @@
 {% load static %}
 {% load material_form %}
 
-{% block extracss %}
-{% endblock extracss %}
+{% block extra_head %}
+{% endblock extra_head %}
 
 {% block card_content %}
     <style type="text/css">
@@ -33,26 +33,32 @@
             padding: 0.3em;
         }
     </style>
-  <div id="online_exam">
-      <button class="mheader1" style="background-color: #3399ff;border-radius: 5px">进入题库</button>
-      <button onclick="window.location.href='../generate_paper'" class="mheader1">生成试卷</button>
-      <button onclick="window.location.href='../release_test'" class="mheader1">发布测试</button>
-      <button onclick="window.location.href='../test_info'" class="mheader1">考试信息</button>
-      <button onclick="window.location.href='../paper_ana'" class="mheader1">试卷分析</button>
-    <br />
-  <hr size="10px"/>
-      <form method="post">
-          {% csrf_token %}
-          学科：<input type="text" placeholder="请输入学科名称" name="course">
-          章节：<input type="text" placeholder="请输入章节" name="chapter">
-          <button type="submit" id="mysearch">搜索题目</button>
-          {% if emptysearch == '1'%}
-          <label style="color: red;float: right">请至少输入学科</label>
-          {% endif %}
-          {% if emptysearch == '2'%}
-              <label style="color: red;float: right">请输入学科</label>
-          {% endif %}
-      </form>
-  <br/>
-  </div>
+    <div id="online_exam">
+        <button class="mheader1" style="background-color: #3399ff;border-radius: 5px">进入题库</button>
+        <button onclick="window.location.href='../generate_paper'" class="mheader1">生成试卷</button>
+        <button onclick="window.location.href='../release_test'" class="mheader1">发布测试</button>
+        <button onclick="window.location.href='../test_info'" class="mheader1">考试信息</button>
+        <button onclick="window.location.href='../paper_ana'" class="mheader1">试卷分析</button>
+        <br />
+        <hr size="10px"/>
+        <form method="post">
+            {% csrf_token %}
+            学科：<input type="text" placeholder="请输入学科名称" name="course">
+            章节：<input type="text" placeholder="请输入章节" name="chapter">
+                    <button type="submit" id="mysearch">搜索题目</button>
+                    {% if emptysearch == '1'%}
+                        <label style="color: red;float: right">请至少输入学科</label>
+                    {% endif %}
+                    {% if emptysearch == '2'%}
+                        <label style="color: red;float: right">请输入学科</label>
+                    {% endif %}
+        </form>
+        <br/>
+
+    </div>
+    <script>
+        $(document).ready(function(){
+            $('select').formSelect();
+        });
+    </script>
 {% endblock card_content %}

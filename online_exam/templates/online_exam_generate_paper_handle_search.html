@@ -24,6 +24,10 @@
         width: 500px;
         text-align: center;
     }
+    .col_4{
+        width: 500px;
+        text-align: center;
+    }
     .mbutton{
         width: 100px;
         text-align: center;
@@ -43,13 +47,15 @@
         <tr>
             <th class="col_1" style="font-size: 20px;">Question</th>
             <th class="col_2" style="font-size: 20px;">Value</th>
-            <th class="col_3" style="font-size: 20px;">Select</th>
+            <th class="col_3" style="font-size: 20px;">Difficulty</th>
+            <th class="col_4" style="font-size: 20px;">Select</th>
         </tr>
         {% for row in questionlist %}
         <tr>
             <td class="col_1">{{ row.0 }}</td>
             <td class="col_2">{{ row.1 }}</td>
-            <td class="col_3"><input type="checkbox" name="uid" value="{{ row.2 }}"></td>
+            <td class="col_3">{{ row.3 }}</td>
+            <td class="col_4"><input type="checkbox" name="uid" value="{{ row.2 }}"></td>
         </tr>
         {% endfor %}
     </table>

@@ -1,86 +1,120 @@
-<!DOCTYPE HTML>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="content-type" content="text/html;charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>在线答题考试系统</title>
+{% extends 'skeleton.html' %}
 
-    <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
-    <style>
-        .hasBeenAnswer {
-            background: #5d9cec;
-            color:#fff;
+{% load static %}
+{% load material_form %}
+
+{% block extracss %}
+{% endblock extracss %}
+
+{% block card_content %}
+    <style type="text/css">
+        .button1{
+            float: left;
+            color: black;
+            width: 80px;
+            text-align: center;
+            height: 50px;
+            background-color: #3399ff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.1em;
+            margin-bottom: 10px;
+        }
+        .button2{
+            float: right;
+            color: black;
+            width: 80px;
+            text-align: center;
+            height: 50px;
+            background-color: red;
+            border: none;
+            border-radius: 5px;
+            padding: 0.1em;
+            margin-bottom: 10px;
+        }
+        .col_1{
+            width: 17%;
+        }
+        .col_2{
+            width: 15%;
+        }
+        .col_3{
+            width: 15%;
+        }
+        .col_4 {
+            whdth: 15%;
+        }
+        .col_5{
+            whdth: 15%;
+        }
+        .col_6{
+            whdth: 15%;
+        }
+        .col_7{
+            whdth: 15%;
+        }
+
+
+        .mylabel{
+            font-size: 10px;
+            color: #3d443d;
+            background-color: lightgreen;
+            border-radius: 5px;
+        }
+        .mybutton{
+            width: 60px;
+            text-align: center;
+            height: 30px;
+            background-color: #3399ff;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.3em;
+        }
+        .mybutton2{
+            width: 60px;
+            text-align: center;
+            height: 30px;
+            background-color: red;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            padding: 0.3em;
+        }
+        #block1{
+            display: block;
+        }
+        #mheader1{
+            font-size: 30px;
+            color: black;
+            background-color: white;
+            width: 200px;
+            border: #3d443d;
         }
     </style>
-
-</head>
-<body>
-
-<nav class="navbar navbar-expand-sm bg-light navbar-light ">
-    <ul class="navbar-nav">
-        <li class="nav-item active">
-            <a class="nav-link"><h3>在线考试系统</h3></a>
-        </li>
-
-        <li class="nav-item active">
-            <a class="nav-link"><h3>当前科目:{{ course }}</h3></a>
-        </li>
-        <li style="position: fixed;right: 70px; font-size: 30px;color: #9fcdff">{{ user.id }}</li>
-
-    </ul>
-</nav>
-<div class="main">
-    <!--nr start-->
-    <div class="test_main">
-        <div class="nr_left">
-            <div class="test">
-                <form action="/calGrade/" method="post">
-                    <input type ="hidden" name = "pid" value = "{{ pid }}">
-                    <input type = "hidden" name = "paper1" value = "{{ paper1 }}">
-                    <div class="test_title">
-                        <p class="test_time">
-                            <i class="icon iconfont">&#xe6fb;</i><b class="alt-1">01:40</b>
-                        </p>
-                        <font><input type="submit" name="tijiao" value="交卷"></font>
-                    </div>
-
-                    <div class="test_content">
-                        <div class="test_content_title">
-                            <h2>题目列表</h2>
-                            <p>
-                                {% for test in paper1.questions.all %}
-                                {% endfor %}
-                                <span>共</span><i class="content_lit">{{ forloop.counter }}</i><span>题，</span>
-                            </p>
-                        </div>
-                    </div>
-                    <div class="test_content_nr">
-                        <ul>
-                            {% for test in paper1.questions.all %}
-                                <li id="{{ forloop.counter }}">
-                                    <div class="test_content_nr_tt">
-                                        <i>{{ forloop.counter}}</i><span>({{ test.value }}分)</span>
-                                        <font>{{ test.content }}</font>
-
-                                    </div>
-                                    <div class="test_content_nr_main">
-                                        <ul>
-                                            <p>{{  test.content }}</p>
-                                        </ul>
-                                    </div>
-                                    <input type="text" name="answer{{ forloop.counter }}" value=" ">
-                                </li>
-                            {% endfor %}
-                        </ul>
-                    </div>
-                </form>
-            </div>
-        </div>
-
+    <div id="block1">
+        <!--<button onclick="" class="button1">添加题目</button>
+        <button onclick="window.location.href='main'" class="button2">返回</button>-->
+        <br>
+        <form method="post" action = "./calGrade">
+        {% csrf_token %}
+        {% for test in list %}
+        <p>共{{ test.6 }}题</p>
+    <input hidden name = "num" value = "{{ test.6 }}">
+            <input hidden name = "testid" value="{{ test.0 }}">
+            <br>
+        <p>开始时间：{{ test.1 }}</p>
+            <br>
+            <p>结束时间：{{ test.2 }}</p>
+        {% endfor %}
+        <br>
+        {% for question in list1 %}
+        <p>第{{ forloop.counter }}题</p>
+        <p> ({{ question.1 }}分) </p>
+        <p> {{ question.0 }}</p>
+        <input type = "text" name = "{{ forloop.counter }}" value =" ">
+    {% endfor %}
+    <input type = "submit" name = "sub" value ="交卷">
+           </form>
     </div>
-    <div class="foot"></div>
-</div>
-
-</body>
-</html>
+{% endblock card_content %}
