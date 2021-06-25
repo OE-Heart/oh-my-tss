@@ -1,6 +1,7 @@
 from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
+from django.core.exceptions import ObjectDoesNotExist
 from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm
 from django.contrib.auth import authenticate, login, logout
@@ -24,8 +25,10 @@ def index(req):
 # TODO: those following pages' templates are not implemented yet.
 
 def info_view(req):
-    Avatar = models.Avatar.objects.get(user=req.user)
-    print(type(Avatar.avatar))
+    try:
+        avatar = models.Avatar.objects.get(user=req.user)
+    except ObjectDoesNotExist:
+        pass
     # res_url = BASE_DIR+'/media/img'+str(Avatar.avatar)
     # print(res_url)
 
