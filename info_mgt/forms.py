@@ -78,3 +78,17 @@ class ClassAddForm(forms.Form):
     term = forms.CharField(widget=forms.Select(choices=choices))
     layout = Layout('course',
                     Row('teacher', 'year', 'term'))
+
+class AddForm(forms.Form):
+    username = forms.CharField(max_length=20)
+    last_name = forms.CharField(max_length=20)
+    first_name = forms.CharField(max_length=20)
+    email = forms.EmailField(max_length=100)
+    major = forms.CharField(max_length=20)
+    choices = [
+        ('student', '学生'),
+        ('teacher', '教师'),
+    ]
+    role = forms.CharField(widget=forms.Select(choices=choices))
+    layout = Layout(Row('username', 'major', 'role'),
+                    Row('last_name', 'first_name'), 'email')

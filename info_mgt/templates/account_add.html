@@ -3,59 +3,34 @@
 {% load static %}
 {% load material_form %}
 
-{% block title %}个人信息{% endblock %}
-
 {% block extra_head %}
-<link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_edit.css' %}"/>
-<link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
-<script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
-<link href="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.css" rel="stylesheet">
-<script src="https://cdn.bootcss.com/toastr.js/2.1.4/toastr.min.js"></script>
-<script>
-    function formtype(){
-        var sel = document.getElementById("groups");
-        if (sel.value == "student"){
-            document.getElementById("d1").style.display = "none";
-			document.getElementById("d2").style.display = "";
-        }
-        if (sel.value == "teacher"){
-            document.getElementById("d1").style.display = "";
-			document.getElementById("d2").style.display = "none";
-        }
-    }
-
-</script>
+<link
+  rel="stylesheet"
+  type="text/css"
+  href="{% static 'info_mgt/css/info_mgt.css' %}"
+/>
 {% endblock extra_head %}
 
 {% block card_content %}
-    <div class="edit-area">
-    <form action="{{ app_path }}" method="post" id="edit-form" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form }}
-        <label>用户群组</label>
-        <select name="group" id="groups" aria-label="群组">
-            <option value="">请选择</option>
-            <option value="teacher">教师</option>
-            <option value="student">学生</option>
-        </select>
+<div id="info_mgt" class="card-content">
+    <form action="{{ app_path }}" method="post" id="class-add-form">{% csrf_token %}
+        {% form form=forms %}
+        {% endform %}
         <input type="file" name="avatar"/>
-    <input type="submit" value="添加用户" class="edit-button"/>
+        <div class="action right-align">
+            <button type="submit" class="btn btn-primary">提交</button>
+        </div>
     </form>
-    {% if edit_result and edit %}
-        <script>
-        $(document).ready(function(){
-            toastr.options.positionClass = 'toast-top-center';
-            toastr.success('提交数据成功');
-        });
-        </script>
-    {% elif edit %}
-        <script>
-        $(document).ready(function(){
-            toastr.options.positionClass = 'toast-top-center';
-            toastr.error('修改数据失败')
-        });
-        </script>
-    {% endif %}
+        {% if result == 'success' and edit_result == True%}
+        <div class="done-msg">
+          <i class="material-icons">done</i>
+          添加新账户成功！
+        </div>
+        {% elif edit_result == False%}
+            <div class="err-msg">
+            <i class="material-icons">warning</i>
+            添加失败！
+            </div>
+        {% endif %}
+    </div>
 {% endblock card_content %}
-</div>

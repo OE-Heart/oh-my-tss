@@ -6,7 +6,7 @@
 {% block title %}个人信息{% endblock %}
 
 {% block extra_head %}
-<link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_edit.css' %}"/>
+<link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_mgt.css' %}"/>
 <link href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.staticfile.org/jquery/2.1.1/jquery.min.js"></script>
 <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -15,7 +15,7 @@
 {% endblock extra_head %}
 
 {% block card_content %}
-    <div class="edit-area">
+    <div id="info_mgt" class="card-content">
     <form action="{{ app_path }}" method="post" id="edit-form" enctype="multipart/form-data">
         {% csrf_token %}
         {{ form }}
@@ -37,4 +37,5 @@
         });
         </script>
     {% endif %}
+    </div>
 {% endblock card_content %}

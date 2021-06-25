@@ -2,7 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 
@@ -206,12 +206,6 @@ def account_edit(req, username='#'):
                     'edit': False
                 })
         else:
-            models.Class.objects.create(
-                course=course_name,
-                teacher=teacher_name,
-                year=year,
-                term=term
-            )
             return render(req, 'class.html', {
                 'web_title': '教学班管理',
                 'page_title': '添加教学班',
@@ -228,22 +222,27 @@ def account_add(req):
             new_last_name = req.POST['last_name']
             new_first_name = req.POST['first_name']
             new_email = req.POST['email']
+            new_major = req.POST['major']
             new_avatar = req.FILES.get('avatar')
-            # new_group = req.POST['group']
-
+            new_group = req.POST['role']
+            print(new_group)
             result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                   first_name=new_first_name, email=new_email)
 
             this_user = models.User.objects.get(username=new_username)
-            # if this_user and new_group:
-            #     if new_group == 'teacher':
-            #         target_group = Group.objects.get(name='student')
-            #         print(target_group)
-            #         this_user.groups.add(target_group)
-            #     else:
-            #         target_group = Group.objects.get(name='teacher')
-            #         print(target_group)
-            #         this_user.groups.add(target_group)
+            print(new_group)
+            if this_user and new_group:
+                if new_group == 'teacher':
+                    print(new_group)
+                    target_group = Group.objects.get(name='student')
+                    print(target_group)
+                    this_user.groups.add(target_group)
+                    this_user.major = new_major
+                elif new_group == 'student':
+                    target_group = Group.objects.get(name='teacher')
+                    print(target_group)
+                    this_user.groups.add(target_group)
+                    this_user.major = new_major
 
             query = models.Avatar.objects.filter(user=this_user)
             if len(query) == 0 and new_avatar is not None and result_0:
@@ -264,8 +263,8 @@ def account_add(req):
                 'web_title': '用户信息添加',
                 'page_title': '用户信息添加',
                 'request_user': req.user,
-                'form': SelfInfoForm(instance=this_user),
-                'edit': True,
+                'forms': AddForm,
+                'result': 'success',
                 'edit_result': True if result_0 != 0 and result_2 != 0 else False
             })
         elif req.method == 'GET':
@@ -274,8 +273,9 @@ def account_add(req):
                 'web_title': '用户信息添加',
                 'page_title': '用户信息添加',
                 'request_user': req.user,
-                'form': SelfInfoForm(),
-                'edit': False
+                'result': 'wait',
+                'forms': AddForm,
+                'edit_result': True
             })
         else:
             return HttpRequest(404)
