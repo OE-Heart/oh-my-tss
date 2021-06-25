@@ -3,7 +3,7 @@ from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm, EditACForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 
@@ -153,7 +153,7 @@ def account_edit(req, username='#'):
             new_first_name = req.POST['first_name']
             new_email = req.POST['email']
             new_avatar = req.FILES.get('avatar')
-            # new_major = req.POST['major']
+            new_major = req.POST['major']
             this_user = models.User.objects.get(username=username)
             if this_user:
                 this_user.username = new_username
@@ -185,7 +185,7 @@ def account_edit(req, username='#'):
                 'web_title': '用户信息修改',
                 'page_title': '用户信息修改',
                 'request_user': req.user,
-                'form': SelfInfoForm(instance=this_user),
+                'forms': SelfInfoForm(instance=this_user),
                 'edit': True,
                 'edit_result': True if result_0 != 0 and result_2 != 0 else False
             })
@@ -196,7 +196,7 @@ def account_edit(req, username='#'):
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
-                    'form': SelfInfoForm(instance=obj),
+                    'forms': SelfInfoForm(instance=obj),
                     'edit': False
                 })
             else:
@@ -205,17 +205,13 @@ def account_edit(req, username='#'):
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
-                    'form': SelfInfoForm(),
+                    'forms': SelfInfoForm,
                     'edit': False
                 })
         else:
-            return render(req, 'class.html', {
-                'web_title': '教学班管理',
-                'page_title': '添加教学班',
-                'cur_submodule': 'class',
-                'form': ClassAddForm,
-                'edit_result': 'success'
-            })
+            return HttpResponseRedirect(404)
+    else:
+        return HttpResponseRedirect(403)
 
 
 def account_add(req):
@@ -241,12 +237,14 @@ def account_add(req):
                     target_group = Group.objects.get(name='teacher')
                     print(target_group)
                     this_user.groups.add(target_group)
-                    this_user.department.name = new_major
+                    '''FIX ME'''
+                    # this_user.department.name = new_major
                 elif new_group == 'student':
                     target_group = Group.objects.get(name='student')
                     print(target_group)
                     this_user.groups.add(target_group)
-                    this_user.major.name = new_major
+                    '''FIX ME'''
+                    # this_user.major.name = new_major
 
             query = models.Avatar.objects.filter(user=this_user)
             if len(query) == 0 and new_avatar is not None and result_0:
