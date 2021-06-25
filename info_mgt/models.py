@@ -72,7 +72,7 @@ class Class(models.Model):
     course = models.ForeignKey(Course, on_delete=models.CASCADE)
     year = models.IntegerField()
     term = models.CharField(max_length=2, choices=TERM_CHOICES)
-    # memberCnt = models.IntegerField(default=0)
+    memberCnt = models.IntegerField(default=0)
 
 
 '''
