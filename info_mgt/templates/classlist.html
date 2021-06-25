@@ -1,0 +1,48 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock  %}
+
+{% block card_content %}
+<div class="card-content">
+  <table>
+    <thead>
+      <tr>
+        <th>教师</th>
+        <th>所属课程</th>
+        <th>学年</th>
+        <th>学期</th>
+        <th>已选人数</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for class in classes %}
+      <tr>
+        <td>{{ class.teacher.last_name }} {{ class.teacher.first_name }}</td>
+        <td>{{ class.course.name }}</td>
+        <td>{{ class.year }}</td>
+        <td>{{ class.term }}</td>
+        <td>{{ "TODO" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div class="pager">
+    {% if prev_disabled %}
+      <span style="color: silver">上一页</span>
+    {% else %}
+      <a href="{% url 'info_mgt:class_list' prev_page %}">上一页</a>
+    {% endif %}
+    {{ cur_page }} / {{ page_sum }} 页
+    {% if next_disabled %}
+      <span style="color: silver">下一页</span>
+    {% else %}
+      <a href="{% url 'info_mgt:class_list' next_page %}">下一页</a>
+    {% endif %}
+  </div>
+  <a class="add-btn" href="" title="添加新班级"></a>
+</div>
+{% endblock card_content %}

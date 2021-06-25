@@ -403,6 +403,25 @@ def course_delete(req, name):
         return HttpResponse(403)
 
 
+def class_list(req, page=0):
+    classes = models.Class.objects.all()[page * 10: page * 10 + 10]
+    page_sum = (len(classes) - 1) // 10 + 1
+    if page >= page_sum:
+        return HttpResponse(404)
+    return render(req, 'classlist.html', {
+        'web_title': '教学班级',
+        'page_title': '教学班级管理',
+        'cur_submodule': 'class',
+        'classes': classes,
+        'cur_page': page + 1,
+        'prev_page': page - 1,
+        'prev_disabled': page == 0,
+        'next_page': page + 1,
+        'next_disabled': page + 1 >= page_sum,
+        'page_sum': page_sum,
+    })
+
+
 def login_view(req):
     if req.method == 'GET':
         return render(req, 'login.html', {
