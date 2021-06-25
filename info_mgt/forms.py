@@ -62,9 +62,11 @@ class CourseEditForm(forms.ModelForm):
         model = Course
         fields = '__all__'
 
+
 class ClassAddForm(forms.Form):
     course = forms.CharField(max_length=20)
-    teacher = forms.CharField(max_length=20)
+    last_name = forms.CharField(max_length=20)
+    first_name = forms.CharField(max_length=20)
     year = forms.IntegerField(min_value=1980)
     choices = [
         ('AW', '秋冬学期'),
@@ -77,4 +79,5 @@ class ClassAddForm(forms.Form):
     ]
     term = forms.CharField(widget=forms.Select(choices=choices))
     layout = Layout('course',
-                    Row('teacher', 'year', 'term'))
+                    Row('first_name', 'last_name'),
+                    Row('year', 'term'))
