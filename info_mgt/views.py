@@ -2,7 +2,7 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 
@@ -86,6 +86,54 @@ def info_edit(req):
             'form': SelfInfoForm(instance=obj), 'edit': False})
     else:
         return HttpRequest(404)
+
+
+def class_add(req):
+    if req.method == 'GET':
+        return render(req, 'class_add.html', {
+            'web_title': '教学班管理',
+            'page_title': '添加教学班',
+            'cur_submodule': 'class',
+            'form': ClassAddForm
+        })
+    elif req.method == 'POST':
+        course_name = req.POST['course']
+        teacher_name = req.POST['teacher']
+        year = req.POST['year']
+        term = req.POST['term']
+        course_ex = models.Course.objects.filter(name=course_name)
+        teacher_ex = models.Teacher.objects.filter(name=teacher_name)
+        if len(course_ex) == 0:
+            return render(req, 'class.html', {
+                'web_title': '教学班管理',
+                'page_title': '添加教学班',
+                'cur_submodule': 'class',
+                'form': ClassAddForm,
+                'edit_result': 'no_such_course'
+            })
+        elif len(teacher_ex) == 0:
+            return render(req, 'class.html', {
+                'web_title': '教学班管理',
+                'page_title': '添加教学班',
+                'cur_submodule': 'class',
+                'form': ClassAddForm,
+                'edit_result': 'no_such_teacher'
+            })
+        else:
+            models.Class.objects.create(
+                course=course_name,
+                teacher=teacher_name,
+                year=year,
+                term=term
+            )
+            return render(req, 'class.html', {
+                'web_title': '教学班管理',
+                'page_title': '添加教学班',
+                'cur_submodule': 'class',
+                'form': ClassAddForm,
+                'edit_result': 'success'
+            })
+
 
 def account_edit(req, username='#'):
     if req.user.has_perm('info_mgt.change_student') and req.user.has_perm('info_mgt.change_teacher'):
@@ -450,6 +498,7 @@ def logout_view(request):
     logout(request)
     # TODO: Redirect to a success page.
     return HttpResponseRedirect('/info_mgt')
+
 
 '''
 {% if blog.article %}  <!-- permission to visit articles in the blog -->
