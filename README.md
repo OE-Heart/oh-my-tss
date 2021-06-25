@@ -6,6 +6,7 @@ django
 django-material
 pymysql
 pillow
+requests
 ```
 
 ```sh

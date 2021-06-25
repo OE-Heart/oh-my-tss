@@ -13,5 +13,6 @@ class OnlineExamConfig(ModuleMixin, AppConfig):
         {'name': 'generate_paper', 'text': '生成试卷', 'link': './generate_paper'},
         {'name': 'release_test', 'text': '发布测试', 'link': './release_test'},
         {'name': 'test_info', 'text': '考试信息', 'link': './test_info'},
-        {'name': 'paper_ana', 'text': '试卷分析', 'link': './paper_ana'},
+        {'name': 'paper_ana', 'text': '试卷分析', 'link': './combine_analysis'},
+        {'name': 'stu_score_ana', 'text': '(学生)成绩分析', 'link': './stu_single'}
     ]

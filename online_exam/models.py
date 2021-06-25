@@ -24,6 +24,7 @@ class Question(models.Model):  # 题目
     answer = models.CharField(choices=ANSWER, max_length=2, default='A', verbose_name='题目答案')  # 答案
     value = models.FloatField()  # 分值
     chapter = models.IntegerField(default=1)  #所属章节
+    difficulty = models.IntegerField(default=1)#难度
 
 
 class Paper(models.Model):  # 试卷
@@ -41,7 +42,7 @@ class Test(models.Model):
     teachers = models.ManyToManyField(info_mgt.models.Teacher)
     courses = models.ManyToManyField(info_mgt.models.Course)
     students = models.ManyToManyField(info_mgt.models.Student)
-
+    paper = models.ForeignKey(Paper, on_delete=models.CASCADE,default=1)
 
 class Score(models.Model):
 

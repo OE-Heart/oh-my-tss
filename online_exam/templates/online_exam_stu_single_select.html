@@ -1,0 +1,22 @@
+
+<!DOCTYPE html>
+<html>
+<body>
+<form action="../stu_single/" method = "post" id="online_exam">{% csrf_token %}
+    <input style="display:none" name = "student_id" value = "{{ student_id }}"/>
+
+    请输入您想要查询的试卷
+
+    <select name="id_select" id = "id_select">
+        {% for row in score_content%}
+            <option value="{{row.0}}"> {{row.1}}</option>
+        {% endfor %}
+
+    </select>
+
+    <input type="submit" value="按此查询"  />
+</form>
+
+
+</body>
+</html>

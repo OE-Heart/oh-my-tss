@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>{{ web_title }}</title>
+    <style type="text/css">
+        input{
+            display: block;
+        }
+        html{
+            font-size: 30px;
+        }
+        h3{
+            text-align: center;
+            font-size: 50px;
+            color: red;
+        }
+    </style>
+</head>
+<body>
+<h3>{{ page_title }}</h3>
+<hr/>
+
+<form method="post" style="display: block">
+    {% csrf_token %}
+    <p>学科：</p>
+    <input type="text" name="course" value="{{ course }}" style="display: block;height: 30px"></input>
+请选择题目类型:
+<select style="font-size: 30px;display: block" name="question_type">
+    <option value="0">选择</option>
+    <option value="1">判断</option>
+</select>
+    <p>请输入题目：</p>
+<textarea name="content" style="width: 800px;height: 220px;display: block"></textarea>
+    A<input type="radio" name="right_answer" value="1">
+    B<input type="radio" name="right_answer" value="2"/>
+    C<input type="radio" name="right_answer" value="3"/>
+    D<input type="radio" name="right_answer" value="4"/>
+    T<input type="radio" name="right_answer" value="5"/>
+    F<input type="radio" name="right_answer" value="6"/>
+    <p>请输入章节：</p>
+    <input type="text" name="chapter">
+    <p>请输入分值：</p>
+    <input type="text" name="value">
+    <p>请输入难度：</p>
+    <input type="text" name="difficulty">
+    <input type="submit" value="确认">
+</form>
+</body>
+</html>

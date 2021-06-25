@@ -85,7 +85,7 @@
     {% csrf_token %}
     <span style="font-size:14px;color:#aaa"></span>
     <label for="textarea1">填写申请理由与期望</label>
-    <textarea id="textarea1" name="content" class="materialize-textarea" style="color:#000" required></textarea>
+    <textarea maxlength="100" id="textarea1" name="content" class="materialize-textarea" style="color:#000" required></textarea>
     <input class="btn btn-default" type="submit" value="提交" style="display:block;margin:30px auto;background:#08c"/>
 </form>
     <a class="btn btn-default" href="{% url 'view_my_application' %}">查看我的申请</a>

@@ -10,6 +10,8 @@ urlpatterns = [
     path('account/<int:page>', views.account_list, name='account_list'),
     path('account/add', views.account_add, name="account_add"),
     path('account/add/<str:username>', views.account_add, name="account_add"),
+    path('account/edit', views.account_edit, name="account_edit"),
+    path('account/edit/<str:username>', views.account_edit, name="account_edit"),
     path('account/delete/<str:username>', views.account_delete, name='account_delete'),
 
     path('info', views.info_view, name='info_view'),
@@ -23,5 +25,7 @@ urlpatterns = [
     path('course/delete/<str:name>', views.course_delete, name='course_delete'),
     path('course/<str:option>/<str:in_course_name>', views.course_edit, name='course_edit'),
 
-    path('class/add', views.class_add, name='class_add'),
+    path('class', views.class_list, name='class_list'),
+    path('class/add', views.views.class_add, name='class_add'),
+    path('class/<int:page>', views.class_list, name='class_list'),
 ]

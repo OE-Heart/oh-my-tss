@@ -15,7 +15,7 @@
         .mytable td{
             border: 1px solid grey;
         }
-        #mheader1{
+        .mheader1{
             font-size: 30px;
             color: black;
             background-color: white;
@@ -34,18 +34,18 @@
         }
     </style>
   <div id="online_exam">
-      <button id="mheader1" style="background-color: #3399ff;border-radius: 5px">进入题库</button>
-      <button onclick="window.location.href='../generate_paper'" id="mheader1">生成试卷</button>
-      <button onclick="window.location.href='../release_test'" id="mheader1">发布测试</button>
-      <button onclick="window.location.href='../test_info'" id="mheader1">考试信息</button>
-      <button onclick="window.location.href='../paper_ana'" id="mheader1">试卷分析</button>
+      <button class="mheader1" style="background-color: #3399ff;border-radius: 5px">进入题库</button>
+      <button onclick="window.location.href='../generate_paper'" class="mheader1">生成试卷</button>
+      <button onclick="window.location.href='../release_test'" class="mheader1">发布测试</button>
+      <button onclick="window.location.href='../test_info'" class="mheader1">考试信息</button>
+      <button onclick="window.location.href='../paper_ana'" class="mheader1">试卷分析</button>
     <br />
   <hr size="10px"/>
       <form method="post">
           {% csrf_token %}
           学科：<input type="text" placeholder="请输入学科名称" name="course">
           章节：<input type="text" placeholder="请输入章节" name="chapter">
-          <button type="submit" id="mysearch">搜索题目</button>|
+          <button type="submit" id="mysearch">搜索题目</button>
           {% if emptysearch == '1'%}
           <label style="color: red;float: right">请至少输入学科</label>
           {% endif %}

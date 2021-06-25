@@ -24,30 +24,87 @@ def index(request):
 
 
 def major_scheme(request):
+    #显示页面
     if request.method == 'GET':
-        return_dict = {'web_title': '培养方案',
-                       'page_title': '培养方案',
-                       'request_user': request.user,
-                       'cur_submodule': 'major_scheme', }
+        return_dict = {
+            'web_title': '培养方案',
+            'page_title': '培养方案',
+            'request_user': request.user,
+            'cur_submodule': 'major_scheme',
+        }
         try:
             department_list = Department.objects.all()
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:
             return_dict['department_list'] = department_list
+            #print(department_list)
         try:
             major_list = Major.objects.all()
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:
-            return_dict['major_list'] = major_list
+            return_dict['major_list'] =major_list
+            #print(major_list)
         try:
             course_list = Course.objects.all()
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:
             return_dict['course_list'] = course_list
+            #print(course_list)
         return render(request, 'major_scheme.html', return_dict)
+
+    elif request.method == 'POST':
+        return_dict = {
+            'web_title': '培养方案',
+            'page_title': '培养方案',
+            'request_user': request.user,
+            'cur_submodule': 'major_scheme',
+        }
+
+        if request.POST.get('dept'):#点击第一个下拉框，第二个下拉框会筛选major信息
+            department_list = Department.objects.filter(id=request.POST.get('dept'))
+            return_dict['department_list'] = department_list
+            major_list = Major.objects.filter(department=department_list[0])
+            return_dict['major_list'] = major_list
+            return_dict['selected_dept'] = int(request.POST.get('dept'))
+            return render(request, 'major_scheme.html', return_dict)
+
+        else:#点击查看培养方案，重置两个下拉框内容并返回培养方案内课程表及课程信息
+            try:
+                department_list = Department.objects.all()
+            except OperationalError:
+                return_dict['info_retrieve_failure'] = True
+            else:
+                return_dict['department_list'] = department_list
+            try:
+                major_list = Major.objects.all()
+            except OperationalError:
+                return_dict['info_retrieve_failure'] = True
+            else:
+                return_dict['major_list'] = major_list
+            mymajor = request.POST.get("major")
+            if mymajor != None:
+                try:
+                    major_ret = MajorHasCourse.objects.filter(major = int(mymajor))
+                except OperationalError:
+                    return_dict['info_retrieve_failure'] = True
+                else:
+                    course_info = []
+                    for i in range(0, len(major_ret)):
+                        try:
+                            course_ret = Course.objects.filter(id =major_ret[i].course_id)
+                        except OperationalError:
+                            return_dict['info_retrieve_failure'] = True
+                        else:
+                            course_info += course_ret
+                    print(course_info)
+                return_dict["course_list"] = course_info
+                return_dict["major_name"] = Major.objects.filter(id = int(mymajor))[0].name
+                return render(request, 'major_scheme.html', return_dict)
+            else:
+                return HttpResponseRedirect('/class_selection/major_scheme')
 
 
 def stu_select(req):
