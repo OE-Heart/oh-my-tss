@@ -7,7 +7,6 @@ from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 
-
 from oh_my_tss.settings import BASE_DIR
 from . import models
 import os
@@ -29,14 +28,15 @@ def info_view(req):
         avatar = models.Avatar.objects.get(user=req.user)
     except ObjectDoesNotExist:
         pass
-    # res_url = BASE_DIR+'/media/img'+str(Avatar.avatar)
-    # print(res_url)
+    # print(avatar.avatar.name)
+    res_url = '/media/img/test.png'
+    print(res_url)
 
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
         'page_title': '个人信息',
         'request_user': req.user,
-        # 'url': res_url
+        'url': res_url
     })
 
 
@@ -51,6 +51,7 @@ def info_view_with_username(req, username):
         'page_title': '个人信息',
         'request_user': user,
     })
+
 
 def info_edit(req):
     ''' TODO: repair it '''
@@ -160,7 +161,10 @@ def account_edit(req, username='#'):
                 this_user.last_name = new_last_name
                 this_user.first_name = new_first_name
                 this_user.email = new_email
-                # this_user.major = new_major
+                if this_user.groups.filter(name="student").exists():
+                    this_user.student.major = new_major
+                elif this_user.groups.filter(name="teacher").exists():
+                    this_user.teacher.department = new_major
                 this_user.save()
                 result_0 = True
             else:
@@ -224,27 +228,24 @@ def account_add(req):
             new_major = req.POST['major']
             new_avatar = req.FILES.get('avatar')
             new_group = req.POST['role']
-            print(new_group)
+
             result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                   first_name=new_first_name, email=new_email)
 
             this_user = models.User.objects.get(username=new_username)
-            print(new_group)
 
             if this_user and new_group:
                 if new_group == 'teacher':
-                    print(new_group)
-                    target_group = Group.objects.get(name='teacher')
-                    print(target_group)
+                    target_group = Group.objects.get(id=2)
                     this_user.groups.add(target_group)
-                    '''FIX ME'''
-                    # this_user.department.name = new_major
+                    this_user.teacher.department.name = new_major
+                    this_user.save()
                 elif new_group == 'student':
-                    target_group = Group.objects.get(name='student')
+                    target_group = Group.objects.get(id=1)
                     print(target_group)
                     this_user.groups.add(target_group)
-                    '''FIX ME'''
-                    # this_user.major.name = new_major
+                    this_user.student.major.name = new_major
+                    this_user.save()
 
             query = models.Avatar.objects.filter(user=this_user)
             if len(query) == 0 and new_avatar is not None and result_0:
@@ -283,6 +284,7 @@ def account_add(req):
             return HttpRequest(404)
     else:
         return HttpRequest(403)
+
 
 def account_list(req, page=0):
     accounts = []
@@ -353,12 +355,15 @@ def account_list(req, page=0):
         'last_search': req.POST['name'] if req.method == 'POST' else None,
     })
 
+
 def account_delete(req, username):
-    if req.user.has_perm('info_mgt.delete_student') and req.user.has_perm('info_mgt.delete_teacher') and req.method == 'GET':
+    if req.user.has_perm('info_mgt.delete_student') and req.user.has_perm(
+            'info_mgt.delete_teacher') and req.method == 'GET':
         User.objects.filter(username=username).delete()
         return HttpResponseRedirect('/info_mgt/account')
     else:
         return HttpResponse(403)
+
 
 def course_list(req, page=0):
     if req.user.has_perm('info_mgt.view_course'):
@@ -388,6 +393,7 @@ def course_list(req, page=0):
         })
     else:
         return HttpResponse(403)
+
 
 def course_detail(req, name):
     if req.user.has_perm('info_mgt.view_course'):
@@ -423,7 +429,7 @@ def course_edit(req, option, in_course_name):
                     'web_title': '课程管理',
                     'page_title': '修改课程详情',
                     'cur_submodule': 'course',
-                    'form': CourseEditForm(instance=models.Course.objects.  filter(name=course_name)[0]),
+                    'form': CourseEditForm(instance=models.Course.objects.filter(name=course_name)[0]),
                     'edit_result': True if n_updates != 0 else False
                 })
             elif option == 'new':
