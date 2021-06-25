@@ -4,7 +4,8 @@ from django.shortcuts import render
 from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
+
 
 from oh_my_tss.settings import BASE_DIR
 from . import models
@@ -23,10 +24,16 @@ def index(req):
 # TODO: those following pages' templates are not implemented yet.
 
 def info_view(req):
+    Avatar = models.Avatar.objects.get(user=req.user)
+    print(type(Avatar.avatar))
+    # res_url = BASE_DIR+'/media/img'+str(Avatar.avatar)
+    # print(res_url)
+
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
         'page_title': '个人信息',
         'request_user': req.user,
+        # 'url': res_url
     })
 
 
@@ -143,13 +150,14 @@ def account_edit(req, username='#'):
             new_first_name = req.POST['first_name']
             new_email = req.POST['email']
             new_avatar = req.FILES.get('avatar')
-
+            # new_major = req.POST['major']
             this_user = models.User.objects.get(username=username)
             if this_user:
                 this_user.username = new_username
                 this_user.last_name = new_last_name
                 this_user.first_name = new_first_name
                 this_user.email = new_email
+                # this_user.major = new_major
                 this_user.save()
                 result_0 = True
             else:
@@ -170,7 +178,7 @@ def account_edit(req, username='#'):
                 f.close()
             else:
                 result_2 = True
-            return render(req, 'info_edit.html', {
+            return render(req, 'account_edit.html', {
                 'web_title': '用户信息修改',
                 'page_title': '用户信息修改',
                 'request_user': req.user,
@@ -181,7 +189,7 @@ def account_edit(req, username='#'):
         elif req.method == 'GET':
             if username != '#':
                 obj = models.User.objects.get(username=username)
-                return render(req, 'info_edit.html', {
+                return render(req, 'account_edit.html', {
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
@@ -190,7 +198,7 @@ def account_edit(req, username='#'):
                 })
             else:
                 obj = req.user
-                return render(req, 'account_add.html', {
+                return render(req, 'account_edit.html', {
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
@@ -211,11 +219,22 @@ def account_add(req):
             new_first_name = req.POST['first_name']
             new_email = req.POST['email']
             new_avatar = req.FILES.get('avatar')
+            # new_group = req.POST['group']
 
             result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
                                                   first_name=new_first_name, email=new_email)
 
             this_user = models.User.objects.get(username=new_username)
+            # if this_user and new_group:
+            #     if new_group == 'teacher':
+            #         target_group = Group.objects.get(name='student')
+            #         print(target_group)
+            #         this_user.groups.add(target_group)
+            #     else:
+            #         target_group = Group.objects.get(name='teacher')
+            #         print(target_group)
+            #         this_user.groups.add(target_group)
+
             query = models.Avatar.objects.filter(user=this_user)
             if len(query) == 0 and new_avatar is not None and result_0:
                 result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)

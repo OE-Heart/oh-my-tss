@@ -54,6 +54,6 @@
       <a href="{% url 'info_mgt:account_list' next_page %}">下一页</a>
     {% endif %}
   </div>
-  <a class="add-btn" href="{% url 'info_mgt:course_edit' 'new' 'new' %}" title="添加新课程"></a>
+  <a class="add-btn" href="{% url 'info_mgt:class_add' %}" title="添加新课程"></a>
 </div>
 {% endblock card_content %}
