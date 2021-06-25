@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 
 from oh_my_tss.settings import BASE_DIR
+from oh_my_tss.errview import *
 from . import models
 import os
 from .models import Major, Student
@@ -319,13 +320,13 @@ def account_list(req, page=0):
         if req.method == 'POST' and req.POST['name']:
             accounts = [x for x in accounts if x['name'] == req.POST['name']]
 
-        page_sum = (len(accounts) - 1) // 10 + 1
+        page_sum = max((len(accounts) - 1) // 10 + 1, 1)
 
         if page >= page_sum:
-            return HttpResponse(404)
+            return err_404(req)
 
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
     disp_accounts = accounts[page * 10:(page + 1) * 10]
 
@@ -373,11 +374,10 @@ def course_list(req, page=0):
         else:
             courses = models.Course.objects.all()[page * 10: page * 10 + 10]
 
-        page_sum = (len(courses) - 1) // 10 + 1
+        page_sum = max((len(courses) - 1) // 10 + 1, 1)
 
         if page >= page_sum:
-            return HttpResponse(404)
-
+            return err_404(req)
         return render(req, 'courselist.html', {
             'web_title': '课程管理',
             'page_title': '课程信息管理',
@@ -392,7 +392,7 @@ def course_list(req, page=0):
             'last_search': req.POST['name'] if req.method == 'POST' else None,
         })
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def course_detail(req, name):
