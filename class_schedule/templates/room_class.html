@@ -13,13 +13,14 @@
 
 {% block card_content %}
 <table id="room_table" class="table table-hover table-bordered text-center timetable1">
-<form method="POST" action="{% url 'room_class' %}">
     <br>
     <tr style="border: 0">
     <td colspan="3">
+    <form method="POST" action="{% url 'room_class' %}">
+    {% csrf_token %}
         <div>
         <label for="campus">校区：</label>
-              <select name="campus" style="display: block" class="prefix" required id="campus_selection" >
+              <select name="campus" style="display: block" class="prefix" id="campus_selection" onclick="document.getElementById('filter2').click()">
                   {% if campus_list %}
                       {% for i in campus_list %}
                       {% if selected_campus and i.id == selected_campus %}
@@ -31,48 +32,66 @@
                   {% endif %}
               </select>
           </div>
+        <button type="submit" hidden id="filter2">提交</button>
+    </form>
     </td>
     <td colspan="3">
         <div>
+        <form method="POST" action="{% url 'room_class' %}">
+        {% csrf_token %}
         <label for="building">教学楼：</label>
-            <select id="building" name="building" style="display: block" class="prefix" required>
+            <select id="building" name="building" style="display: block" class="prefix" onchange="document.getElementById('filter1').click()">
+            <option value="" disabled selected>--请选择教学楼--</option>
                   {% if building_list %}
                       {% for j in building_list %}
-                            <option value="{{ j.id }}">{{ j.name }}</option>
+                            <option value="{{ j.id }}" {% if j.id == selected_building %}selected{% endif %}>{{ j.name }}</option>
                       {% endfor %}
                   {% endif %}
               </select>
+            <button type="submit" hidden id="filter1">提交</button>
+        </form>
         </div>
     </td>
+    </form>
+<form method="get">
 <td colspan="3">
     <label for="room_id">门牌号：</label>
           <select name="room_id" style="display: block" class="prefix" id="room_id" required>
+              <option value="" disabled selected>请选择教室门牌号</option>
+              {% if room_list %}
+                  {% for r in room_list %}
+                  <option value="{{ r.id }}" {% if r.id == selected_room %}selected{% endif %}>{{ r.room_number }}</option>
+                  {% endfor %}
+              {% endif %}
 </td>
    </tr>
     <tr style="border: 0">
-        <td colspan="5">
+        <td colspan="4" width="40%">
     <div>
         <label for="year">学年：</label>
         <select name="year" style="display: block" class="prefix" id="year" required>
-            <option value="y1">2021-2022</option>
-            <option value="y2">2020-2021</option>
-            <option value="y3">2019-2020</option>
-            <option value="y4">2018-2019</option>
-
+            <option value="2021-2022" {% if year == '2021-2022' %}selected{% endif %}>2021-2022</option>
+            <option value="2020-2021" {% if year == '2020-2021' %}selected{% endif %}>2020-2021</option>
+            <option value="2019-2020" {% if year == '2019-2020' %}selected{% endif %}>2019-2020</option>
+            <option value="2018-2019" {% if year == '2019-2020' %}selected{% endif %}>2018-2019</option>
         </select>
     </div>
         </td>
-    <td colspan="4">
+    <td colspan="4" width="40%">
     <div>
         <label for="term">学期：</label>
         <select name="term" style="display: block" class="prefix" id="term" required>
-            <option value="SP">春</option>
-            <option value="SU">夏</option>
-            <option value="AU">秋</option>
-            <option value="WI">冬</option>
+            <option value="AU" {% if term == 'AU' %}selected{% endif %}>秋</option>
+            <option value="WI" {% if term == 'WI' %}selected{% endif %}>冬</option>
+            <option value="SP" {% if term == 'SP' %}selected{% endif %}>春</option>
+            <option value="SU" {% if term == 'SU' %}selected{% endif %}>夏</option>
         </select>
     </div>
         </td>
+        <td colspan="1" width="20%">
+                    <br/>
+        <button type="submit" style="background:#08c" class="btn btn-primary btn-sm" id="btn_cskb">查询课表</button>
+                </td>
     </tr>
 </form>
 <br><br><hr>
@@ -80,7 +99,7 @@
     <tbody>
     <tr style="border: 0">
         <td colspan="16">
-            <div class="timetable_title"><h6 align="center">{{year}}学年 {{ term }} 学期{{ room }}的课表</h6></div>
+            <div class="timetable_title"><h6 align="center">{{year}}学年 {{ term_char }} 学期{{ room_name }}的课表</h6></div>
         </td>
     </tr>
     <tr class="tbody_head">
@@ -776,6 +795,12 @@
                 <font color="blue">{{ course26.name }}<br>{{ course26.teacher}}<br><br>
                 </font>
             </td>
+            {% elif course26.duration == 3 %}
+            <td id="2-6" rowspan="3" width="6%">
+                <span class="time"></span>
+                <font color="blue">{{ course26.name }}<br>{{ course26.teacher}}<br><br>
+                </font>
+            </td>
         {% endif %}
 
         {% if not course36 %}
@@ -790,6 +815,12 @@
             </td>
         {% elif course36.duration == 2 %}
             <td id="3-6" rowspan="2" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course36.name }}<br>{{ course36.teacher}}<br><br>
+                </font>
+            </td>
+        {% elif course36.duration == 3 %}
+            <td id="3-6" rowspan="3" width="6%">
                 <span class="time"></span>
                 <font color="blue">{{ course36.name }}<br>{{ course36.teacher}}<br><br>
                 </font>
@@ -812,6 +843,12 @@
                 <font color="blue">{{ course46.name }}<br>{{ course46.teacher}}<br><br>
                 </font>
             </td>
+        {% elif course46.duration == 3 %}
+            <td id="4-6" rowspan="3" width="6%">
+                <span class="time"></span>
+                <font color="blue">{{ course46.name }}<br>{{ course46.teacher}}<br><br>
+                </font>
+            </td>
         {% endif %}
 
         {% if not course56 %}
@@ -826,6 +863,12 @@
             </td>
         {% elif course56.duration == 2 %}
             <td id="5-6" rowspan="2" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course56.name }}<br>{{ course56.teacher}}<br><br>
+                </font>
+            </td>
+            {% elif course56.duration == 3 %}
+            <td id="5-6" rowspan="3" width="6%">
                 <span class="time"></span>
                 <font color="blue">{{ course56.name }}<br>{{ course56.teacher}}<br><br>
                 </font>
@@ -848,6 +891,12 @@
                 <font color="blue">{{ course66.name }}<br>{{ course66.teacher}}<br><br>
                 </font>
             </td>
+        {% elif course66.duration == 3 %}
+            <td id="6-6" rowspan="3" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course66.name }}<br>{{ course66.teacher}}<br><br>
+                </font>
+            </td>
         {% endif %}
 
         {% if not course76 %}
@@ -862,6 +911,12 @@
             </td>
         {% elif course76.duration == 2 %}
             <td id="7-6" rowspan="2" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course76.name }}<br>{{ course76.teacher}}<br><br>
+                </font>
+            </td>
+            {% elif course76.duration == 3 %}
+            <td id="7-6" rowspan="3" width="6%">
                 <span class="time"></span>
                 <font color="blue">{{ course76.name }}<br>{{ course76.teacher}}<br><br>
                 </font>
@@ -885,6 +940,12 @@
                     <font color="blue">{{ course17.name }}<br>{{ course17.teacher}}<br><br>
                     </font>
                 </td>
+        {% elif course16.duration == 3 %}
+            <td id="1-6" rowspan="3" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course16.name }}<br>{{ course16.teacher}}<br><br>
+                </font>
+            </td>
             {% endif %}
         {% endif %}
 
@@ -978,6 +1039,7 @@
         <td>
             <span class="festival">8</span>
         </td>
+    {% if not course16 or course16.duration < 3 %}
         {% if not course18 %}
             <td id="1-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -988,20 +1050,9 @@
                 <font color="blue">{{ course18.name }}<br>{{ course18.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course18.duration == 2 %}
-            <td id="1-8" rowspan="2" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course18.name }}<br>{{ course18.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course18.duration == 3 %}
-            <td id="1-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course18.name }}<br>{{ course18.teacher}}<br><br>
-                </font>
-            </td>
         {% endif %}
-
+    {% endif %}
+    {% if not course26 or course26.duration < 3 %}
         {% if not course28 %}
             <td id="2-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1012,20 +1063,9 @@
                 <font color="blue">{{ course28.name }}<br>{{ course28.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course28.duration == 2 %}
-            <td id="2-8" rowspan="2" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course28.name }}<br>{{ course28.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course28.duration == 3 %}
-            <td id="2-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course28.name }}<br>{{ course28.teacher}}<br><br>
-                </font>
-            </td>
         {% endif %}
-
+        {% endif %}
+    {% if not course36 or course36.duration < 3 %}
         {% if not course38 %}
             <td id="3-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1036,20 +1076,9 @@
                 <font color="blue">{{ course38.name }}<br>{{ course38.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course38.duration == 2 %}
-            <td id="3-8" rowspan="2" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course38.name }}<br>{{ course38.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course38.duration == 3 %}
-            <td id="3-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course38.name }}<br>{{ course38.teacher}}<br><br>
-                </font>
-            </td>
+            {% endif %}
         {% endif %}
-
+    {% if not course46 or course46.duration < 3 %}
         {% if not course48 %}
             <td id="4-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1060,20 +1089,9 @@
                 <font color="blue">{{ course48.name }}<br>{{ course48.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course48.duration == 2 %}
-            <td id="4-8" rowspan="2" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course48.name }}<br>{{ course48.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course48.duration == 3 %}
-            <td id="4-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course48.name }}<br>{{ course48.teacher}}<br><br>
-                </font>
-            </td>
         {% endif %}
-
+        {% endif %}
+    {% if not course56 or course56.duration < 3 %}
         {% if not course58 %}
             <td id="5-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1097,7 +1115,8 @@
                 </font>
             </td>
         {% endif %}
-
+{% endif %}
+        {% if not course66 or course66.duration < 3 %}
         {% if not course68 %}
             <td id="6-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1108,20 +1127,9 @@
                 <font color="blue">{{ course68.name }}<br>{{ course68.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course68.duration == 2 %}
-            <td id="6-8" rowspan="2" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course68.name }}<br>{{ course68.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course68.duration == 3 %}
-            <td id="6-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course68.name }}<br>{{ course68.teacher}}<br><br>
-                </font>
-            </td>
         {% endif %}
-
+        {% endif %}
+    {% if not course76 or course76.duration < 3 %}
         {% if not course78 %}
             <td id="7-8" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1132,18 +1140,7 @@
                 <font color="blue">{{ course78.name }}<br>{{ course78.teacher}}<br><br>
                 </font>
             </td>
-        {% elif course78.duration == 2 %}
-            <td id="7-8" rowspan="2" width="6%">
-                <span class="time"></span>
-                <font color="blue">{{ course78.name }}<br>{{ course78.teacher}}<br><br>
-                </font>
-            </td>
-        {% elif course78.duration == 3 %}
-            <td id="7-8" rowspan="3" width="6%" >
-                <span class="time"></span>
-                <font color="blue">{{ course78.name }}<br>{{ course78.teacher}}<br><br>
-                </font>
-            </td>
+        {% endif %}
         {% endif %}
     </tr>
 
@@ -1151,7 +1148,6 @@
         <td>
             <span class="festival">9</span>
         </td>
-        {% if not course18 or course18.duration == 1 %}
             {% if not course19 %}
                 <td id="1-9" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1162,10 +1158,14 @@
                     <font color="blue">{{ course19.name }}<br>{{ course19.teacher}}<br><br>
                     </font>
                 </td>
+            {% elif course19.duration == 2 %}
+                <td id="1-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course19.name }}<br>{{ course19.teacher}}<br><br>
+                    </font>
+                </td>
             {% endif %}
-        {% endif %}
 
-        {% if not course28 or course28.duration == 1 %}
             {% if not course29 %}
                 <td id="2-9" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1176,10 +1176,14 @@
                     <font color="blue">{{ course29.name }}<br>{{ course29.teacher}}<br><br>
                     </font>
                 </td>
-            {% endif %}
+            {% elif course19.duration == 2 %}
+                <td id="2-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course29.name }}<br>{{ course29.teacher}}<br><br>
+                    </font>
+                </td>
         {% endif %}
 
-        {% if not course38 or course38.duration == 1 %}
             {% if not course39 %}
                 <td id="3-9" rowspan="1" width="6%">
                     <span class="time"></span>
@@ -1190,10 +1194,14 @@
                     <font color="blue">{{ course39.name }}<br>{{ course39.teacher}}<br><br>
                     </font>
                 </td>
-            {% endif %}
+            {% elif course39.duration == 2 %}
+            <td id="3-9" rowspan="2" width="6%" >
+                <span class="time"></span>
+                <font color="blue">{{ course39.name }}<br>{{ course39.teacher}}<br><br>
+                </font>
+            </td>
         {% endif %}
 
-        {% if not course48 or course48.duration == 1 %}
             {% if not course49 %}
                 <td id="4-9" rowspan="1" width="6%">
                     <span class="time"></span>
@@ -1204,10 +1212,14 @@
                     <font color="blue">{{ course49.name }}<br>{{ course49.teacher}}<br><br>
                     </font>
                 </td>
+            {% elif course49.duration == 2 %}
+                <td id="4-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course49.name }}<br>{{ course49.teacher}}<br><br>
+                    </font>
+                </td>
             {% endif %}
-        {% endif %}
 
-        {% if not course58 or course58.duration == 1 %}
             {% if not course59 %}
                 <td id="5-9" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1218,10 +1230,14 @@
                     <font color="blue">{{ course59.name }}<br>{{ course59.teacher}}<br><br>
                     </font>
                 </td>
-            {% endif %}
+            {% elif course59.duration == 2 %}
+                <td id="5-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course59.name }}<br>{{ course59.teacher}}<br><br>
+                    </font>
+                </td>
         {% endif %}
 
-        {% if not course68 or course68.duration == 1 %}
             {% if not course69 %}
                 <td id="6-9" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1232,10 +1248,14 @@
                     <font color="blue">{{ course69.name }}<br>{{ course69.teacher}}<br><br>
                     </font>
                 </td>
+            {% elif course69.duration == 2 %}
+                <td id="6-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course69.name }}<br>{{ course69.teacher}}<br><br>
+                    </font>
+                </td>
             {% endif %}
-        {% endif %}
 
-        {% if not course78 or course78.duration == 1 %}
             {% if not course79 %}
                 <td id="7-9" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1246,16 +1266,20 @@
                     <font color="blue">{{ course79.name }}<br>{{ course79.teacher}}<br><br>
                     </font>
                 </td>
+            {% elif course79.duration == 2 %}
+                <td id="7-9" rowspan="2" width="6%" >
+                    <span class="time"></span>
+                    <font color="blue">{{ course79.name }}<br>{{ course79.teacher}}<br><br>
+                    </font>
+                </td>
             {% endif %}
-        {% endif %}
 
     </tr>
-
     <tr>
         <td>
             <span class="festival">10</span>
         </td>
-        {% if course18.duration != 3 and course19.duration != 2 %}
+        {% if not course19 or course19.duration != 2 %}
             {% if not course1a %}
                 <td id="1-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1263,13 +1287,13 @@
             {% elif course1a.duration == 1 %}
                 <td id="1-a" rowspan="1" width="6%" >
                     <span class="time"></span>
-                    <font color="blue">{{ course1a.name }}<br>{{ course1a.teacher}}<br><br>
+                    <font color="blue">{{ course1a.name }}<br/>{{ course1a.teacher}}<br/><br/>
                     </font>
                 </td>
             {% endif %}
         {% endif %}
 
-        {% if course28.duration != 3 and course29.duration != 2 %}
+        {% if not course29 or course29.duration != 2 %}
             {% if not course2a %}
                 <td id="2-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1283,7 +1307,7 @@
             {% endif %}
         {% endif %}
 
-        {% if course38.duration != 3 and course39.duration != 2 %}
+        {% if not course39 or course39.duration != 2 %}
             {% if not course3a %}
                 <td id="3-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1297,7 +1321,7 @@
             {% endif %}
         {% endif %}
 
-        {% if course48.duration != 3 and course49.duration != 2 %}
+        {% if not course49.duration or course49.duration != 2 %}
             {% if not course4a %}
                 <td id="4-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1311,7 +1335,7 @@
             {% endif %}
         {% endif %}
 
-        {% if course58.duration != 3 and course59.duration != 2 %}
+        {% if not course59 or course59.duration != 2 %}
             {% if not course5a %}
                 <td id="5-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1325,7 +1349,7 @@
             {% endif %}
         {% endif %}
 
-        {% if course68.duration != 3 and course69.duration != 2 %}
+        {% if not course69 or course69.duration != 2 %}
             {% if not course6a %}
                 <td id="6-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1339,7 +1363,7 @@
             {% endif %}
         {% endif %}
 
-        {% if course78.duration != 3 and course79.duration != 2 %}
+        {% if not course79 or course79.duration != 2 %}
             {% if not course7a %}
                 <td id="7-a" rowspan="1" width="6%" >
                     <span class="time"></span>
@@ -1458,7 +1482,6 @@
                 </font>
             </td>
         {% endif %}
-
         {% if not course5b %}
             <td id="5-b" rowspan="1" width="6%" >
                 <span class="time"></span>
@@ -1532,7 +1555,6 @@
         {% endif %}
 
     </tr>
-
     <tr>
         <td>
             <span class="festival">12</span>
