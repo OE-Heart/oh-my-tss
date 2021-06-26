@@ -30,7 +30,20 @@ class SelfInfoForm(forms.Form):
         'email'
     )
 
-
+class EditInfoForm(forms.Form):
+    username = forms.CharField(max_length=20)
+    last_name = forms.CharField(max_length=20)
+    first_name = forms.CharField(max_length=20)
+    major = forms.CharField(max_length=20)
+    email = forms.EmailField(max_length=100)
+    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
+    password_again = forms.CharField(max_length=128, widget=forms.PasswordInput)
+    layout = Layout(
+        'username', 'major',
+        Row('last_name', 'first_name'),
+        Row('password', 'password_again'),
+        'email'
+    )
 #
 # class AvatarForm(SelfInfoForm):
 #     class Meta:

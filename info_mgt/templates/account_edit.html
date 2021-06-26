@@ -15,7 +15,8 @@
 <div id="info_mgt" class="card-content">
     <form action="{{ app_path }}" method="post" id="class-add-form">{% csrf_token %}
         <div style="width: 100%">
-        {{ forms }}
+            {% form form=forms %}
+            {% endform %}
         </div>
         <label>院系</label>
         <input type="text" name="major">
@@ -24,7 +25,7 @@
             <button type="submit" class="btn btn-primary">提交</button>
         </div>
     </form>
-        {% if result == 'success' and edit_result == True%}
+        {% if edit == True and edit_result == True%}
         <div class="done-msg">
           <i class="material-icons">done</i>
             修改账户成功！
