@@ -45,7 +45,7 @@ def info_view_with_username(req, username):
     try:
         user = models.User.objects.get(username=username)
     except:
-        return HttpResponse(404)
+        return err_404(req)
 
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
@@ -97,7 +97,7 @@ def info_edit(req):
             'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
             'form': SelfInfoForm(instance=obj), 'edit': False})
     else:
-        return HttpResponse(404)
+        return err_404(req)
 
 
 def account_edit(req, username='#'):
@@ -167,9 +167,9 @@ def account_edit(req, username='#'):
                     'edit': False
                 })
         else:
-            return HttpResponse(404)
+            return err_404(req)
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def account_add(req):
@@ -235,9 +235,9 @@ def account_add(req):
                 'edit_result': True
             })
         else:
-            return HttpRequest(404)
+            return err_404(req)
     else:
-        return HttpRequest(403)
+        return err_403(req)
 
 
 def account_list(req, page=0):
@@ -293,7 +293,7 @@ def account_list(req, page=0):
     #     page_sum = len(courses) // 10 + 1
 
     #     if page >= page_sum:
-    #         return HttpResponse(404)
+    #         return err_404(req)
 
     return render(req, 'accountlist.html', {
         'web_title': '信息管理',
@@ -316,7 +316,7 @@ def account_delete(req, username):
         User.objects.filter(username=username).delete()
         return HttpResponseRedirect('/info_mgt/account')
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def course_list(req, page=0):
@@ -358,7 +358,7 @@ def course_detail(req, name):
             'request_course': course
         })
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def course_edit(req, option, in_course_name):
@@ -401,10 +401,10 @@ def course_edit(req, option, in_course_name):
                     'new_result': True if ins else False
                 })
             elif option == 'delete':
-                return HttpResponse(403)
+                return err_403(req)
             else:
                 # TODO: report a 404 error
-                return HttpResponse(404)
+                return err_404(req)
         elif req.method == 'GET':
             if option == 'edit':
                 page_title = '修改课程详情'
@@ -428,9 +428,9 @@ def course_edit(req, option, in_course_name):
                 models.Course.objects.get(name=in_course_name).delete()
                 return HttpResponseRedirect('/info_mgt/course')
         else:
-            return HttpResponse(403)
+            return err_403(req)
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def course_delete(req, name):
@@ -438,14 +438,14 @@ def course_delete(req, name):
         models.Course.objects.get(name=name).delete()
         return HttpResponseRedirect('/info_mgt/course')
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def class_list(req, page=0):
     classes = models.Class.objects.all()[page * 10: page * 10 + 10]
     page_sum = (len(classes) - 1) // 10 + 1
     if page >= page_sum:
-        return HttpResponse(404)
+        return err_404(req)
     return render(req, 'classlist.html', {
         'web_title': '教学班级',
         'page_title': '教学班级管理',
@@ -507,7 +507,7 @@ def class_add(req):
                     'edit_result': 'success'
                 })
     else:
-        return HttpResponse(403)
+        return err_403(req)
 
 
 def login_view(req):
