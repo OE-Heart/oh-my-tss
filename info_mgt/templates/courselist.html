@@ -45,13 +45,13 @@
     {% if prev_disabled %}
       <span style="color: silver">上一页</span>
     {% else %}
-      <a href="{% url 'info_mgt:account_list' prev_page %}">上一页</a>
+      <a href="{% url 'info_mgt:course_list' prev_page %}">上一页</a>
     {% endif %}
     {{ cur_page }} / {{ page_sum }} 页
     {% if next_disabled %}
       <span style="color: silver">下一页</span>
     {% else %}
-      <a href="{% url 'info_mgt:account_list' next_page %}">下一页</a>
+      <a href="{% url 'info_mgt:course_list' next_page %}">下一页</a>
     {% endif %}
   </div>
   <a class="add-btn" href="{% url 'info_mgt:course_edit' 'new' 'new'%}" title="添加新课程"></a>

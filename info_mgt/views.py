@@ -437,9 +437,11 @@ def course_list(req, page=0):
         if req.method == 'POST' and req.POST['name']:
             courses = models.Course.objects.filter(name=req.POST['name'])
         else:
-            courses = models.Course.objects.all()[page * 10: page * 10 + 10]
+            courses = models.Course.objects.all()
 
         page_sum = max((len(courses) - 1) // 10 + 1, 1)
+
+        disp_courses = courses[page * 10:(page + 1) * 10]
 
         if page >= page_sum:
             return err_404(req)
@@ -447,7 +449,7 @@ def course_list(req, page=0):
             'web_title': '课程管理',
             'page_title': '课程信息管理',
             'cur_submodule': 'course',
-            'courses': courses,
+            'courses': disp_courses,
             'cur_page': page + 1,
             'prev_page': page - 1,
             'prev_disabled': page == 0,
@@ -554,15 +556,16 @@ def course_delete(req, name):
 
 
 def class_list(req, page=0):
-    classes = models.Class.objects.all()[page * 10: page * 10 + 10]
+    classes = models.Class.objects.all()
     page_sum = (len(classes) - 1) // 10 + 1
+    disp_classes = classes[page * 10:(page + 1) * 10]
     if page >= page_sum:
         return err_404(req)
     return render(req, 'classlist.html', {
         'web_title': '教学班级',
         'page_title': '教学班级管理',
         'cur_submodule': 'class',
-        'classes': classes,
+        'classes': disp_classes,
         'cur_page': page + 1,
         'prev_page': page - 1,
         'prev_disabled': page == 0,
@@ -588,7 +591,7 @@ def class_add(req):
             year = req.POST['year']
             term = req.POST['term']
             course_ex = models.Course.objects.filter(name=course_name)
-            teacher_ex = models.User.objects.filter(Q(first_name=first_name) & Q(last_name=last_name))
+            teacher_ex = models.User.objects.filter(Q(first_name=first_name), Q(last_name=last_name))
             if len(course_ex) == 0:
                 return render(req, 'class_add.html', {
                     'web_title': '教学班管理',
