@@ -9,15 +9,16 @@
 {% block card_content %}
 
 <div id="class_selection" class="card-content">
-<form method="POST" style="margin-bottom:30px">
+<form method="POST" action="#/" style="margin-bottom:30px">
     {% csrf_token %}
         <div>
         <select name="dept" id="dept"  class="form-control" required onchange="document.getElementById('sub1').click()">
-            <option selected>请选择所在学院..</option>
+            <option disabled selected>请选择所在学院..</option>
                 {% if department_list %}
                       {% for i in department_list %}
                           {% if selected_dept and  i.id  == selected_dept %}
                               <option value="{{ i.id }}" selected>{{ i.name }}</option>
+
                            {% else %}
                              <option value="{{ i.id }}">{{ i.name }}</option>
                           {% endif %}
@@ -38,7 +39,7 @@
     {% csrf_token %}
     <div>
         <select name="major" id="major" class="form-control" required>
-            <option selected>请选择所在专业..</option>
+            <option disabled selected>请选择所在专业..</option>
             {% if major_list %}
                 {% for j in major_list %}
                     <option value="{{ j.id }}">{{ j.name }}</option>
@@ -60,14 +61,21 @@
 <span style="font-size:25px">培养方案</span>
 <table style="margin-top:30px">
     <thead>
-        <tr><th>课程学分</th><th>课程编号</th><th>课程名称</th><th>推荐修读学期</th><th>详细信息</th></tr>
+        <tr><th>课程编号</th><th>课程名称</th><th>课程学分</th><th>课程类型</th><th>详细信息</th></tr>
     </thead>
     <tbody>
     {% if course_list %}
         {% for i in course_list %}
             <tr>
-                <th>课程学分</th><th>课程编号</th><th>{{ i.name }}</th><th>推荐修读学期</th>
-                <th><a href="{% url 'info_mgt:course_display' i.name %}">查看</a></th>
+                <th>{{i.course.id }}</th><th>{{ i.course.name }}</th><th>{{ i.course.credit }}</th>
+                <td>
+                  {% if i.course_type == 'C' %}
+                    必修
+                    {% else %}
+                    选修
+                    {% endif %}
+                </td>
+                <th><a href="{% url 'info_mgt:course_display' i.course.name %}">查看</a></th>
             </tr>
         {% endfor %}
     {% endif %}

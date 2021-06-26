@@ -15,12 +15,20 @@
 <br>
 <table>
     <thead>
-        <tr><th>    </th><th>初选阶段</th><th>补选阶段</th></tr>
+        <tr><th>    </th><th>开始时间</th><th>截止时间</th></tr>
     </thead>
     <tbody>
-        <tr><th>开始时间</th></tr>
-        <tr><th>结束时间</th></tr>
-    </tbody>
+        <tr>
+            <td>初选阶段</td>
+            <td>{{ time_zero.start }}</td>
+            <td>{{ time_zero.end }}</td>
+        </tr>
+        <tr>
+            <td>补选阶段</td>
+            <td>{{ time_one.start }}</td>
+            <td>{{ time_one.end }}</td>
+        </tr>
+  </tbody>
 
 </table>
 </div>

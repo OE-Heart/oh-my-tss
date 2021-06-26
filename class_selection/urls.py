@@ -21,9 +21,11 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('major_scheme/', views.major_scheme),
     path('stu_class/', views.stu_class),
-    path('tea_class/', views.tea_class),
+    path('tea_class/', views.tea_class, name='tea_class'),
     path('time_control/', views.time_control),
     path('admin_class/', views.admin_class),
-    path('stu_select/', views.stu_select),
+    path('stu_select/', views.stu_select,name="stu_select"),
     path('tea_class/detail/<str:class_id>', views.stu_detail, name='stu_display'),
+    path('stu_select/choose_class', views.choose_class, name='choose_class'),
+    path('stu_class_list/', views.stu_class_list, name='stu_class_list'),
 ]

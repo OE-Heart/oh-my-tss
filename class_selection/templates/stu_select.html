@@ -1,7 +1,7 @@
 {% extends 'skeleton.html' %}
 
-{% load static %} 
-{% load material_form %} 
+{% load static %}
+{% load material_form %}
 
 {% block extra_head %}
 {% endblock extra_head %}
@@ -9,74 +9,114 @@
 {% block card_content %}
 
 <div id="class_selection" class="card-content">
-<form class="input-field" action="manipulate_schedule" method="GET" style="margin-bottom:30px">
+<form method="POST" action="#/" style="margin-bottom:30px">
+    {% csrf_token %}
     <table class="tab_03">
     <tbody>
         <tr style="border:0">
         <td width="30%">
-            <select name="cx_cxlb_1" id="cx_cxlb_1" class="form-control">
+
+
+            <select name="cxkc_1" id="cxkc_1" class="form-control">
             <option value="" disabled selected>选择查询类别</option>
             <option value="skjs">授课教师</option>
             <option value="kcbh">课程代码</option>
             <option value="kcmc">课程名称</option>
 
-            <lect>
+            </select>
         </td>
         <td>
-            <input type="text" name="cx_cxnr_1" value="" id="cx_cxnr_1" class="form-control">
+            <input type="text" name="cx_input_1" value="" id="cx_input_1" class="form-control" required>
         </td>
         </tr>
-        <tr style="border:0">
-        <td colspan="5">
-            <label>
-                <input style="margin-left:15px" name="logic" type="radio" id="cx_zbgx_and" value="and" checked/>
-                <span>与</span>
-            </label>
-            <label>
-                <input style="margin-left:15px" name="logic" type="radio" id="cx_zbgx_or" value="or" />
-                <span>或</span>
-            </label>
-        </td>
-        </tr>
-        <tr style="border:0">
-        <td>
-            <select name="cx_cxlb_2" id="cx_cxlb_2" class="form-control">
-            <option value="" disabled selected>选择查询类别</option>
-            <option value="skjs">授课教师</option>
-            <option value="kcbh">课程代码</option>
-            <option value="kcmc">课程名称</option>
 
-            <lect>
-        </td>
-        <td>
-            <input type="text" name="cx_cxnr_2" value="" id="cx_cxnr_2" class="form-control">
-        </td>
-        </tr>
         <tr>
-            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxjxb"> 查询课程 <tton> </td>
+            <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxkc"> 查询课程 </button> </td>
         </tr>
     </tbody>
     </table>
 </form>
 
 <span style="font-size:25px">可选课程</span>
-<table style="margin-top:30px">
+
+<form method="POST" action="choose_class">
+{% csrf_token %}
+<table>
     <thead>
-        <tr><th>授课教师</th><th>课程编号</th><th>课程名称</th><th>课程时段</th><th>课程地点</th><th>课程剩余容量</th><th>详细信息</th><th>选课状态</th></tr>
+        <tr>
+            <th>课程编号</th>
+            <th>课程名称</th>
+            <th>授课教师</th>
+            <th>上课时间</th>
+            <th>上课地点</th>
+            <th>已选人数/总容量</th>
+            <th>详细信息</th>
+
+            <th>选课状态</th>
+        </tr>
     </thead>
     <tbody>
-        {% for course in courses %}
-        <tr onMouseOver="this.style.backgroundColor='#9fc5db'" onMouseOut="this.style.backgroundColor='white'" onclick="window.location.href='manipulate?course_id={{course.id}}'">
-            <td>{{ course.teacher }}</td><td>{{ course.no }}</td><td>{{ course.name }}</td><td>{{ course.time }}</td><td>{{ course.location }}</td>
-        </tr>
+    {% if class_info %}
+        {% for i in class_info %}
+
+            <td>{{ i.course_id }}</td>
+            <td>{{ i.course.name }}</td>
+            <td>{{ i.teacher.last_name }}&nbsp;{{ i.teacher.first_name }} </td>
+            <td>
+            {% for j in i.classhasroom_set.all %}
+                <div>
+                    {% if j.classroom %}
+                        {% if j.day == 1 %}
+                            周一
+                        {% elif j.day == 2 %}
+                            周二
+                        {% elif j.day == 3 %}
+                            周三
+                        {% elif j.day == 4 %}
+                            周四
+                        {% elif j.day == 5 %}
+                            周五
+                        {% elif j.day == 6 %}
+                            周六
+                        {% elif j.day == 7 %}
+                            周日
+                        {% endif %}
+                        {{ j.start_at }}-{{ j.end_at }}节
+                    {% else %}
+                        {{ j.duration }}节课，暂未安排
+                    {% endif %}
+                </div>
+            {% endfor %}
+            </td>
+            <td>
+                {% for j in i.classhasroom_set.all %}
+                    {% if j.classroom %}
+                            <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
+                        {% else %}
+                            <br/>
+                    {% endif %}
+                {% endfor %}
+            </td>
+            <td>{{ i.memberCnt}}/{{i.course.capacity}}</td>
+            <td><a href="{% url 'info_mgt:course_display' i.course.name %}">查看</a></td>
+            {% if i in my_class %}
+            <td><input type="submit" class="btn btn-default" name="{{i.id}}" value="drop"></td>
+            {% else %}
+            <td><input type="submit" class="btn btn-primary btn-sm" name="{{i.id}}" value="select"></td>
+            {% endif %}
+            </tr>
         {% endfor %}
+    {% endif %}
+
     </tbody>
 </table>
+</form>
 </div>
 <script>
     $(document).ready(function(){
     $('select').formSelect();
     });
 </script>
+
 {% endblock card_content %}
 

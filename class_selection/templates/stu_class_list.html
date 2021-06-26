@@ -11,7 +11,9 @@
 
 <div  class="card-content">
 
-
+<span style="font-size:30px">课程列表</span>
+<button type="button" class="btn btn-default"style="position:relative; float:right;"
+        onclick="window.history.go(-1)">课程表</button>
 <table>
     <thead>
         <tr>
@@ -19,24 +21,22 @@
             <th>授课教师</th>
             <th>课程编号</th>
             <th>课程名称</th>
-
             <th>上课时间</th>
             <th>上课地点</th>
-            <th>已选人数/总容量</th>
             <th>详细信息</th>
-            <th>学生列表</th>
+
         </tr>
     </thead>
     <tbody>
-    {% if class_list %}
-        {% for i in class_list %}
+    {% if has_class_list %}
+        {% for i in has_class_list %}
 
             <tr>
-            <td>{{ request_user.last_name }}&nbsp;{{ request_user.first_name }}</td>
-            <td>{{ i.course_id }}</td>
-            <td>{{ i.course.name }}</td>
+            <td>{{ i.Class.teacher.last_name }}&nbsp;{{ i.Class.teacher.first_name }}</td>
+            <td>{{ i.Class_id }}</td>
+            <td>{{ i.Class.course.name }}</td>
             <td>
-            {% for j in i.classhasroom_set.all %}
+            {% for j in i.Class.classhasroom_set.all %}
                 <div>
                     {% if j.classroom %}
                         {% if j.day == 1 %}
@@ -62,7 +62,7 @@
             {% endfor %}
             </td>
             <td>
-                {% for j in i.classhasroom_set.all %}
+                {% for j in i.Class.classhasroom_set.all %}
                     {% if j.classroom %}
                             <div>{{ j.classroom.building.campus.name }}{{ j.classroom.building.name }}{{ j.classroom.room_number }}</div>
                         {% else %}
@@ -70,11 +70,8 @@
                     {% endif %}
                 {% endfor %}
             </td>
-
-            <td>{{ i.memberCnt}}/{{i.course.capacity}}</td>
-                <td><a href="{% url 'info_mgt:course_display' i.course.name %}">查看</a>
-            <td><a href="{% url 'class_selection:stu_display' i.id %}">查看</a>
-            </tr>
+            <td><a href="{% url 'info_mgt:course_display' i.Class.course.name %}">查看</a>
+                   </tr>
         {% endfor %}
     {% endif %}
 

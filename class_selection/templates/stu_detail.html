@@ -4,11 +4,13 @@
 <div  class="card-content">
 
 <span style="font-size:30px">选课学生列表</span>
+<button type="button" class="btn btn-default"style="position:relative; float:right;"
+        onclick="window.history.go(-1)">返回</button>
 <table>
     <thead>
         <tr>
             <th>学号</th>
-            <th colspan="2" >姓名</th>
+            <th>姓名</th>
             <th>专业</th>
         </tr>
     </thead>
@@ -19,8 +21,7 @@
             <tr>
             <td>{{ i.Student_id }}</td>
 
-            <td>{{ i.Student.user.first_name}}</td>
-            <td>{{ i.Student.user.last_name}}</td>
+            <td>{{ i.Student.user.last_name}}&nbsp{{ i.Student.user.first_name}}</td>
             <td>{{ i.Student.major.name}}</td>
             </tr>
         {% endfor %}
@@ -28,5 +29,6 @@
 
     </tbody>
 </table>
+
 </div>
 {% endblock card_content %}
