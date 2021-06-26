@@ -14,6 +14,6 @@ class ClassScheduleConfig(ModuleMixin, AppConfig):
         {'name': 'manipulate_schedule', 'text': '手动课程调整', 'link': 'manipulate_schedule/'},
         {'name': 'application', 'text': '提出调课申请', 'link': 'application/'},
         {'name': 'handle_application', 'text': '处理调课申请', 'link': 'handle_application/'},
-        {'name': 'teacher_class', 'text': '本人课表查询', 'link': 'teacher_class/'},
+        {'name': 'teacher_class', 'text': '教师课表查询', 'link': 'teacher_class/'},
         {'name': 'room_class', 'text': '教室课表查询', 'link': 'room_class/'},
     ]

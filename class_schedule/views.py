@@ -1,14 +1,13 @@
 import datetime
+from oh_my_tss.errview import err_403, err_404
 from .genetic import *
-from django.db import OperationalError, transaction
+from django.db import OperationalError, transaction, DataError
 from django.http.response import HttpResponseRedirect, Http404, HttpResponse
 from django.shortcuts import render
-from django.http.request import HttpRequest
-from django.contrib.auth.models import User, Group
 from .models import Classroom, ClassHasRoom, Application, Building
 from info_mgt.models import Campus, Department, Major, Teacher, Course, MajorHasCourse, Class
 from django.urls import reverse
-from django.db.models import Q, Count
+from django.db.models import Q
 
 
 def index(request):
@@ -27,7 +26,7 @@ def index(request):
 def add_room(request):  # 打开添加教室的页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     return_dict = {'web_title': '添加教室',
                    'page_title': '添加教室',
                    'request_user': request.user,
@@ -54,13 +53,15 @@ def add_room(request):  # 打开添加教室的页面
         return_dict['add_failure'] = True
     elif request.GET.get('duplicated'):  # 之前教室因为门牌号重复而添加失败
         return_dict['duplicate'] = True
+    elif request.GET.get('outofrange'):
+        return_dict['outofrange'] = True
     return render(request, 'add_room.html', return_dict)
 
 
 def add_room_submit(request):  # 提交添加教室的信息
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'POST':
         # room_campus_id = request.POST.get('campus')
         room_building_id = request.POST.get('building')
@@ -78,6 +79,8 @@ def add_room_submit(request):  # 提交添加教室的信息
                              capacity=room_capacity)
         try:
             new_room.save()
+        except DataError:
+            return HttpResponseRedirect(reverse('add_room') + '?outofrange=true')
         except OperationalError:
             return HttpResponseRedirect(reverse('add_room') + '?failed=true')
         else:
@@ -87,7 +90,7 @@ def add_room_submit(request):  # 提交添加教室的信息
 def modify_room(request, page=0):  # 打开修改教室页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '修改教室信息',
                        'page_title': '修改教室信息',
@@ -98,14 +101,14 @@ def modify_room(request, page=0):  # 打开修改教室页面
         elif request.GET.get('delete_failure'):
             return_dict['delete_room_failed'] = True
         try:
-            room_list = Classroom.objects.all().order_by('-building_id', 'room_number')[page * 10: page * 10 + 10]
+            room_list = Classroom.objects.all().order_by('-building_id', 'room_number')
         except OperationalError:
             return_dict['info_retrieve_failure'] = True
         else:
             page_sum = len(room_list) // 10 + 1
-            if page >= page_sum:
+            if page > page_sum:
                 return HttpResponse(404)
-            return_dict['room_list'] = room_list
+            return_dict['room_list'] = room_list[page * 10: page * 10 + 10]
             return_dict['cur_page'] = page + 1
             return_dict['prev_page'] = (page - 1)
             return_dict['prev_disabled'] = (page == 0)
@@ -120,13 +123,15 @@ def modify_room(request, page=0):  # 打开修改教室页面
             return_dict['duplicated'] = True
         elif request.GET.get('no_such_room'):
             return_dict['no_such_room'] = True
+        elif request.GET.get('outofrange'):
+            return_dict['outofrange'] = True
         return render(request, 'modify_room.html', return_dict)
 
 
 def modify_certain_room(request, room_id):  # 修改特定教室信息的页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     return_dict = {'web_title': '修改教室信息',
                    'page_title': '修改教室信息',
                    'request_user': request.user,
@@ -158,9 +163,9 @@ def modify_certain_room(request, room_id):  # 修改特定教室信息的页面
 def modify_room_submit(request, room_id):  # 提交修改的教室信息
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if not room_id:
-        return HttpResponse(404)  # 必须在url中给出教室编号
+        return err_404(request)  # 必须在url中给出教室编号
     if request.method == 'POST':
         try:
             room_to_modify = Classroom.objects.get(pk=room_id)
@@ -183,6 +188,8 @@ def modify_room_submit(request, room_id):  # 提交修改的教室信息
         room_to_modify.capacity = request.POST.get('room_capacity')
         try:
             room_to_modify.save()
+        except DataError:
+            return HttpResponseRedirect(reverse('modify_room') + '?outofrange=true')
         except OperationalError:
             return HttpResponseRedirect(reverse('modify_room') + '?failure=true')
         else:
@@ -194,7 +201,7 @@ def modify_room_submit(request, room_id):  # 提交修改的教室信息
 def delete_room(request, room_id):
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if not room_id:
         return HttpResponseRedirect(reverse('modify_room'))
     if request.method == 'GET':
@@ -213,7 +220,7 @@ def delete_room(request, room_id):
 def auto_schedule(request, page=0):  # 打开自动排课页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '自动排课',
                        'page_title': '自动排课',
@@ -235,7 +242,7 @@ def auto_schedule(request, page=0):  # 打开自动排课页面
             return_dict['schedule_list'] = schedule_list[page * 10: page * 10 + 10]
             page_sum = len(schedule_list) // 10 + 1
             if page >= page_sum:
-                return HttpResponse(404)
+                return err_404(request)
             return_dict['cur_page'] = page + 1
             return_dict['prev_page'] = (page - 1)
             return_dict['prev_disabled'] = (page == 0)
@@ -248,7 +255,7 @@ def auto_schedule(request, page=0):  # 打开自动排课页面
 def do_auto_schedule(request):  # 进行自动排课。。。麻烦（（（
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     section_list = ClassHasRoom.objects.filter(Class__year=2021, Class__term__in={'AU', 'WI', 'AW'})
     s = []
     for i in section_list:
@@ -276,11 +283,9 @@ def do_auto_schedule(request):  # 进行自动排课。。。麻烦（（（
                     or (i.duration == 5 and i.slot not in {1, 6}):  # 如果有冲突或开始的节数不合适，该课程不被排入课表
                 same_class_section_list = ClassHasRoom.objects.filter(Class_id=i.classId)
                 for j in same_class_section_list:  # 已经排进去同一个教学班的其他时段再删掉
-                    del j.classroom
-                    del j.start_at
-                    del j.end_at
-                    del j.day
-                    j.save()
+                    new_section = ClassHasRoom(id=j.id, Class_id=j.Class_id, duration=j.duration)
+                    j.delete()
+                    new_section.save()
                 conflict_count += 1
             else:  # 把这个时段排进去
                 this_section = ClassHasRoom.objects.get(pk=i.sectionId)
@@ -299,7 +304,7 @@ def do_auto_schedule(request):  # 进行自动排课。。。麻烦（（（
 def manipulate_schedule(request):  # 打开手动调课页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '手动课程调整',
                        'page_title': '手动课程调整',
@@ -420,7 +425,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
 def manipulate_certain_class(request, section_id):  # 打开处理特定课程的页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '手动课程调整',
                        'page_title': '手动课程调整',
@@ -467,8 +472,11 @@ def manipulate_certain_class(request, section_id):  # 打开处理特定课程�
 
 
 def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针对一个时段）
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return err_403(request)
     if not class_has_room_id:
-        return Http404
+        return err_404(request)
     if request.method == 'POST':
         new_day = int(request.POST.get('skrq'))
         new_start_at = int(request.POST.get('qssj'))
@@ -480,7 +488,10 @@ def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针�
         else:
             new_end_at = new_start_at + section_to_modify.duration - 1
             try:
-                conflict_check = ClassHasRoom.objects.filter(Q(classroom_id=new_room_id) & Q(Class__term=section_to_modify.Class.term) & Q(Class__year=section_to_modify.Class.year)
+                conflict_check = ClassHasRoom.objects.filter(Q(Q(classroom_id=new_room_id)
+                                                               | Q(Class__teacher=section_to_modify.Class.teacher)) &
+                                                             Q(Class__term=section_to_modify.Class.term) &
+                                                             Q(Class__year=section_to_modify.Class.year)
                                                              & ~Q(Q(end_at__lt=new_start_at)
                                                                   | Q(start_at__gt=new_end_at))
                                                              & Q(day=new_day) & ~Q(id=class_has_room_id))
@@ -506,6 +517,9 @@ def submit_manipulate(request, class_has_room_id):  # 提交手动调课（针�
 
 
 def application(request):  # 打开提出调课申请页面
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'teacher':
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '提出调课申请',
                        'page_title': '提出调课申请',
@@ -531,6 +545,9 @@ def application(request):  # 打开提出调课申请页面
 
 
 def submit_application(request):  # 提交调课申请
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'teacher':
+        return err_403(request)
     if request.method == 'POST':
         class_id = request.POST.get('class_selection')
         content = request.POST.get('content')
@@ -545,6 +562,9 @@ def submit_application(request):  # 提交调课申请
 
 
 def view_application(request):
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '查看调课申请',
                        'page_title': '查看调课申请',
@@ -563,6 +583,9 @@ def view_application(request):
 
 
 def view_spec_application(request, app_id):
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '查看调课申请',
                        'page_title': '查看调课申请',
@@ -589,7 +612,7 @@ def view_spec_application(request, app_id):
 def handle_application(request, page=0):  # 打开处理调课申请页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '处理调课申请',
                        'page_title': '处理调课申请',
@@ -627,7 +650,7 @@ def handle_application(request, page=0):  # 打开处理调课申请页面
 def handle_certain_application(request, application_id):  # 打开一条特定的申请的处理页面
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if request.method == 'GET':
         return_dict = {'web_title': '处理调课申请',
                        'page_title': '处理调课申请',
@@ -651,9 +674,9 @@ def handle_certain_application(request, application_id):  # 打开一条特定�
 def submit_handle(request, application_id):  # 提交申请处理结果
     current_user_group = request.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        return err_403(request)
     if not application_id:
-        return Http404
+        return err_404(request)
     if request.method == 'POST':
         reply = request.POST.get('reply')
         accepted_or_not = request.POST.get('choice')
@@ -678,10 +701,13 @@ def submit_handle(request, application_id):  # 提交申请处理结果
 
 
 def teacher_class(request):  # 按教师查询课表页面
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'teacher':
+        return err_403(request)
     if request.method == 'GET':  # 获取3个查询条件
         if not request.GET.get('term') and not request.GET.get('year'):
             return HttpResponseRedirect(reverse('teacher_class') + '?year=2021-2022&term=AU')
-        return_dict = {'web_title': '查询本人课表', 'page_title': '查询本人课表', 'request_user': request.user,
+        return_dict = {'web_title': '教师课表查询', 'page_title': '教师课表查询', 'request_user': request.user,
                        'cur_submodule': 'teacher_class', 'name': request.user.first_name + ' ' + request.user.last_name}
         year = request.GET.get('year')
         term = request.GET.get('term')
@@ -733,10 +759,13 @@ def teacher_class(request):  # 按教师查询课表页面
                         elif k == 13:
                             num = 'D'
                         return_dict['course' + str(j) + num] = i
-    return render(request, 'teacher_class.html', return_dict)
+        return render(request, 'teacher_class.html', return_dict)
 
 
 def room_class(request):
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name not in {'admin', 'teacher'}:
+        return err_403(request)
     if request.method == 'GET':  # 获取2个查询条件
         year = request.GET.get('year')
         term = request.GET.get('term')

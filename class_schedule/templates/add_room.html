@@ -21,6 +21,8 @@ function check(){
         window.alert('教室添加失败，请稍后重试');
     {% elif duplicate %}
         window.alert('教室添加失败，请检查新教室门牌号是否和同一教学楼已有教室有重复');
+        {% elif outofrange %}
+        window.alert('门牌号或容量输入不合法')
     {% endif %}
     {% if info_retrieve_failure %}
         window.alert('信息加载失败，请刷新重试。');

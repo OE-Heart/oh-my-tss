@@ -30,6 +30,8 @@
             alert('教室信息修改失败，请检查门牌号是否有重复');
         {% elif no_such_room %}
             alert('教室不存在')
+        {% elif outofrange %}
+            alert('输入的门牌号或容量不合法')
         {% endif %}
 </script>
 <div class="card-content">

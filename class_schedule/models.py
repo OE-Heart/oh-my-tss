@@ -29,7 +29,7 @@ class ClassHasRoom(models.Model):
     Class = models.ForeignKey(Class, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.SET_NULL, null=True, blank=True)
     day = models.IntegerField(default=1, null=True, blank=True, validators=[MaxValueValidator(7), MinValueValidator(1)])
-    start_at = models.IntegerField(default=1, null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(13)])
+    start_at = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(13)])
     # 按理说应该限制2节及以上长度的时段只能在1，3，6，7，9，11节开始，只有长度为1节的才是可取1~13，从view里定义限制吧……
     duration = models.IntegerField(default=2, validators=[MinValueValidator(1), MaxValueValidator(4)])
     # 这个最大值4哪来的？万恶的沟通技巧。
