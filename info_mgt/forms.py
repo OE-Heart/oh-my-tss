@@ -16,17 +16,20 @@ from oh_my_tss import demo as forms
 #         Row('first_name', 'last_name'),
 #         'emails',
 #     )
-class SelfInfoForm(forms.ModelForm):
+class SelfInfoForm(forms.Form):
+    username = forms.CharField(max_length=20)
+    last_name = forms.CharField(max_length=20)
+    first_name = forms.CharField(max_length=20)
+    email = forms.EmailField(max_length=100)
+    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
+    password_again = forms.CharField(max_length=128, widget=forms.PasswordInput)
     layout = Layout(
         'username',
         Row('last_name', 'first_name'),
+        Row('password', 'password_again'),
         'email'
-    ),
+    )
 
-    class Meta:
-        model = User
-        fields = ('username', 'last_name', 'first_name', 'email')
-        help_texts = {'username':""}
 
 #
 # class AvatarForm(SelfInfoForm):
@@ -85,12 +88,15 @@ class AddForm(forms.Form):
     first_name = forms.CharField(max_length=20)
     email = forms.EmailField(max_length=100)
     major = forms.CharField(max_length=20)
+    password = forms.CharField(max_length=128, widget=forms.PasswordInput)
+    password_again = forms.CharField(max_length=128, widget=forms.PasswordInput)
     choices = [
         ('student', '学生'),
         ('teacher', '教师'),
     ]
     role = forms.CharField(widget=forms.Select(choices=choices))
     layout = Layout(Row('username', 'major', 'role'),
+                    Row('password', 'password_again'),
                     Row('last_name', 'first_name'), 'email')
 
 

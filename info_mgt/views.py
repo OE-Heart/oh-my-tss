@@ -2,8 +2,10 @@ from django.http.request import HttpRequest
 from django.http.response import Http404, HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.hashers import make_password,check_password
+# import models
 from info_mgt.forms import LoginForm
-from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm, EditACForm
+from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
 
@@ -55,38 +57,68 @@ def info_view_with_username(req, username):
 
 
 def info_edit(req):
-    ''' TODO: repair it '''
-    if req.method == 'POST':
-        new_username = req.POST['username']
-        new_last_name = req.POST['last_name']
-        new_first_name = req.POST['first_name']
-        new_email = req.POST['email']
-        new_avatar = req.FILES.get('avatar')
-
-        query = models.Avatar.objects.filter(user=req.user)
-
-        if len(query) == 0:
-            result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
-            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-            for chunk in new_avatar.chunks():
-                f.write(chunk)
-            f.close()
-        elif len(new_avatar) != 0:
-            result2 = query.update(avatar=new_avatar)
-            f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-            for chunk in new_avatar.chunks():
-                f.write(chunk)
-            f.close()
+    def is_valid(req):
+        try:
+            flag1 = True
+            query = models.User.objects.get(username=req.POST['username'])
+        except:
+            query = None
+        if query is None:
+            flag1 = False
+        if req.POST['password'] == req.POST['password_again']:
+            flag2 = True
+        if flag1 and flag2:
+            return True
         else:
-            result2 = True
+            return False
 
-        query_set = models.User.objects.filter(id=req.user.id)
-        result = query_set.update(username=new_username, last_name=new_last_name,
-                                  first_name=new_first_name, email=new_email)
+    if req.method == 'POST':
+        if is_valid(req):
+            new_username = req.POST['username']
+            if new_username is None:
+                new_username = req.user.username
+            new_last_name = req.POST['last_name']
+            if new_last_name is None:
+                new_last_name = req.user.last_name
+            new_first_name = req.POST['first_name']
+            if new_first_name is None:
+                new_first_name = req.user.first_name
+            new_email = req.POST['email']
+            if new_email is None:
+                new_email = req.user.email
+            new_avatar = req.FILES.get('avatar')
 
+            password1 = req.POST['password']
+            password2 = req.POST['password_again']
+            try:
+                query = models.Avatar.objects.filter(user=req.user)
+            except:
+                query = None
+
+            if query is None and new_avatar is not None:
+                result2 = models.Avatar.objects.create(user=req.user, avatar=new_avatar)
+                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                for chunk in new_avatar.chunks():
+                    f.write(chunk)
+                f.close()
+            elif new_avatar is not None:
+                result2 = query.update(avatar=new_avatar)
+                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                for chunk in new_avatar.chunks():
+                    f.write(chunk)
+                f.close()
+            else:
+                result2 = True
+
+            query_set = models.User.objects.filter(id=req.user.id)
+            result = query_set.update(username=new_username, last_name=new_last_name,
+                                      first_name=new_first_name, email=new_email, password=make_password(password1))
+        else:
+            result = 0
+            result_2 = 0
         return render(req, 'info_edit.html', {
             'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
-            'form': SelfInfoForm(instance=req.user), 'edit': True,
+            'form': SelfInfoForm, 'edit': True,
             'edit_result': True if result != 0 and result2 != 0 else False
         })
     elif req.method == 'GET':
@@ -95,7 +127,7 @@ def info_edit(req):
         # print(avatar_obj)
         return render(req, 'info_edit.html', {
             'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
-            'form': SelfInfoForm(instance=obj), 'edit': False})
+            'form': SelfInfoForm, 'edit': False})
     else:
         return err_404(req)
 
@@ -143,7 +175,7 @@ def account_edit(req, username='#'):
                 'web_title': '用户信息修改',
                 'page_title': '用户信息修改',
                 'request_user': req.user,
-                'forms': SelfInfoForm(instance=this_user),
+                'forms': SelfInfoForm(),
                 'edit': True,
                 'edit_result': True if result_0 != 0 and result_2 != 0 else False
             })
@@ -154,7 +186,7 @@ def account_edit(req, username='#'):
                     'web_title': '用户信息修改',
                     'page_title': '用户信息修改',
                     'request_user': req.user,
-                    'forms': SelfInfoForm(instance=obj),
+                    'forms': SelfInfoForm(),
                     'edit': False
                 })
             else:
@@ -173,54 +205,82 @@ def account_edit(req, username='#'):
 
 
 def account_add(req):
+    def is_valid(req):
+        try:
+            flag1 = True
+            query = models.User.objects.get(username=req.POST['username'])
+        except:
+            query = None
+        if query is not None:
+            flag1 = False
+        if req.POST['password'] == req.POST['password_again']:
+            flag2 = True
+        if req.POST['role'] == 'student':
+            query = models.Major.objects.get(name=req.POST['major'])
+            if query is not None:
+                flag3 = True
+        elif req.POST['role'] == 'teacher':
+            query = models.Department.objects.get(name=req.POST['major'])
+            if query is not None:
+                flag3 = True
+        if flag1 and flag2 and flag3:
+            return True
+        else:
+            return False
+
     if req.user.has_perm('info_mgt.add_student') or req.user.has_perm('info_mgt.add_teacher'):
         if req.method == 'POST':
-            new_username = req.POST['username']
-            new_last_name = req.POST['last_name']
-            new_first_name = req.POST['first_name']
-            new_email = req.POST['email']
-            new_major = req.POST['major']
-            new_avatar = req.FILES.get('avatar')
-            new_group = req.POST['role']
+            if is_valid(req):
+                new_username = req.POST['username']
+                new_last_name = req.POST['last_name']
+                new_first_name = req.POST['first_name']
+                new_email = req.POST['email']
+                new_major = req.POST['major']
+                new_avatar = req.FILES.get('avatar')
+                new_group = req.POST['role']
+                pass_word1 = req.POST['password']
+                pass_word2 = req.POST['password_again']
+                result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
+                                                      first_name=new_first_name, email=new_email, password=make_password(pass_word1))
 
-            result_0 = models.User.objects.create(username=new_username, last_name=new_last_name,
-                                                  first_name=new_first_name, email=new_email)
+                this_user = models.User.objects.get(username=new_username)
 
-            this_user = models.User.objects.get(username=new_username)
+                if this_user and new_group and result_0:
+                    if new_group == 'teacher':
+                        target_group = Group.objects.get(name="teacher")
+                        this_user.groups.add(target_group)
+                        try:
+                            this_major = models.Department.objects.get(name=new_major)
+                            result_0 = models.Teacher.objects.create(department_id=this_major.id, user_id=this_user.id)
+                        except:
+                            result_0 = False
+                    elif new_group == 'student':
+                        target_group = Group.objects.get(name="student")
+                        this_user.groups.add(target_group)
+                        try:
+                            this_major = models.Major.objects.get(name=new_major)
+                            result_0 = models.Student.objects.create(major_id=this_major.id, user_id=this_user.id)
+                        except:
+                            result_0 = False
 
-            if this_user and new_group and result_0:
-                if new_group == 'teacher':
-                    target_group = Group.objects.get(name="teacher")
-                    this_user.groups.add(target_group)
-                    try:
-                        this_major = models.Department.objects.get(name=new_major)
-                        result_0 = models.Teacher.objects.create(department_id=this_major.id, user_id=this_user.id)
-                    except:
-                        result_0 = False
-                elif new_group == 'student':
-                    target_group = Group.objects.get(name="student")
-                    this_user.groups.add(target_group)
-                    try:
-                        this_major = models.Major.objects.get(name=new_major)
-                        result_0 = models.Student.objects.create(major_id=this_major.id, user_id=this_user.id)
-                    except:
-                        result_0 = False
-
-            query = models.Avatar.objects.filter(user=this_user)
-            if len(query) == 0 and new_avatar is not None and result_0:
-                result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
-                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-                for chunk in new_avatar.chunks():
-                    f.write(chunk)
-                f.close()
-            elif new_avatar is not None and result_0:
-                result_2 = query.update(avatar=new_avatar)
-                f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
-                for chunk in new_avatar.chunks():
-                    f.write(chunk)
-                f.close()
+                query = models.Avatar.objects.filter(user=this_user)
+                if len(query) == 0 and new_avatar is not None and result_0:
+                    result_2 = models.Avatar.objects.create(user=this_user, avatar=new_avatar)
+                    f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                    for chunk in new_avatar.chunks():
+                        f.write(chunk)
+                    f.close()
+                elif new_avatar is not None and result_0:
+                    result_2 = query.update(avatar=new_avatar)
+                    f = open(os.path.join(BASE_DIR, 'media', 'img', new_avatar.name), 'wb+')
+                    for chunk in new_avatar.chunks():
+                        f.write(chunk)
+                    f.close()
+                else:
+                    result_2 = True
             else:
-                result_2 = True
+                result_0 = 0
+                result_2 = 0
             return render(req, 'account_add.html', {
                 'web_title': '用户信息添加',
                 'page_title': '用户信息添加',
