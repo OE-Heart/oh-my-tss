@@ -13,7 +13,7 @@ from oh_my_tss.settings import BASE_DIR
 from oh_my_tss.errview import *
 from . import models
 import os
-from .models import Major, Student
+from .models import Major, Student, Teacher
 
 
 def index(req):
@@ -188,19 +188,20 @@ def account_edit(req, username='#'):
                     f.close()
 
                 result_2 = 1
-
                 if new_major is not None:
                     this_user = models.User.objects.get(username=new_username)
-                    if this_user.groups.get(name="student"):
+                    if Student.objects.get(user_id=this_user.id):
+                        query_set = Student.objects.filter(user_id=this_user.id)
                         try:
                             this_major = models.Major.objects.get(name=new_major)
-                            result_1 = models.Student.objects.create(major_id=this_major.id, user_id=this_user.id)
+                            result_1 = query_set.update(major_id=this_major.id, user_id=this_user.id)
                         except:
                             pass
-                    elif this_user.groups.get(name="teacher"):
+                    elif Teacher.objects.get(user_id=this_user.id):
+                        query_set = Teacher.objects.filter(user_id=this_user.id)
                         try:
                             this_major = models.Department.objects.get(name=new_major)
-                            result_1 = models.Teacher.objects.create(department_id=this_major.id, user_id=this_user.id)
+                            result_1 = query_set.update(department_id=this_major.id, user_id=this_user.id)
                         except:
                             pass
 
