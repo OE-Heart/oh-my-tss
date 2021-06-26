@@ -30,9 +30,9 @@ def index(req):
 def info_view(req):
     try:
         avatar = models.Avatar.objects.get(user=req.user)
-        res_url = 'media\\img\\' + str(avatar.avatar.name)
+        res_url = '/static/media/img/' + str(avatar.avatar.name)
     except ObjectDoesNotExist:
-        res_url = 'media\\img\\' + 'default.png'
+        res_url = '/static/media/img/' + 'default.png'
         pass
 
     return render(req, 'info_view.html', {

@@ -1,5 +1,7 @@
 {% extends 'skeleton.html' %}
 
+{% load static %}
+
 {% block card_content %}
 <div id="info_mgt" class="card-content">
     <table>
@@ -33,7 +35,7 @@
 
             <tr>
                 <th>头像</th>
-                <th><img src="{{ url }}"></th>
+                <th><img src="{{ url }}" width="160px" height="200px"></th>
 
             </tr>
         </thead>
