@@ -221,35 +221,30 @@ def time_control(req):
         })
 
 
-def stu_class(req):  # 学生课表
+def stu_class(req):#学生课表
     current_user_group = req.user.groups.first()
     if not current_user_group or current_user_group.name != 'student':
-        return render(req, 'stu_class.html', {
-            'web_title': '课程选择',
-            'page_title': '课程选择',
-            'request_user': req.user,
-            'identity': 0
-        })
-    this_user = req.user
-    students = models.Student.objects.filter(user=this_user)
-    myclass_list = models.StuHasClass.objects.filter(Student=students[0])
-    myclass = [["" for i in range(7)] for i in range(13)]
+        return HttpResponseRedirect(reverse('login'))
+    this_user=req.user
+    students=models.Student.objects.filter(user=this_user)
+    myclass_list=models.StuHasClass.objects.filter(Student=students[0])
+    myclass=[[""for i in range(7)]for i in range(13)]
     for i in range(0, len(myclass_list)):
-        myclasstime = models.ClassHasRoom.objects.filter(Class=myclass_list[i].Class)
-        myclassday = myclasstime[0].day - 1
-        myclassstart = myclasstime[0].start_at - 1
-        myclassdur = myclasstime[0].duration
-        myclassname = myclasstime[0].Class.course.name
-        for j in range(0, 12):
-            if j in range(myclassstart, myclassstart + myclassdur):
-                myclass[j][myclassday] = myclassname
+        myclasstime=models.ClassHasRoom.objects.filter(Class=myclass_list[i].Class)
+        for k in range(0,len(myclasstime)):
+            myclassday=myclasstime[k].day-1
+            myclassstart=myclasstime[k].start_at-1
+            myclassdur=myclasstime[k].duration
+            myclassname=myclasstime[k].Class.course.name
+            for j in range(0,12):
+                if j in range(myclassstart,myclassstart+myclassdur):
+                    myclass[j][myclassday]=myclassname
     return render(req, 'stu_class.html', {
         'web_title': '学生课表',
         'page_title': '学生课表',
         'request_user': req.user,
-        'schedule': myclass
+        'schedule':myclass
     })
-
 
 def tea_class(request):
     current_user_group = request.user.groups.first()
