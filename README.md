@@ -7,6 +7,8 @@ django-material
 pymysql
 pillow
 requests
+numpy
+weasyprint
 ```
 
 ```sh
