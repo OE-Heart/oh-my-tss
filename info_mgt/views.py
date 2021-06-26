@@ -58,7 +58,7 @@ def info_view_with_username(req, username):
 
 def info_edit(req):
     def is_valid(req):
-        flag1 = False
+        flag1 = True
         flag2 = False
         try:
             flag1 = True
@@ -136,7 +136,7 @@ def info_edit(req):
 
 def account_edit(req, username='#'):
     def is_valid(req):
-        flag1 = False
+        flag1 = True
         flag2 = False
         try:
             flag1 = True
@@ -250,7 +250,7 @@ def account_edit(req, username='#'):
 
 def account_add(req):
     def is_valid(req):
-        flag1 = False
+        flag1 = True
         flag2 = False
         flag3 = False
         try:
