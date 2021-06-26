@@ -97,11 +97,11 @@ def admin_class(req):  # 管理员选退课
                     'space_out': space_out,
                 })
             else:
-                myclass_list = models.StuHasClass.objects.filter(Student=students)#加的判断冲突选课的
+                myclass_list = models.StuHasClass.objects.filter(Student=students)  # 加的判断冲突选课的
                 myclass = [["" for i in range(7)] for i in range(13)]
                 for i in range(0, len(myclass_list)):
                     myclasstime = models.ClassHasRoom.objects.filter(Class=myclass_list[i].Class)
-                    for k in range(0,len(myclasstime)):
+                    for k in range(0, len(myclasstime)):
                         myclassday = myclasstime[k].day - 1
                         myclassstart = myclasstime[k].start_at - 1
                         myclassdur = myclasstime[k].duration
@@ -110,7 +110,7 @@ def admin_class(req):  # 管理员选退课
                             if j in range(myclassstart, myclassstart + myclassdur):
                                 myclass[j][myclassday] = myclassname
                 myclasstime = models.ClassHasRoom.objects.filter(Class=classes)
-                for k in range(0,len(myclasstime)):
+                for k in range(0, len(myclasstime)):
                     myclassday = myclasstime[k].day - 1
                     myclassstart = myclasstime[k].start_at - 1
                     myclassdur = myclasstime[k].duration
@@ -125,8 +125,8 @@ def admin_class(req):  # 管理员选退课
                                     'request_user': req.user,
                                     'request_class': classes,
                                     'pre_capacity': capacity,
-                                    'conflict_err': conflict_err,#需要前端输出弹窗
-                                })#添加的内容到此结束
+                                    'conflict_err': conflict_err,  # 需要前端输出弹窗
+                                })  # 添加的内容到此结束
                 models.StuHasClass.objects.create(Student=students, Class=classes)
                 classes.memberCnt += 1
                 classes.save()
@@ -265,7 +265,7 @@ def stu_class(req):  # 学生课表
     myclass = [["" for i in range(7)] for i in range(13)]
     for i in range(0, len(myclass_list)):
         myclasstime = models.ClassHasRoom.objects.filter(Class=myclass_list[i].Class)
-        for k in range(0,len(myclasstime)):
+        for k in range(0, len(myclasstime)):
             myclassday = myclasstime[k].day - 1
             myclassstart = myclasstime[k].start_at - 1
             myclassdur = myclasstime[k].duration
@@ -316,14 +316,24 @@ def stu_detail(req, class_id):
 
 
 def major_scheme(request):
+
+    return_dict = {
+        'web_title': '培养方案',
+        'page_title': '培养方案',
+        'request_user': request.user,
+        'cur_submodule': 'major_scheme',
+    }
+
     # 显示页面
     if request.method == 'GET':
-        return_dict = {
-            'web_title': '培养方案',
-            'page_title': '培养方案',
-            'request_user': request.user,
-            'cur_submodule': 'major_scheme',
-        }
+        current_user_group = request.user.groups.first()
+        if current_user_group.name == 'student':
+            try:
+                course_list = MajorHasCourse.objects.filter(major=request.user.student.major)
+            except OperationalError:
+                return_dict['info_retrieve_failure'] = True
+            else:
+                return_dict['course_list'] = course_list
         try:
             department_list = Department.objects.all()
         except OperationalError:
@@ -336,22 +346,11 @@ def major_scheme(request):
             return_dict['info_retrieve_failure'] = True
         else:
             return_dict['major_list'] = major_list
-        try:
-            course_list = MajorHasCourse.objects.filter(major=request.user.student.major)
-        except OperationalError:
-            return_dict['info_retrieve_failure'] = True
-        else:
-            return_dict['course_list'] = course_list
+
             # print(course_list)
         return render(request, 'major_scheme.html', return_dict)
 
     elif request.method == 'POST':
-        return_dict = {
-            'web_title': '培养方案',
-            'page_title': '培养方案',
-            'request_user': request.user,
-            'cur_submodule': 'major_scheme',
-        }
 
         if request.POST.get('dept'):  # 点击第一个下拉框，第二个下拉框会筛选major信息
             department_list = Department.objects.all()
@@ -393,7 +392,6 @@ def requset(args):
     pass
 
 
-
 def stu_class_list(request):
     return_dict = {
         'page_title': '课程列表',
@@ -413,7 +411,7 @@ def stu_select(req, null=None):
     identity = 1
     current_user_group = req.user.groups.first()
     if not current_user_group or current_user_group.name != 'student':
-        identity = 0      # This user can not use this function
+        identity = 0  # This user can not use this function
         return render(req, 'stu_select.html', {
             'web_title': '课程选择',
             'page_title': '课程选择',
@@ -422,7 +420,7 @@ def stu_select(req, null=None):
         })
     time_zero = models.sel_time.objects.get(type=0)
     timenow = timezone.now()
-    if(str(timenow)[0:19]<str(time_zero.start)[0:19] or str(timenow)[0:19]>str(time_zero.end)[0:19]):
+    if (str(timenow)[0:19] < str(time_zero.start)[0:19] or str(timenow)[0:19] > str(time_zero.end)[0:19]):
         return render(req, 'stu_select.html', {
             'web_title': '课程选择',
             'page_title': '课程选择',
@@ -476,12 +474,13 @@ def stu_select(req, null=None):
                 return render(req, 'stu_select.html', return_dict)
         elif choice == "kcmc":
             class_name = models.Course.objects.filter(name__contains=content)
-            if len(class_name)>0:
+            if len(class_name) > 0:
                 class_info = models.Class.objects.filter(course=class_name[0].id)
                 for i in range(1, len(class_name)):
                     class_id = models.Class.objects.filter(course=class_name[i].id)
                     class_info = class_info | class_id
-            else: class_info={}
+            else:
+                class_info = {}
         elif choice == "kcbh":
             class_info = models.Class.objects.filter(course=int(content))
         return_dict["class_info"] = class_info
