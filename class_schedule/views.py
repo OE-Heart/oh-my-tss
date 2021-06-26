@@ -1,13 +1,17 @@
 import datetime
-from oh_my_tss.errview import err_403, err_404
-from .genetic import *
+
 from django.db import OperationalError, transaction, DataError
-from django.http.response import HttpResponseRedirect, Http404, HttpResponse
-from django.shortcuts import render
-from .models import Classroom, ClassHasRoom, Application, Building
-from info_mgt.models import Campus, Department, Major, Teacher, Course, MajorHasCourse, Class
-from django.urls import reverse
 from django.db.models import Q
+from django.http.response import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render
+from django.urls import reverse
+import weasyprint
+from django.template.loader import render_to_string
+
+from info_mgt.models import Campus
+from oh_my_tss.errview import err_403, err_404, err_50x
+from .genetic import *
+from .models import Classroom, ClassHasRoom, Application, Building
 
 
 def index(request):
@@ -236,7 +240,7 @@ def auto_schedule(request, page=0):  # 打开自动排课页面
             scheduled_list = Class.objects.filter(classhasroom__classroom__isnull=False, year=2021,
                                                   term__in={'AU', 'WI', 'AW'}).distinct().order_by('id')
         except OperationalError:
-            pass
+            return err_50x(request, 500)
         else:
             schedule_list = schedule_list.union(scheduled_list)
             for i in schedule_list:
@@ -317,7 +321,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
         try:
             campus_list = Campus.objects.all()
         except OperationalError:
-            pass
+            return err_50x(request, 500)
         else:
             return_dict['campus_list'] = campus_list
         logic = request.GET.get('logic')
@@ -331,7 +335,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
                     try:
                         class_list_1 = Class.objects.filter(course_id=cxnr1, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
-                        pass
+                        return err_50x(request, 500)
             elif type1 == 'skjs':  # 查询授课教师
                 try:
                     cxnr1 = cxnr1.split()
@@ -339,25 +343,26 @@ def manipulate_schedule(request):  # 打开手动调课页面
                         Q(teacher__first_name__in=cxnr1) | Q(teacher__last_name__in=cxnr1), year=2021,
                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type1 == 'jxbbh':  # 查询教学班编号
                 if cxnr1:
                     try:
                         class_list_1 = Class.objects.filter(id=cxnr1, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
-                        pass
+                        return err_50x(request, 500)
+
             elif type1 == 'kcmc':  # 查询课程名称
                 try:
                     class_list_1 = Class.objects.filter(course__name__contains=cxnr1, year=2021,
                                                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type1 == 'sksj':  # 查询上课时间
                 day = request.GET.get('day1')
                 try:
                     class_list_1 = Class.objects.filter(classhasroom__day=day, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type1 == 'skxq':  # 查询上课校区
                 campus_id = request.GET.get('campus1')
                 try:
@@ -365,7 +370,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
                     class_list_1 = Class.objects.filter(classhasroom__classroom__in=classroom_list, year=2021,
                                                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             type2 = request.GET.get('cx_cxlb_2')
             cxnr2 = request.GET.get('cx_cxnr_2')
             if type2 == 'kcbh':  # 查询课程编号
@@ -373,7 +378,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
                     try:
                         class_list_2 = Class.objects.filter(course_id=cxnr2, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
-                        pass
+                        return err_50x(request, 500)
             elif type2 == 'skjs':  # 查询授课教师
                 try:
                     cxnr2 = cxnr2.split()
@@ -381,25 +386,25 @@ def manipulate_schedule(request):  # 打开手动调课页面
                         Q(teacher__first_name__in=cxnr2) | Q(teacher__last_name__in=cxnr2), year=2021,
                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type2 == 'jxbbh':  # 查询教学班编号
                 if cxnr2:
                     try:
                         class_list_2 = Class.objects.filter(id=cxnr2, year=2021, term__in={'AU', 'WI', 'AW'})
                     except:
-                        pass
+                        return err_50x(request, 500)
             elif type2 == 'kcmc':  # 查询课程名称
                 try:
                     class_list_2 = Class.objects.filter(course__name__contains=cxnr2, year=2021,
                                                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type2 == 'sksj':  # 查询上课时间
                 day = request.GET.get('day2')
                 try:
                     class_list_2 = Class.objects.filter(classhasroom__day=day, year=2021, term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             elif type2 == 'skxq':  # 查询上课校区
                 campus_id = request.GET.get('campus2')
                 try:
@@ -407,7 +412,7 @@ def manipulate_schedule(request):  # 打开手动调课页面
                     class_list_2 = Class.objects.filter(classhasroom__classroom__in=classroom_list, year=2021,
                                                         term__in={'AU', 'WI', 'AW'})
                 except:
-                    pass
+                    return err_50x(request, 500)
             if len(class_list_1) > 0 and len(class_list_2) > 0:
                 if logic == 'and':
                     class_list_1 = class_list_1.intersection(class_list_2)
@@ -799,7 +804,8 @@ def room_class(request):
                 return_dict['building_list'] = building_list
                 return_dict['selected_campus'] = selected_campus
                 return_dict['selected_building'] = selected_building
-                return_dict['room_list'] = Classroom.objects.filter(building_id=selected_building).order_by('room_number')
+                return_dict['room_list'] = Classroom.objects.filter(building_id=selected_building).order_by(
+                    'room_number')
     elif request.method == 'GET':
         room = request.GET.get('room_id')
         year = request.GET.get('year')
@@ -811,7 +817,8 @@ def room_class(request):
             return_dict['selected_campus'] = this_room.building.campus_id
             return_dict['building_list'] = Building.objects.filter(pk=return_dict['selected_building'])
             return_dict['campus_list'] = Campus.objects.all()
-            return_dict['room_list'] = Classroom.objects.filter(building_id=this_room.building_id).order_by('room_number')
+            return_dict['room_list'] = Classroom.objects.filter(building_id=this_room.building_id).order_by(
+                'room_number')
             return_dict['year'] = year
             return_dict['term'] = term
             if term == 'AU':
@@ -842,7 +849,8 @@ def room_class(request):
                 term_range = {term, 'SS'}
             else:
                 term_range = {term, 'AW'}
-            return_dict['room_name'] = this_room.building.campus.name + this_room.building.name + str(this_room.room_number)
+            return_dict['room_name'] = this_room.building.campus.name + this_room.building.name + str(
+                this_room.room_number)
             section_list = ClassHasRoom.objects.filter(Class__year=year, Class__term__in=term_range, classroom_id=room)
 
             for i in section_list:
@@ -865,3 +873,67 @@ def room_class(request):
         else:
             return_dict['building_list'] = Building.objects.filter(campus_id=campus_list[0].id)
     return render(request, 'room_class.html', return_dict)
+
+
+def download(request):
+    if request.method == 'GET':
+        context = {}
+        year = request.GET.get('year_selected')
+        term = request.GET.get('term_selected')
+        context['year'] = year
+        context['term'] = term
+        context['name'] = request.user.first_name + request.user.last_name
+        if term == 'AU':
+            context['term_char'] = '秋'
+        elif term == 'SP':
+            context['term_char'] = '春'
+        elif term == 'WI':
+            context['term_char'] = '冬'
+        elif term == 'SU':
+            context['term_char'] = '夏'
+        if year == '2021-2022' and (term == 'SP' or term == 'SU'):
+            year = 2022
+        elif year == '2021-2022' and (term == 'AU' or term == 'WI'):
+            year = 2021
+        elif year == '2020-2021' and (term == 'SP' or term == 'SU'):
+            year = 2021
+        elif year == '2020-2021' and (term == 'AU' or term == 'WI'):
+            year = 2020
+        elif year == '2019-2020' and (term == 'SP' or term == 'SU'):
+            year = 2020
+        elif year == '2019-2020' and (term == 'AU' or term == 'WI'):
+            year = 2019
+        elif year == '2018-2019' and (term == 'SP' or term == 'SU'):
+            year = 2019
+        elif year == '2018-2019' and (term == 'AU' or term == 'WI'):
+            year = 2018
+        if term in {'SU', 'SP'}:
+            term_range = {term, 'SS'}
+        else:
+            term_range = {term, 'AW'}
+        section_list = ClassHasRoom.objects.filter(Class__teacher_id=request.user.id, Class__year=year,
+                                                   Class__term__in=term_range, classroom__isnull=False)
+        for i in section_list:
+            i.name = i.Class.course.name
+            i.campus = i.classroom.building.campus.name
+            i.building = i.classroom.building.name
+            i.room = str(i.classroom.room_number)
+            for j in range(1, 8):
+                for k in range(1, 14):
+                    if i.day == j and i.start_at == k:
+                        if k < 10:
+                            num = str(k)
+                        elif k == 10:
+                            num = 'a'
+                        elif k == 11:
+                            num = 'b'
+                        elif k == 12:
+                            num = 'c'
+                        elif k == 13:
+                            num = 'd'
+                        context['course' + str(j) + num] = i
+        html = render_to_string('schedule_table.html', context)
+        response = HttpResponse(content_type='application/pdf')
+        response['Content-Disposition'] = '课表'
+        weasyprint.HTML(string=html).write_pdf(response)
+        return response

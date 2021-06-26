@@ -27,5 +27,6 @@ urlpatterns = [
     path('manipulate_schedule/<int:section_id>', views.manipulate_certain_class, name='manipulate_certain_class'),
     path('submit_manipulate/<int:class_has_room_id>', views.submit_manipulate, name='manipulate_submit'),
     path('teacher_class/', views.teacher_class, name='teacher_class'),
+    path('teacher_class/download_schedule', views.download, name='pdf'),
     path('room_class/', views.room_class, name='room_class'),
 ]
