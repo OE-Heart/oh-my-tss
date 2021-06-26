@@ -8,6 +8,7 @@ from info_mgt.forms import LoginForm
 from info_mgt.forms import SelfInfoForm, LoginForm, CourseEditForm, ClassAddForm, AddForm
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User, Group
+from django.db.models import Q
 
 from oh_my_tss.settings import BASE_DIR
 from oh_my_tss.errview import *
@@ -582,40 +583,41 @@ def class_add(req):
             })
         elif req.method == 'POST':
             course_name = req.POST['course']
-            teacher_name = req.POST['teacher']
+            first_name = req.POST['first_name']
+            last_name = req.POST['last_name']
             year = req.POST['year']
             term = req.POST['term']
             course_ex = models.Course.objects.filter(name=course_name)
-            teacher_ex = models.Teacher.objects.filter(name=teacher_name)
+            teacher_ex = models.User.objects.filter(Q(first_name=first_name) & Q(last_name=last_name))
             if len(course_ex) == 0:
-                return render(req, 'class.html', {
+                return render(req, 'class_add.html', {
                     'web_title': '教学班管理',
                     'page_title': '添加教学班',
                     'cur_submodule': 'class',
                     'form': ClassAddForm,
-                    'edit_result': 'no_such_course'
+                    'new_result': 1
                 })
             elif len(teacher_ex) == 0:
-                return render(req, 'class.html', {
+                return render(req, 'class_add.html', {
                     'web_title': '教学班管理',
                     'page_title': '添加教学班',
                     'cur_submodule': 'class',
                     'form': ClassAddForm,
-                    'edit_result': 'no_such_teacher'
+                    'new_result': 2
                 })
             else:
                 models.Class.objects.create(
-                    course=course_name,
-                    teacher=teacher_name,
+                    course=course_ex[0],
+                    teacher=teacher_ex[0],
                     year=year,
                     term=term
                 )
-                return render(req, 'class.html', {
+                return render(req, 'class_add.html', {
                     'web_title': '教学班管理',
                     'page_title': '添加教学班',
                     'cur_submodule': 'class',
                     'form': ClassAddForm,
-                    'edit_result': 'success'
+                    'new_result': 0
                 })
     else:
         return err_403(req)
