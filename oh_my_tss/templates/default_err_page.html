@@ -1,0 +1,15 @@
+{% extends 'skeleton.html' %} 
+
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'info_mgt/css/lists.css' %}" />
+{% endblock extra_head %}
+
+{% block card_content %}
+<div class="card-content">
+  <div class="err-text">
+    {{ err_text }}
+  </div>
+</div>
+{% endblock card_content %}
