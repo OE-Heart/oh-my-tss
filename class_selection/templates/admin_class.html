@@ -7,7 +7,35 @@
 {% endblock extra_head %}
 
 {% block card_content %}
-
+    <script>
+function check_auth(){
+    {% if identity == 0 %}
+        window.alert('缺少管理员权限！');
+        window.history.back(-1);
+    {% endif %}
+}
+    check_auth();
+</script>
+<script>
+function check(){
+    {% if in_success %}
+        window.alert('选课成功！');
+    {% elif out_success %}
+        window.alert('退课成功！');
+    {% elif non_stu %}
+        window.alert('选课失败，该学生不存在!');
+    {% elif non_class %}
+        window.alert('选课失败，该课程不存在!');
+    {% elif space_out %}
+        window.alert('选课失败，容量不足!');
+    {% elif delete_check %}
+        window.alert('退课失败，该学生未选择该课程！');
+    {% elif duplicate %}
+        window.alert('选课失败，该学生已选择该课程!');
+    {% endif %}
+}
+    check();
+</script>
 <div id="class_selection" class="card-content">
 <form method="POST" style="margin-bottom:30px" action="#/">
      {% csrf_token %}
@@ -20,7 +48,7 @@
         </tr>
         <tr style="border:0">
         <td width="30%">
-            <select name="option" id="cx_cxlb_1" class="form-control">
+            <select name="option" id="cx_cxlb_1" class="form-control" required>
             <option value="" disabled selected>选课/退选</option>
             <option value="In">手动选课</option>
             <option value="Out">手动退课</option>

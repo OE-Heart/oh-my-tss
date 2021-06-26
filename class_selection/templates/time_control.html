@@ -7,7 +7,29 @@
 {% endblock extra_head %}
 
 {% block card_content %}
-
+    <script>
+function check_auth(){
+    {% if identity == 0 %}
+        window.alert('缺少管理员权限！');
+        window.history.back(-1);
+    {% endif %}
+}
+    check_auth();
+</script>
+<script>
+function check(){
+    {% if stage1_suc %}
+        window.alert('初选时间修改成功！');
+    {% elif stage2_suc %}
+        window.alert('补选时间修改成功！');
+    {% elif time_err %}
+        window.alert('修改失败，截止时间应晚于开始时间!');
+    {% elif stage_err %}
+        window.alert('修改失败，补选开始时间应晚于初选截止时间!');
+    {% endif %}
+}
+    check();
+</script>
 <div id="class_selection" class="card-content">
     <form method="POST" style="margin-bottom:30px" action="#/">
     {% csrf_token %}
@@ -20,7 +42,7 @@
         </tr>
         <tr style="border:0">
         <td width="30%">
-            <select name="stage" id="stage" class="form-control">
+            <select name="stage" id="stage" class="form-control" required>
             <option value="" disabled selected>初选/补选</option>
             <option value="cxjd">初选阶段</option>
             <option value="bxjd">补选阶段</option>

@@ -7,7 +7,27 @@
 {% endblock extra_head %}
 
 {% block card_content %}
-
+<script>
+function check_auth(){
+    {% if identity == 0 %}
+        window.alert('只有学生可以参与选课！');
+        window.history.back(-1);
+    {% endif %}
+}
+    check_auth();
+</script>
+<script>
+function check(){
+    {% if space_out %}
+        window.alert('选课失败，该课程已无余量！');
+    {% elif tab_missing %}
+        window.alert('查询失败，姓名之间要有空格！');
+    {% elif tea_non %}
+        window.alert('查询失败，该老师不存在！');
+    {% endif %}
+}
+    check();
+</script>
 <div id="class_selection" class="card-content">
 <form method="POST" action="#/" style="margin-bottom:30px">
     {% csrf_token %}
@@ -38,7 +58,6 @@
 </form>
 
 <span style="font-size:25px">可选课程</span>
-
 <form method="POST" action="choose_class">
 {% csrf_token %}
 <table>
@@ -119,4 +138,3 @@
 </script>
 
 {% endblock card_content %}
-

@@ -31,7 +31,13 @@ def index(request):
 def admin_class(req):  # 管理员选退课
     current_user_group = req.user.groups.first()
     if not current_user_group or current_user_group.name != 'admin':
-        return HttpResponseRedirect(reverse('login'))
+        identity = 0  # This user can not use this function
+        return render(req, 'admin_class.html', {
+            'web_title': '课程选择',
+            'page_title': '课程选择',
+            'request_user': req.user,
+            'identity': identity
+        })
     this_user = req.user
     if req.method == 'GET':
         return render(req, 'admin_class.html', {
@@ -40,33 +46,112 @@ def admin_class(req):  # 管理员选退课
             'request_user': req.user,
         })
     if req.method == 'POST':
-        students = models.Student.objects.get(pk=req.POST.get('Student_id'))
-        classes = models.Class.objects.get(pk=req.POST.get('Class_id'))
-        capacity = classes.course.capacity - classes.memberCnt
+        try:
+            students = models.Student.objects.get(pk=req.POST.get('Student_id'))
+        except Exception:
+            non_stu = True
+            return render(req, 'admin_class.html', {
+                'web_title': '手动选课',
+                'page_title': '手动选课',
+                'request_user': req.user,
+                'non_stu': non_stu,
+            })
+        else:
+            try:
+                classes = models.Class.objects.get(pk=req.POST.get('Class_id'))
+            except Exception:
+                non_class = True
+                return render(req, 'admin_class.html', {
+                    'web_title': '手动选课',
+                    'page_title': '手动选课',
+                    'request_user': req.user,
+                    'non_class': non_class,
+                })
+            else:
+                capacity = classes.course.capacity - classes.memberCnt
         if req.POST.get("option") == 'In':
+            try:
+                duplicate_check = models.StuHasClass.objects.get(Student=students, Class=classes)
+            except models.StuHasClass.DoesNotExist:
+                pass
+            else:
+                if duplicate_check:
+                    duplicated = True
+                    return render(req, 'admin_class.html', {
+                        'web_title': '手动选课',
+                        'page_title': '手动选课',
+                        'request_user': req.user,
+                        'request_class': classes,
+                        'pre_capacity': capacity,
+                        'duplicate': duplicated,
+                    })
+
             if capacity <= 0:
-                return HttpResponse(404)
+                space_out = True
+                return render(req, 'admin_class.html', {
+                    'web_title': '手动选课',
+                    'page_title': '手动选课',
+                    'request_user': req.user,
+                    'request_class': classes,
+                    'pre_capacity': capacity,
+                    'space_out': space_out,
+                })
+
             else:
                 models.StuHasClass.objects.create(Student=students, Class=classes)
                 classes.memberCnt += 1
                 classes.save()
-
                 capacity -= 1
+                in_success = True
+                return render(req, 'admin_class.html', {
+                    'web_title': '手动选课',
+                    'page_title': '手动选课',
+                    'request_user': req.user,
+                    'request_class': classes,
+                    'pre_capacity': capacity,
+                    'in_success': in_success,
+                })
         elif req.POST.get("option") == 'Out':
+            try:
+                delete_check = models.StuHasClass.objects.get(Student=students, Class=classes)
+            except models.StuHasClass.DoesNotExist:
+                pass
+            else:
+                if delete_check == 0:
+                    delete_unable = True
+                    return render(req, 'admin_class.html', {
+                        'web_title': '手动选课',
+                        'page_title': '手动选课',
+                        'request_user': req.user,
+                        'request_class': classes,
+                        'pre_capacity': capacity,
+                        'delete_check': delete_unable,
+                    })
             classes.memberCnt -= 1
             classes.save()
             capacity += 1
             models.StuHasClass.objects.get(Student=students, Class=classes).delete()
-        return render(req, 'admin_class.html', {
-            'web_title': '手动选课',
-            'page_title': '手动选课',
-            'request_user': req.user,
-            'request_class': classes,
-            'pre_capacity': capacity,
-        })
+            out_success = True
+            return render(req, 'admin_class.html', {
+                'web_title': '手动选课',
+                'page_title': '手动选课',
+                'request_user': req.user,
+                'request_class': classes,
+                'pre_capacity': capacity,
+                'out_success': out_success,
+            })
 
 
 def time_control(req):
+    current_user_group = req.user.groups.first()
+    if not current_user_group or current_user_group.name != 'admin':
+        identity = 0  # This user can not use this function
+        return render(req, 'time_control.html', {
+            'web_title': '课程选择',
+            'page_title': '课程选择',
+            'request_user': req.user,
+            'identity': identity
+        })
     if req.method == "POST":
         return_dict = {
             'web_title': '管理时间',
@@ -77,19 +162,53 @@ def time_control(req):
         start_time = req.POST.get("stage_time1")  # datetime格式
         end_time = req.POST.get("stage_time2")
 
+        if end_time < start_time:
+            time_err = True
+            return render(req, 'time_control.html', {
+                'web_title': '管理时间',
+                'page_title': '管理时间',
+                'request_user': req.user,
+                'time_err': time_err,
+            })
+
         if stage == "cxjd":  # 初选设置
             stage_num = 0
             update_result = models.sel_time.objects.get(type=stage_num)
             update_result.start = start_time
             update_result.end = end_time
             update_result.save()
+            stage1_suc = True
+            return render(req, 'time_control.html', {
+                'web_title': '管理时间',
+                'page_title': '管理时间',
+                'request_user': req.user,
+                'stage1_suc': stage1_suc,
+            })
 
         elif stage == "bxjd":  # 补选设置
             stage_num = 1
-            update_result = models.sel_time.objects.get(type=stage_num)
-            update_result.start = start_time
-            update_result.end = end_time
-            update_result.save()
+            stage1_time = models.sel_time.objects.get(type=0)
+            stage1_end = stage1_time.end
+            if str(stage1_end) > start_time:
+                stage_err = True
+                return render(req, 'time_control.html', {
+                    'web_title': '管理时间',
+                    'page_title': '管理时间',
+                    'request_user': req.user,
+                    'stage_err': stage_err,
+                })
+            else:
+                update_result = models.sel_time.objects.get(type=stage_num)
+                update_result.start = start_time
+                update_result.end = end_time
+                update_result.save()
+                stage2_suc = True
+                return render(req, 'time_control.html', {
+                    'web_title': '管理时间',
+                    'page_title': '管理时间',
+                    'request_user': req.user,
+                    'stage2_suc': stage2_suc,
+                })
         else:
             return_dict["error"] = True
 
@@ -105,7 +224,12 @@ def time_control(req):
 def stu_class(req):  # 学生课表
     current_user_group = req.user.groups.first()
     if not current_user_group or current_user_group.name != 'student':
-        return HttpResponseRedirect(reverse('login'))
+        return render(req, 'stu_class.html', {
+            'web_title': '课程选择',
+            'page_title': '课程选择',
+            'request_user': req.user,
+            'identity': 0
+        })
     this_user = req.user
     students = models.Student.objects.filter(user=this_user)
     myclass_list = models.StuHasClass.objects.filter(Student=students[0])
@@ -128,7 +252,15 @@ def stu_class(req):  # 学生课表
 
 
 def tea_class(request):
-    current_user_id = request.user.groups.first()
+    current_user_group = request.user.groups.first()
+    if not current_user_group or current_user_group.name != 'teacher':
+        identity = 0  # This user can not use this function
+        return render(request, 'tea_class.html', {
+            'web_title': '课程选择',
+            'page_title': '课程选择',
+            'request_user': request.user,
+            'identity': identity
+        })
     if request.method == 'GET':
         return_dict = {'web_title': '教师课表',
                        'page_title': '教师课表',
@@ -262,7 +394,14 @@ def choose_class(request):
             classes.memberCnt += 1
             classes.save()
         else:
-            return HttpResponse(404)  # 已无余量
+            space_out = True
+            return_dict = {
+                'web_title': '课程选择',
+                'page_title': '课程选择',
+                'request_user': request.user,
+                'space_out': space_out,
+            }
+            return render(request, 'stu_select.html', return_dict)
 
     choice = request.session.get('choice')
     content = request.session.get('content')
@@ -314,6 +453,16 @@ def stu_class_list(request):
 
 
 def stu_select(req, null=None):
+    identity = 1
+    current_user_group = req.user.groups.first()
+    if not current_user_group or current_user_group.name != 'student':
+        identity = 0      # This user can not use this function
+        return render(req, 'stu_select.html', {
+            'web_title': '课程选择',
+            'page_title': '课程选择',
+            'request_user': req.user,
+            'identity': identity
+        })
     class_info = {}
     if req.method == "POST":
         # print(req.POST.get("my_option"))
@@ -321,6 +470,7 @@ def stu_select(req, null=None):
             'web_title': '课程选择',
             'page_title': '课程选择',
             'request_user': req.user,
+            'identity': identity
         }
         content = req.POST.get("cx_input_1")
         choice = req.POST.get("cxkc_1")
@@ -333,7 +483,15 @@ def stu_select(req, null=None):
         if choice == "skjs":
             teacher_name = content.split(' ', 1)
             if len(teacher_name) < 2:
-                return HttpResponse(404)  # 未输入空格
+                tab_missing = True
+                return_dict = {
+                    'web_title': '课程选择',
+                    'page_title': '课程选择',
+                    'request_user': req.user,
+                    'identity': identity,
+                    'tab_missing': tab_missing,
+                }
+                return render(req, 'stu_select.html', return_dict)
             user = models.User.objects.filter(first_name=teacher_name[1], last_name=teacher_name[0])
             if len(user) > 0:
                 class_info = models.Class.objects.filter(teacher=user[0])
@@ -341,13 +499,23 @@ def stu_select(req, null=None):
                     tmp = models.Class.objects.filter(teacher=user[j])
                     class_info = class_info | tmp
             else:
-                return HttpResponse(404)  # 老师不存在
+                tea_non = True
+                return_dict = {
+                    'web_title': '课程选择',
+                    'page_title': '课程选择',
+                    'request_user': req.user,
+                    'identity': identity,
+                    'tea_non': tea_non,
+                }
+                return render(req, 'stu_select.html', return_dict)
         elif choice == "kcmc":
             class_name = models.Course.objects.filter(name__contains=content)
-            class_info = models.Class.objects.filter(course=class_name[0].id)
-            for i in range(1, len(class_name)):
-                class_id = models.Class.objects.filter(course=class_name[i].id)
-                class_info = class_info | class_id
+            if len(class_name)>0:
+                class_info = models.Class.objects.filter(course=class_name[0].id)
+                for i in range(1, len(class_name)):
+                    class_id = models.Class.objects.filter(course=class_name[i].id)
+                    class_info = class_info | class_id
+            else: class_info={}
         elif choice == "kcbh":
             class_info = models.Class.objects.filter(course=int(content))
         return_dict["class_info"] = class_info
@@ -381,6 +549,7 @@ def stu_select(req, null=None):
             'web_title': '课程选择',
             'page_title': '课程选择',
             'request_user': req.user,
+            'identity': identity
         }
         req.session['choice'] = "all"
         req.session['content'] = "all"

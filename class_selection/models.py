@@ -16,5 +16,3 @@ class sel_time(models.Model):
     start = models.DateTimeField()
     end = models.DateTimeField()
     type = models.IntegerField()
-
-

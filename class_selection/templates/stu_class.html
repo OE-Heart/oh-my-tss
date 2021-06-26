@@ -6,8 +6,17 @@
 {% block extra_css %}
     <link rel="stylesheet" type="text/css" href="{% static 'online_exam/css/style.css' %}"/>
 {% endblock extra_css %}
- <h5 style="margin:0 0 0 0">课程表</h5>
+
 {% block card_content %}
+    <script>
+function check(){
+    {% if identity == 0 %}
+        window.alert('非学生身份无法查看课表！');
+        window.history.back(-1);
+    {% endif %}
+}
+    check();
+</script>
 
 <table style="margin:0 0 0 0" border="0" cellpadding="9" >
     <tr>
@@ -167,5 +176,9 @@
         <th>{{ schedule.12.6 }}</th>
     </tr>
  </table>
-
+<script>
+    $(document).ready(function(){
+    $('select').formSelect();
+    });
+</script>
 {% endblock card_content %}
