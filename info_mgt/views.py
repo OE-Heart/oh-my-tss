@@ -29,11 +29,10 @@ def index(req):
 def info_view(req):
     try:
         avatar = models.Avatar.objects.get(user=req.user)
+        res_url = 'media\\img\\' + str(avatar.avatar.name)
     except ObjectDoesNotExist:
+        res_url = 'media\\img\\' + 'default.png'
         pass
-    # print(avatar.avatar.name)
-    res_url = '/media/img/test.png'
-    print(res_url)
 
     return render(req, 'info_view.html', {
         'web_title': '个人信息',
