@@ -96,54 +96,7 @@ def info_edit(req):
             'web_title': '个人信息修改', 'page_title': '个人信息修改', 'request_user': req.user,
             'form': SelfInfoForm(instance=obj), 'edit': False})
     else:
-        return HttpRequest(404)
-
-
-def class_add(req):
-    if req.method == 'GET':
-        return render(req, 'class_add.html', {
-            'web_title': '教学班管理',
-            'page_title': '添加教学班',
-            'cur_submodule': 'class',
-            'form': ClassAddForm
-        })
-    elif req.method == 'POST':
-        course_name = req.POST['course']
-        teacher_name = req.POST['teacher']
-        year = req.POST['year']
-        term = req.POST['term']
-        course_ex = models.Course.objects.filter(name=course_name)
-        teacher_ex = models.Teacher.objects.filter(name=teacher_name)
-        if len(course_ex) == 0:
-            return render(req, 'class.html', {
-                'web_title': '教学班管理',
-                'page_title': '添加教学班',
-                'cur_submodule': 'class',
-                'form': ClassAddForm,
-                'edit_result': 'no_such_course'
-            })
-        elif len(teacher_ex) == 0:
-            return render(req, 'class.html', {
-                'web_title': '教学班管理',
-                'page_title': '添加教学班',
-                'cur_submodule': 'class',
-                'form': ClassAddForm,
-                'edit_result': 'no_such_teacher'
-            })
-        else:
-            models.Class.objects.create(
-                course=course_name,
-                teacher=teacher_name,
-                year=year,
-                term=term
-            )
-            return render(req, 'class.html', {
-                'web_title': '教学班管理',
-                'page_title': '添加教学班',
-                'cur_submodule': 'class',
-                'form': ClassAddForm,
-                'edit_result': 'success'
-            })
+        return HttpResponse(404)
 
 
 def account_edit(req, username='#'):
@@ -213,9 +166,9 @@ def account_edit(req, username='#'):
                     'edit': False
                 })
         else:
-            return HttpResponseRedirect(404)
+            return HttpResponse(404)
     else:
-        return HttpResponseRedirect(403)
+        return HttpResponse(403)
 
 
 def account_add(req):
@@ -505,6 +458,56 @@ def class_list(req, page=0):
         'next_disabled': page + 1 >= page_sum,
         'page_sum': page_sum,
     })
+
+
+def class_add(req):
+    if req.user.has_perm('info_mgt.add_class'):
+        if req.method == 'GET':
+            return render(req, 'class_add.html', {
+                'web_title': '教学班管理',
+                'page_title': '添加教学班',
+                'cur_submodule': 'class',
+                'form': ClassAddForm
+            })
+        elif req.method == 'POST':
+            course_name = req.POST['course']
+            teacher_name = req.POST['teacher']
+            year = req.POST['year']
+            term = req.POST['term']
+            course_ex = models.Course.objects.filter(name=course_name)
+            teacher_ex = models.Teacher.objects.filter(name=teacher_name)
+            if len(course_ex) == 0:
+                return render(req, 'class.html', {
+                    'web_title': '教学班管理',
+                    'page_title': '添加教学班',
+                    'cur_submodule': 'class',
+                    'form': ClassAddForm,
+                    'edit_result': 'no_such_course'
+                })
+            elif len(teacher_ex) == 0:
+                return render(req, 'class.html', {
+                    'web_title': '教学班管理',
+                    'page_title': '添加教学班',
+                    'cur_submodule': 'class',
+                    'form': ClassAddForm,
+                    'edit_result': 'no_such_teacher'
+                })
+            else:
+                models.Class.objects.create(
+                    course=course_name,
+                    teacher=teacher_name,
+                    year=year,
+                    term=term
+                )
+                return render(req, 'class.html', {
+                    'web_title': '教学班管理',
+                    'page_title': '添加教学班',
+                    'cur_submodule': 'class',
+                    'form': ClassAddForm,
+                    'edit_result': 'success'
+                })
+    else:
+        return HttpResponse(403)
 
 
 def login_view(req):
