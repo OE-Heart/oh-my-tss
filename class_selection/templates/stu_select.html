@@ -13,8 +13,11 @@ function check_auth(){
         window.alert('只有学生可以参与选课！');
         window.history.back(-1);
     {% endif %}
+    {% if identity == 2 %}
+        window.alert('现在不在选课时间内！');
+        window.history.back(-1);
+    {% endif %}
 }
-    check_auth();
 </script>
 <script>
 function check(){
@@ -24,6 +27,8 @@ function check(){
         window.alert('查询失败，姓名之间要有空格！');
     {% elif tea_non %}
         window.alert('查询失败，该老师不存在！');
+    {% elif conflict_err %}
+        window.alert('选课失败，时间冲突！');
     {% endif %}
 }
     check();
@@ -51,6 +56,7 @@ function check(){
         </tr>
 
         <tr>
+            <td><input type="hidden" style="" name="my_option" id="my_option" value="selectclass"></input></td>
             <td colspan="5" style="text-align:center"><button type="submit" style="margin-left:15px;background:#08c" class="btn btn-primary btn-sm" id="btn_cxkc"> 查询课程 </button> </td>
         </tr>
     </tbody>
@@ -58,7 +64,7 @@ function check(){
 </form>
 
 <span style="font-size:25px">可选课程</span>
-<form method="POST" action="choose_class">
+<form method="POST" action="#/">
 {% csrf_token %}
 <table>
     <thead>
@@ -71,7 +77,7 @@ function check(){
             <th>已选人数/总容量</th>
             <th>详细信息</th>
 
-            <th>选课状态</th>
+            <th colspan="2">选课状态</th>
         </tr>
     </thead>
     <tbody>
@@ -118,6 +124,7 @@ function check(){
             </td>
             <td>{{ i.memberCnt}}/{{i.course.capacity}}</td>
             <td><a href="{% url 'info_mgt:course_display' i.course.name %}">查看</a></td>
+            <td><input type="hidden" style="" name="my_option" id="my_option" value="chooseclass"></input></td>
             {% if i in my_class %}
             <td><input type="submit" class="btn btn-default" name="{{i.id}}" value="drop"></td>
             {% else %}

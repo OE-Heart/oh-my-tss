@@ -32,6 +32,8 @@ function check(){
         window.alert('退课失败，该学生未选择该课程！');
     {% elif duplicate %}
         window.alert('选课失败，该学生已选择该课程!');
+    {% elif conflict_err %}
+        window.alert('选课失败，该学生课程时间冲突！');
     {% endif %}
 }
     check();
