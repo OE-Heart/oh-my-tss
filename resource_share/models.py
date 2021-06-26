@@ -3,22 +3,32 @@ from django.db import models
 # Create your models here.
 from django.db import models
 from django.contrib.auth.models import User
-from info_mgt.models import Student, Course
+from django.db.models.base import ModelState
+from django.db.models.fields.related import ForeignKey
+from info_mgt.models import Student, Course, Class
 
 
 class Source(models.Model):
-    file_path = models.CharField(max_length=256)
-    file_size = models.DecimalField(max_digits=19, decimal_places=2)
+    file_type_choices = (
+        (1, '文件'),
+        (2, '文件夹')
+    )
+    file_path = models.CharField(max_length=256, null=True, blank=True)
+    file_size = models.BigIntegerField(null=True, blank=True)
     file_name = models.CharField(max_length=100)
-    file_type = models.CharField(max_length=10)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)     # 外键
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)  # 外键
+    file_type = models.CharField(max_length=10, choices=file_type_choices)
+    parent = models.CharField(max_length=100, null=True, blank=True)
+    Class = models.ManyToManyField(Class)
+    user = models.ManyToManyField(User)     # 外键
+    course = models.ManyToManyField(Course)
     created_at = models.DateField(auto_now_add=True)    # 自动添加上传时间，之后不会再更改
     updated_at = models.DateField(auto_now=True)    # 自动更新修改时间，每次执行操作都会相应的更改
 
 
 class Assignment(models.Model):
-    course = models.ForeignKey(Course, on_delete=models.CASCADE)  # 外键
+    course = models.ManyToManyField(Course)  # 外键
+    Class = models.ManyToManyField(Class)
+    assignment_name = models.CharField(max_length=20,null=True)
     assignment_start = models.DateTimeField()
     assignment_end = models.DateTimeField()
     assignment_intro = models.TextField()
@@ -28,5 +38,7 @@ class Assignment(models.Model):
 class AssignmentGrade(models.Model):
     student = models.ManyToManyField(Student)  # 外键
     course = models.ManyToManyField(Course)  # 外键
+    Class = models.ManyToManyField(Class)
     assignment_path = models.CharField(max_length=256)
     assignment_result = models.IntegerField(null=True, blank=True)
+    is_submit = models.BooleanField(null=True,)

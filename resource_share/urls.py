@@ -10,6 +10,15 @@ urlpatterns = [
     path('homework_detail',views.hwdetail,name="hwdetail"),
     path('homework_list',views.hwlist,name="hwlist"),
     path('homework_list_t',views.hwlist_t,name="hwlist_t"),
-    path('homework_assign',views.hwass,name="hwass"),
-    path('homework_detail_t',views.hwdetail_t,name="hwdetail_t")
+    path('homework_assign',views.hwass,name="homework_assign"),
+    path('homework_detail_t',views.hwdetail_t,name="hwdetail_t"),
+    path('addassignment',views.addassignment,name="addassignment"),
+    path('homework_detail_t_update',views.homework_detail_update,name="homework_detail_t_update"),
+    path('homework_delete',views.homeworkdelete,name="homework_delete"),
+    path('up/', views.up, name="up"),
+    # path('download/', views.down,name="download"),
+    path('download/(?P<filename>.+)', views.down,name="download"),
+    path("new/", views.new, name="new")
+
+
 ]

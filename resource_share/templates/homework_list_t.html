@@ -1,50 +1,64 @@
-{% extends 'skeleton.html' %} 
-
-{% load static %} 
-{% load material_form %} 
-
-{% block extra_head %}
-<link
-  rel="stylesheet"
-  type="text/css"
-  href="{% static 'info_mgt/css/info_mgt.css' %}"
-/>
-{% endblock extra_head %} 
-
-{% block card_content %}
+{% extends 'skeleton.html' %} {% load static %} {% load material_form %} {% block extra_head %}
+<link rel="stylesheet" type="text/css" href="{% static 'info_mgt/css/info_mgt.css' %}" /> {% endblock extra_head %} {% block card_content %}
 <div id="homework_list" class="card-content">
-    <label style="font-size: 25px;">课程名称</label>
-    <button onclick=" " id="dataRecycle"
-    title="布置作业" class="btn btn-default btn-sm" style="margin-left: 5px; float:right">
-    布置作业
-    </button>
-    <table><thead>
-    <tr><th>作业标题</th><th>截止时间</th><th>当前状态</th><th>操作</th><th>
-    </thead>
-    <tbody>
+    <label style="font-size: 25px;">课程作业:</label>
+    <form action="{%url 'homework_assign'%}" method="POST">
+        {%csrf_token%}
+        <input type="submit" id="dataRecycle" value="布置作业" class="btn btn-default btn-sm" style="margin-left: 5px; float:right">
+    </form>
+    <table class="table2">
         <tr>
-            <td>第一周作业</td>
-            <td>20210621 21:00</td>
-            <td>未截止</td>
             <td>
-                <button class="operation-btn">查看详情</button>
-                <button class="operation-btn">编辑</button>
-                <button class="operation-btn">批改</button>
-                <button class="operation-btn">删除</button>
+                <ul>
+                    <li class="p3">课程学期：{{classinfo.0.year}}年{{classinfo.0.term}}学期</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li class="p3">课程名称：{{courseinfo.0.name}}</li>
+                </ul>
+            </td>
+            <td>
+                <ul>
+                    <li class="p3">
+                        上课时间: {%for time in classtime%} 周{{time.date}} {%for span in time.timespan%} {{span}} {%endfor%} 节 {%endfor%}
+                    </li>
+                </ul>
             </td>
         </tr>
-        <tr>
-            <td>Project Final 提交</td>
-            <td>20210630 23:59</td>
-            <td>未批改</td>
-            <td>
-                <button class="operation-btn">查看详情</button>
-                <button class="operation-btn">编辑</button>
-                <button class="operation-btn">批改</button>
-                <button class="operation-btn">删除</button>
-            </td>
-        </tr>
-    </tbody>
+    </table>
+    <table>
+        <thead>
+            <tr>
+                <th>作业标题</th>
+                <th>开始时间</th>
+                <th>截止时间</th>
+                <th>操作</th>
+                <th>
+        </thead>
+        <tbody>
+            {%for ass in asslist%}
+            <tr>
+                <td>{{ass.name}}</td>
+                <td>{{ass.start}}</td>
+                <td>{{ass.end}}</td>
+                <td>
+                    <form action="{%url 'hwdetail_t'%}" method="POST">
+                        {%csrf_token%}
+                        <input type="submit" class="operation-btn" name="{{ass.id}}" value="查看详情">
+                    </form>
+                    <form>
+                        {%csrf_token%}
+                        <input type="submit" class="operation-btn" name="{{ass.id}}" value="批改">
+                    </form>
+                    <form action="{%url 'homework_delete'%}" method="POST">
+                        {%csrf_token%}
+                        <input type="submit" class="operation-btn" name="{{ass.id}}" value="删除">
+                    </form>
+                </td>
+            </tr>
+            {%endfor%}
+        </tbody>
     </table>
 
-{% endblock card_content %}
+    {% endblock card_content %}
