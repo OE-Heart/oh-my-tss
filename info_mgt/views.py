@@ -500,20 +500,29 @@ def course_edit(req, option, in_course_name):
                     'edit_result': True if n_updates != 0 else False
                 })
             elif option == 'new':
-                ins = models.Course.objects.create(
-                    name=course_name,
-                    description=course_desc,
-                    credit=course_credit,
-                    capacity=course_capacity,
-                    duration=course_duration
-                )
-                return render(req, 'course_edit.html', {
-                    'web_title': '课程管理',
-                    'page_title': '添加课程',
-                    'cur_submodule': 'course',
-                    'form': CourseEditForm,
-                    'new_result': True if ins else False
-                })
+                if len(course_name) > 0 and len(course_desc) > 0 and course_credit > 0 and course_capacity > 0 and len(course_duration) > 0:
+                    ins = models.Course.objects.create(
+                        name=course_name,
+                        description=course_desc,
+                        credit=course_credit,
+                        capacity=course_capacity,
+                        duration=course_duration
+                    )
+                    return render(req, 'course_edit.html', {
+                        'web_title': '课程管理',
+                        'page_title': '添加课程',
+                        'cur_submodule': 'course',
+                        'form': CourseEditForm,
+                        'new_result': True if ins else False
+                    })
+                else:
+                    return render(req, 'course_edit.html', {
+                        'web_title': '课程管理',
+                        'page_title': '添加课程',
+                        'cur_submodule': 'course',
+                        'form': CourseEditForm,
+                        'new_result': False
+                    })
             elif option == 'delete':
                 return err_403(req)
             else:
